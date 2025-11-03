@@ -22,17 +22,33 @@ This is designed as a **flexible, multi-scenario budgeting tool** for students o
 
 **Main Entities:**
 - `User` – authenticated via Amazon Cognito
-- `Plan` – 3-year timeframe, owned by a user
-- `Budget` – monthly budget (income, expenses) tied to a user or plan
-- `Asset` – savings or investment accounts tied to a user
+- `Plan` – 3-year (36 month) financial projection containing:
+  - Monthly budgets with income/expenses
+  - Net worth calculations for each month
+  - Asset value projections for each month
+- `Budget` – monthly budget containing:
+  - Income sources (salary, freelance, etc.)
+  - Expense categories (rent, food, utilities, etc.)
+  - Monthly totals and projections
+- `Asset` – savings or investment accounts containing:
+  - Name (e.g., "Emergency Fund", "Roth IRA")
+  - Current cash value
+  - Yearly APY (Annual Percentage Yield)
+- `Debt` – loans and credit accounts containing:
+  - Name (e.g., "Student Loan", "Credit Card", "Car Loan")
+  - Current balance (negative value)
+  - Yearly interest rate
+- `Transaction` – one-off income or expenses for specific months, outside of regular budgets
 
 Each entity is stored as a JSON document in DynamoDB.
 
 **Relationships:**
 - User → Plans (1:many)
 - User → Assets (1:many)
+- User → Debts (1:many)
 - User → Budgets (1:many)
 - Plan → Budgets (1:many)
+- Plan → Transactions (1:many)
 
 ---
 
