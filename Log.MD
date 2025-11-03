@@ -1,1 +1,1 @@
-11/03/2025 Worked on github setup, inital designs 2 hour
+11/03/2025 Worked on github setup, inital designs, tech stack 2 hour
