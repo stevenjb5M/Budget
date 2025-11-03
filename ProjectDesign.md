@@ -71,7 +71,42 @@ Each entity is stored as a JSON document in DynamoDB.
 4. Frontend displays plan data and budget calculations
 5. CloudWatch logs performance and errors
 
----
+**System Design Diagram:**
+
+```
+┌─────────────┐
+│    User     │
+│  (Browser)  │
+└──────┬──────┘
+       │ HTTPS
+       ▼
+┌─────────────┐     ┌─────────────────┐
+│   React     │◄────┤   Amazon        │
+│  Frontend   │     │   Cognito       │
+│ (S3 + CF)   │     │  (Auth/JWT)     │
+└──────┬──────┘     └─────────────────┘
+       │ REST API
+       │ (JWT Auth)
+       ▼
+┌─────────────┐     ┌─────────────────┐
+│ ASP.NET     │◄───►│   DynamoDB      │
+│ Core API    │     │  (NoSQL DB)     │
+│ (EB)        │     └─────────────────┘
+└──────┬──────┘
+       │ Logs/Metrics
+       ▼
+┌─────────────┐
+│ CloudWatch  │
+│ (Monitoring)│
+└─────────────┘
+```
+
+**Key Interactions:**
+- **User → Cognito**: Authentication (sign up/login)
+- **Cognito → React**: JWT tokens for authorized requests
+- **React → ASP.NET**: REST API calls with JWT authentication
+- **ASP.NET → DynamoDB**: CRUD operations on user data
+- **ASP.NET → CloudWatch**: Logging and monitoring
 
 ## 📅 Project Timeline (Nov 3 – Dec 10)
 
