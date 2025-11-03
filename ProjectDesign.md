@@ -4,7 +4,7 @@ Final Project: https://byu.instructure.com/courses/32608/pages/final-project
 
 ---
 
-## 📋 Project Purpose & Goals
+## Project Purpose & Goals
 
 **Budget Planner** is a modern web application that helps users plan income, expenses, and savings across multiple months and scenarios. 
 
