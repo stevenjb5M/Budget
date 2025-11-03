@@ -23,7 +23,7 @@ This is designed as a **flexible, multi-scenario budgeting tool** for students o
 **Main Entities:**
 - `User` – authenticated via Amazon Cognito
 - `Plan` – 3-year timeframe, owned by a user
-- `Budget` – monthly budget (income, expenses) tied to a plan
+- `Budget` – monthly budget (income, expenses) tied to a user or plan
 - `Asset` – savings or investment accounts tied to a user
 
 Each entity is stored as a JSON document in DynamoDB.
@@ -31,6 +31,7 @@ Each entity is stored as a JSON document in DynamoDB.
 **Relationships:**
 - User → Plans (1:many)
 - User → Assets (1:many)
+- User → Budgets (1:many)
 - Plan → Budgets (1:many)
 
 ---
