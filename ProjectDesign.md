@@ -1,4 +1,4 @@
-# 💰 Budget Planner - Final Project Design
+# Budget Planner - Final Project Design
 
 Final Project: https://byu.instructure.com/courses/32608/pages/final-project
 
@@ -18,7 +18,7 @@ This is designed as a **flexible, multi-scenario budgeting tool** for students o
 
 ---
 
-## 🗂️ Data Model (ERD)
+## Data Model (ERD)
 
 **Main Entities:**
 - `User` – authenticated via Amazon Cognito
@@ -52,7 +52,7 @@ Each entity is stored as a JSON document in DynamoDB.
 
 ---
 
-## 🏗️ System Architecture
+## System Architecture
 
 **Tech Stack:**
 | Layer | Technology | Purpose |
@@ -108,7 +108,7 @@ Each entity is stored as a JSON document in DynamoDB.
 - **ASP.NET → DynamoDB**: CRUD operations on user data
 - **ASP.NET → CloudWatch**: Logging and monitoring
 
-## 📅 Project Timeline (Nov 3 – Dec 10)
+## Project Timeline (Nov 3 – Dec 10)
 
 | Milestone | Date | Goals |
 |-----------|------|-------|
@@ -120,13 +120,13 @@ Each entity is stored as a JSON document in DynamoDB.
 
 ---
 
-## 🎨 Initial UX Sketch
+## Initial UX Sketch
 
 *(To be added: rough wireframes of dashboard, plan creation, budget editing screens)*
 
 ---
 
-## ✅ Additional Notes
+## Additional Notes
 
 - Using AWS free tier where possible
 - DynamoDB for flexible JSON storage
