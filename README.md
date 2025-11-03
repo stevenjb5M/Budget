@@ -1,11 +1,11 @@
-# 💰 Budget Planner (Full AWS Stack)
+# Budget Planner
 
 A modern budgeting web app that helps users plan income, expenses, and savings across multiple months and scenarios.  
 Built with **React**, **C# (ASP.NET Core)**, and fully deployed on **AWS**.
 
 ---
 
-## 🧠 Overview
+## Overview
 
 Budget Planner allows users to:
 - Create **multiple financial plans** (e.g., baseline, best-case, or reduced income scenarios)
@@ -17,7 +17,7 @@ This is designed as a **flexible, multi-scenario budgeting tool** for students o
 
 ---
 
-## 🏗️ Tech Stack
+## Tech Stack
 
 | Layer | Technology | Purpose |
 |-------|-------------|----------|
@@ -25,12 +25,12 @@ This is designed as a **flexible, multi-scenario budgeting tool** for students o
 | **Backend** | ASP.NET Core Web API (C#) | REST API hosted on AWS Elastic Beanstalk |
 | **Database** | Amazon DynamoDB | NoSQL JSON-style storage for users, budgets, plans, and assets |
 | **Authentication** | Amazon Cognito | Secure user sign-up, login, and JWT-based auth |
-| **Hosting / Infra** | AWS S3, CloudFront, Elastic Beanstalk, DynamoDB, Cognito | Fully cloud-hosted using AWS free tier |
+| **Hosting** | AWS S3, CloudFront, Elastic Beanstalk, DynamoDB, Cognito | Fully cloud-hosted using AWS free tier |
 | **Monitoring** | AWS CloudWatch | Logs and performance metrics |
 
 ---
 
-## 🧩 Data Model
+## Data Model
 
 **Main Entities:**
 - `User` – authenticated via Cognito
