@@ -188,8 +188,8 @@ function Assets() {
             <ul className="mt-4 space-y-2">
               {assets.map((asset) => (
                 <li key={asset.id} className="flex justify-between items-center p-4 bg-white shadow rounded-lg">
-                  <div className="flex space-x-6">
-                    <span className="font-medium text-black">{asset.name}</span>
+                  <div className="flex-1 font-medium text-black text-left">{asset.name}</div>
+                  <div className="flex flex-col items-end mr-4">
                     <span className="text-gray-600">Value: ${asset.currentValue.toFixed(2)}</span>
                     <span className="text-gray-600">APY: {asset.annualAPY}%</span>
                   </div>
@@ -223,7 +223,7 @@ function Assets() {
                     id="name"
                     value={newAsset.name}
                     onChange={(e) => setNewAsset({ ...newAsset, name: e.target.value })}
-                    className="mt-1 mb-2 block w-80 border-gray-300 rounded-md shadow-sm text-black"
+                    className="mt-1 mb-2 block w-4/5 mx-auto border-gray-300 rounded-md shadow-sm text-black"
                     required
                   />
                 </div>
@@ -234,7 +234,7 @@ function Assets() {
                     id="currentValue"
                     value={newAsset.currentValue}
                     onChange={(e) => setNewAsset({ ...newAsset, currentValue: parseFloat(e.target.value) })}
-                    className="mt-1 mb-2 block w-80 border-gray-300 rounded-md shadow-sm text-black"
+                    className="mt-1 mb-2 block w-4/5 mx-auto border-gray-300 rounded-md shadow-sm text-black"
                     required
                   />
                 </div>
@@ -246,7 +246,7 @@ function Assets() {
                     id="annualAPY"
                     value={newAsset.annualAPY}
                     onChange={(e) => setNewAsset({ ...newAsset, annualAPY: parseFloat(e.target.value) })}
-                    className="mt-1 mb-2 block w-80 border-gray-300 rounded-md shadow-sm text-black"
+                    className="mt-1 mb-2 block w-4/5 mx-auto border-gray-300 rounded-md shadow-sm text-black"
                     required
                   />
                 </div>
