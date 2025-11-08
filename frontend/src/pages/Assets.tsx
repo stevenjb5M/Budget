@@ -92,17 +92,16 @@ export function Assets() {
             <h2 className="text-2xl font-bold text-gray-900">Assets</h2>
             <button
               onClick={() => setShowModal(true)}
-              className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
+              className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-[#0171bd] hover:bg-[#0156a3]"
             >
               New Asset
             </button>
           </div>
           <div className="mt-8">
-            <h3 className="text-lg font-medium text-gray-900">Your Assets</h3>
             <div className="mt-4 bg-white shadow rounded-lg overflow-hidden">
-              <div className="grid grid-cols-[60px_2fr_1fr_1fr_100px] gap-4 p-4 bg-gray-50 font-medium text-gray-700 border-b">
+              <div className="grid grid-cols-[60px_1fr_120px_120px_100px] gap-4 p-4 bg-gray-50 font-medium text-gray-700 border-b">
                 <div></div>
-                <div>Name</div>
+                <div className="text-left">Name</div>
                 <div className="text-center">Value</div>
                 <div className="text-center">APY</div>
                 <div className="text-center">Actions</div>
@@ -184,7 +183,7 @@ export function Assets() {
                   </button>
                   <button
                     type="submit"
-                    className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
+                    className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-[#0171bd] hover:bg-[#0156a3]"
                   >
                     Create Asset
                   </button>
@@ -268,7 +267,7 @@ export function Assets() {
                     </button>
                     <button
                       type="submit"
-                      className="inline-flex justify-center py-1 px-3 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
+                      className="inline-flex justify-center py-1 px-3 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-[#0171bd] hover:bg-[#0156a3]"
                     >
                       Save
                     </button>

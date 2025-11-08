@@ -9,7 +9,7 @@ export function Nav() {
             to="/"
             className={({ isActive }) =>
               isActive
-                ? "border-indigo-500 text-gray-900 border-b-2 py-4 px-1 text-sm font-medium"
+                ? "border-[#0171bd] text-gray-900 border-b-2 py-4 px-1 text-sm font-medium"
                 : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 border-b-2 py-4 px-1 text-sm font-medium"
             }
           >
@@ -19,7 +19,7 @@ export function Nav() {
             to="/plans"
             className={({ isActive }) =>
               isActive
-                ? "border-indigo-500 text-gray-900 border-b-2 py-4 px-1 text-sm font-medium"
+                ? "border-[#0171bd] text-gray-900 border-b-2 py-4 px-1 text-sm font-medium"
                 : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 border-b-2 py-4 px-1 text-sm font-medium"
             }
           >
@@ -29,7 +29,7 @@ export function Nav() {
             to="/budgets"
             className={({ isActive }) =>
               isActive
-                ? "border-indigo-500 text-gray-900 border-b-2 py-4 px-1 text-sm font-medium"
+                ? "border-[#0171bd] text-gray-900 border-b-2 py-4 px-1 text-sm font-medium"
                 : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 border-b-2 py-4 px-1 text-sm font-medium"
             }
           >
@@ -39,7 +39,7 @@ export function Nav() {
             to="/assets"
             className={({ isActive }) =>
               isActive
-                ? "border-indigo-500 text-gray-900 border-b-2 py-4 px-1 text-sm font-medium"
+                ? "border-[#0171bd] text-gray-900 border-b-2 py-4 px-1 text-sm font-medium"
                 : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 border-b-2 py-4 px-1 text-sm font-medium"
             }
           >

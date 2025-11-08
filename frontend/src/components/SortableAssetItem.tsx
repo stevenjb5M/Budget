@@ -37,7 +37,7 @@ export function SortableAssetItem({ asset, onEdit }: SortableAssetItemProps) {
     <div
       ref={setNodeRef}
       style={style}
-      className="grid grid-cols-[60px_2fr_1fr_1fr_100px] gap-4 p-4 border-b border-gray-200 hover:bg-gray-50"
+      className="grid grid-cols-[60px_1fr_120px_120px_100px] gap-4 p-4 border-b border-gray-200 hover:bg-gray-50"
     >
       <div className="flex justify-center">
         <button
@@ -51,7 +51,7 @@ export function SortableAssetItem({ asset, onEdit }: SortableAssetItemProps) {
           </svg>
         </button>
       </div>
-      <div>
+      <div className="text-left">
         <div className="font-medium text-black">{asset.name}</div>
         {asset.notes && <div className="text-sm text-gray-500 mt-1">{asset.notes}</div>}
       </div>
