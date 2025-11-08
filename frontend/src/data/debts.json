@@ -1,0 +1,35 @@
+[
+  {
+    "id": "debt1",
+    "userId": "user1",
+    "name": "Student Loan",
+    "currentBalance": 25000,
+    "interestRate": 4.5,
+    "minimumPayment": 350,
+    "notes": "Federal student loan from college",
+    "createdAt": "2024-01-15T10:00:00Z",
+    "updatedAt": "2024-01-15T10:00:00Z"
+  },
+  {
+    "id": "debt2",
+    "userId": "user1",
+    "name": "Credit Card",
+    "currentBalance": 5200,
+    "interestRate": 18.99,
+    "minimumPayment": 150,
+    "notes": "High interest credit card debt",
+    "createdAt": "2024-01-20T14:30:00Z",
+    "updatedAt": "2024-01-20T14:30:00Z"
+  },
+  {
+    "id": "debt3",
+    "userId": "user1",
+    "name": "Car Loan",
+    "currentBalance": 18500,
+    "interestRate": 5.25,
+    "minimumPayment": 425,
+    "notes": "Auto loan for 2022 sedan",
+    "createdAt": "2024-02-01T09:15:00Z",
+    "updatedAt": "2024-02-01T09:15:00Z"
+  }
+]
