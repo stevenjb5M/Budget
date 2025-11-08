@@ -9,6 +9,7 @@ export function Assets() {
   const [assets, setAssets] = useState<Asset[]>(dummyAssets)
   const [showModal, setShowModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [editingAsset, setEditingAsset] = useState<Asset | null>(null)
   const [newAsset, setNewAsset] = useState({ name: '', currentValue: 0, annualAPY: 0, notes: '' })
 
@@ -248,11 +249,7 @@ export function Assets() {
                 <div className="flex justify-between space-x-2">
                   <button
                     type="button"
-                    onClick={() => {
-                      if (window.confirm(`Are you sure you want to delete the asset "${editingAsset.name}"? This action cannot be undone.`)) {
-                        handleDelete()
-                      }
-                    }}
+                    onClick={() => setShowDeleteModal(true)}
                     className="inline-flex justify-center py-1 px-3 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700"
                   >
                     Delete Asset
@@ -274,6 +271,40 @@ export function Assets() {
                   </div>
                 </div>
               </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && editingAsset && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full" onClick={() => setShowDeleteModal(false)}>
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white" onClick={(e) => e.stopPropagation()}>
+            <div className="mt-3">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Delete Asset</h3>
+              <p className="text-sm text-gray-500 mb-6">
+                Are you sure you want to delete <span className="font-medium text-gray-900">"{editingAsset.name}"</span>? 
+                This action cannot be undone.
+              </p>
+              <div className="flex justify-end space-x-3">
+                <button
+                  type="button"
+                  onClick={() => setShowDeleteModal(false)}
+                  className="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleDelete()
+                    setShowDeleteModal(false)
+                  }}
+                  className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700"
+                >
+                  Delete Asset
+                </button>
+              </div>
             </div>
           </div>
         </div>
