@@ -21,6 +21,11 @@ export function Assets() {
   const [newAsset, setNewAsset] = useState({ name: '', currentValue: 0, annualAPY: 0, notes: '' })
   const [newDebt, setNewDebt] = useState({ name: '', currentBalance: 0, interestRate: 0, minimumPayment: 0, notes: '' })
 
+  // Calculate totals
+  const assetsTotal = assets.reduce((sum, asset) => sum + asset.currentValue, 0)
+  const debtsTotal = debts.reduce((sum, debt) => sum + debt.currentBalance, 0)
+  const netWorth = assetsTotal - debtsTotal
+
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -157,6 +162,18 @@ export function Assets() {
       <Nav />
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
+          {/* Net Worth Display */}
+          <div className="bg-white shadow rounded-lg p-4 mb-6">
+            <h1 className="text-2xl font-bold text-gray-900 text-center">Net Worth</h1>
+            <p className={`text-3xl font-bold text-center mt-1 ${netWorth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              ${netWorth.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </p>
+            <div className="flex justify-center space-x-6 mt-2 text-sm text-gray-600">
+              <span>Assets: ${assetsTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+              <span>Debts: ${debtsTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+            </div>
+          </div>
+
           <h2 className="text-2xl font-bold text-gray-900 text-left">Assets</h2>
           <div className="mt-8">
             <div className="mt-4 bg-white shadow rounded-lg overflow-hidden">
@@ -178,6 +195,14 @@ export function Assets() {
                   ))}
                 </SortableContext>
               </DndContext>
+            </div>
+            <div className="bg-gray-50 px-4 py-3 border-t border-gray-200">
+              <div className="flex justify-between items-center">
+                <span className="font-medium text-gray-900">Total Assets</span>
+                <span className="font-bold text-lg text-gray-900">
+                  ${assetsTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </span>
+              </div>
             </div>
             <div className="flex justify-center py-4">
               <button
@@ -216,6 +241,14 @@ export function Assets() {
                   ))}
                 </SortableContext>
               </DndContext>
+            </div>
+            <div className="bg-gray-50 px-4 py-3 border-t border-gray-200">
+              <div className="flex justify-between items-center">
+                <span className="font-medium text-gray-900">Total Debts</span>
+                <span className="font-bold text-lg text-red-600">
+                  ${debtsTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </span>
+              </div>
             </div>
             <div className="flex justify-center py-4">
               <button
