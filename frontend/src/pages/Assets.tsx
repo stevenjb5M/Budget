@@ -157,15 +157,7 @@ export function Assets() {
       <Nav />
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
-          <div className="flex justify-between items-center">
-            <h2 className="text-2xl font-bold text-gray-900">Assets</h2>
-            <button
-              onClick={() => setShowModal(true)}
-              className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-[#0171bd] hover:bg-[#0156a3]"
-            >
-              New Asset
-            </button>
-          </div>
+          <h2 className="text-2xl font-bold text-gray-900 text-left">Assets</h2>
           <div className="mt-8">
             <div className="mt-4 bg-white shadow rounded-lg overflow-hidden">
               <div className="grid grid-cols-[60px_1fr_120px_120px_100px] gap-4 p-4 bg-gray-50 font-medium text-gray-700 border-b">
@@ -187,22 +179,24 @@ export function Assets() {
                 </SortableContext>
               </DndContext>
             </div>
+            <div className="flex justify-center py-4">
+              <button
+                onClick={() => setShowModal(true)}
+                className="group text-[#0171bd] hover:text-[#0156a3] p-2 rounded-full transition-colors"
+                title="Add new asset"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
 
         {/* Debts Section */}
         <div className="mt-12">
-          <div className="flex justify-between items-center">
-            <h2 className="text-2xl font-bold text-gray-900">Debts</h2>
-            <button
-              onClick={() => setShowDebtModal(true)}
-              className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-[#0171bd] hover:bg-[#0156a3]"
-            >
-              New Debt
-            </button>
-          </div>
+          <h2 className="text-2xl font-bold text-gray-900 text-left">Debts</h2>
           <div className="mt-8">
-            <h3 className="text-lg font-medium text-gray-900">Your Debts</h3>
             <div className="mt-4 bg-white shadow rounded-lg overflow-hidden">
               <div className="grid grid-cols-[60px_1fr_120px_120px_100px] gap-4 p-4 bg-gray-50 font-medium text-gray-700 border-b">
                 <div></div>
@@ -222,6 +216,17 @@ export function Assets() {
                   ))}
                 </SortableContext>
               </DndContext>
+            </div>
+            <div className="flex justify-center py-4">
+              <button
+                onClick={() => setShowDebtModal(true)}
+                className="group text-[#0171bd] hover:text-[#0156a3] p-2 rounded-full transition-colors"
+                title="Add new debt"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+              </button>
             </div>
           </div>
         </div>
