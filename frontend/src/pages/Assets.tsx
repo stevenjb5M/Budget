@@ -197,8 +197,8 @@ export function Assets() {
               </DndContext>
             </div>
             <div className="bg-gray-50 px-4 py-3 border-t border-gray-200">
-              <div className="flex justify-between items-center">
-                <span className="font-medium text-gray-900">Total Assets</span>
+              <div className="flex justify-end items-center">
+                <span className="font-medium text-gray-900 mr-4">Total Assets</span>
                 <span className="font-bold text-lg text-gray-900">
                   ${assetsTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>
@@ -243,8 +243,8 @@ export function Assets() {
               </DndContext>
             </div>
             <div className="bg-gray-50 px-4 py-3 border-t border-gray-200">
-              <div className="flex justify-between items-center">
-                <span className="font-medium text-gray-900">Total Debts</span>
+              <div className="flex justify-end items-center">
+                <span className="font-medium text-gray-900 mr-4">Total Debts</span>
                 <span className="font-bold text-lg text-red-600">
                   ${debtsTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>
