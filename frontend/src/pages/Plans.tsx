@@ -35,6 +35,8 @@ export function Plans() {
   const [showNewPlanModal, setShowNewPlanModal] = useState(false)
   const [newPlanName, setNewPlanName] = useState('')
   const [newPlanDescription, setNewPlanDescription] = useState('')
+  const [plansMinimized, setPlansMinimized] = useState(false)
+  const [budgetPlanningMinimized, setBudgetPlanningMinimized] = useState(false)
 
   const selectedPlan = plans.find(p => p.id === selectedPlanId)
   const budgets = dummyBudgets as Budget[]
@@ -183,12 +185,6 @@ export function Plans() {
     return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
   }
 
-  const getBudgetName = (budgetId: string | null) => {
-    if (!budgetId) return 'No Budget'
-    const budget = budgets.find(b => b.id === budgetId)
-    return budget ? budget.name : 'Unknown Budget'
-  }
-
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow">
@@ -199,29 +195,63 @@ export function Plans() {
       <Nav />
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
-          <div className="flex justify-between items-center mb-8">
-            <h2 className="text-2xl font-bold text-gray-900">Financial Plans</h2>
-            <button
-              onClick={() => setShowNewPlanModal(true)}
-              className="bg-[#0171bd] text-white px-4 py-2 rounded-md hover:bg-[#0156a3] transition-colors"
-            >
-              Create New Plan
-            </button>
+          <div className="mb-8">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold text-gray-900">Financial Plans</h2>
+              <button
+                onClick={() => setShowNewPlanModal(true)}
+                className="bg-[#0171bd] text-white px-4 py-2 rounded-md hover:bg-[#0156a3] transition-colors"
+              >
+                Create New Plan
+              </button>
+            </div>
+            {plansMinimized && (
+              <div className="mt-4">
+                <button
+                  onClick={() => setPlansMinimized(false)}
+                  className="text-gray-500 hover:text-gray-700 transition-colors flex items-center space-x-2"
+                  title="Show plans list"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                  <span className="text-sm">Show Plans</span>
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
             {/* Plans List */}
-            <div className="lg:col-span-1">
-              <div className="bg-white shadow rounded-lg p-4">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Your Plans</h3>
-                <div className="space-y-2">
-                  {plans.map((plan) => (
-                    <div
-                      key={plan.id}
-                      onClick={() => handleSelectPlan(plan.id)}
-                      className={`p-3 rounded-md cursor-pointer transition-colors ${
-                        plan.id === selectedPlanId
-                          ? 'bg-[#0171bd] text-white'
+            {!plansMinimized && (
+              <div className="lg:col-span-1">
+                <div className="bg-white shadow rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-medium text-gray-900">Your Plans</h3>
+                    <button
+                      onClick={() => setPlansMinimized(!plansMinimized)}
+                      className="text-gray-500 hover:text-gray-700 transition-colors"
+                      title={plansMinimized ? "Expand plans" : "Minimize plans"}
+                    >
+                      {plansMinimized ? (
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      ) : (
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                        </svg>
+                      )}
+                    </button>
+                  </div>
+                  <div className="space-y-2">
+                    {plans.map((plan) => (
+                      <div
+                        key={plan.id}
+                        onClick={() => handleSelectPlan(plan.id)}
+                        className={`p-3 rounded-md cursor-pointer transition-colors ${
+                          plan.id === selectedPlanId
+                            ? 'bg-[#0171bd] text-white'
                           : 'bg-gray-50 text-gray-900 hover:bg-gray-100'
                       }`}
                     >
@@ -231,12 +261,13 @@ export function Plans() {
                       </div>
                     </div>
                   ))}
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
 
             {/* Plan Details */}
-            <div className="lg:col-span-3">
+            <div className={plansMinimized ? "lg:col-span-4" : "lg:col-span-3"}>
               {selectedPlan ? (
                 <div className="space-y-6">
                   {/* Plan Header */}
@@ -259,40 +290,70 @@ export function Plans() {
 
                   {/* Monthly Grid */}
                   <div className="bg-white shadow rounded-lg p-6">
-                    <h4 className="text-lg font-medium text-gray-900 mb-4">Monthly Budget Planning</h4>
-                    <div className="space-y-3">
-                      {selectedPlan.months.map((monthData, index) => (
-                        <div key={monthData.month} className="border border-gray-200 rounded-lg p-4">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-4">
-                              <h5 className="font-medium text-gray-900 w-24">{getMonthName(monthData.month)}</h5>
-                              <div className="flex-1 max-w-xs">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Budget</label>
-                                <select
-                                  value={monthData.budgetId || ''}
-                                  onChange={(e) => handleBudgetChange(index, e.target.value)}
-                                  className="w-full border-gray-300 rounded-md shadow-sm text-black text-sm"
-                                  title={`Select budget for ${getMonthName(monthData.month)}`}
-                                >
-                                  <option value="">No Budget</option>
-                                  {budgets.map((budget) => (
-                                    <option key={budget.id} value={budget.id}>
-                                      {budget.name}
-                                    </option>
-                                  ))}
-                                </select>
-                              </div>
-                              <div className="text-sm text-gray-500 max-w-xs truncate">
-                                {getBudgetName(monthData.budgetId)}
-                              </div>
-                            </div>
-                            <div className={`text-lg font-bold ${monthData.netWorth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                              ${monthData.netWorth.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                            </div>
-                          </div>
-                        </div>
-                      ))}
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="text-lg font-medium text-gray-900">Monthly Budget Planning</h4>
+                      <button
+                        onClick={() => setBudgetPlanningMinimized(!budgetPlanningMinimized)}
+                        className="text-gray-500 hover:text-gray-700 transition-colors"
+                        title={budgetPlanningMinimized ? "Expand budget planning" : "Minimize budget planning"}
+                      >
+                        {budgetPlanningMinimized ? (
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </svg>
+                        ) : (
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                          </svg>
+                        )}
+                      </button>
                     </div>
+                    {!budgetPlanningMinimized && (
+                      <div className="space-y-3">
+                        {selectedPlan.months.map((monthData, index) => {
+                          const isNewYear = monthData.month.endsWith('-01') // January indicates new year
+                          const year = monthData.month.split('-')[0]
+
+                          return (
+                            <div key={`month-${monthData.month}`}>
+                              {isNewYear && index > 0 && (
+                                <div className="flex items-center justify-center py-2 my-2 bg-blue-50 border border-blue-100 rounded-md">
+                                  <span className="text-sm font-medium text-blue-700">{year}</span>
+                                </div>
+                              )}
+                              <div className="border border-gray-200 rounded-lg p-4">
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center space-x-4">
+                                    <h5 className="font-medium text-gray-900 w-24">{getMonthName(monthData.month)}</h5>
+                                    <div className="flex-1 max-w-xs">
+                                      <div className="flex items-center space-x-2">
+                                        <label className="text-sm font-medium text-gray-700">Budget:</label>
+                                        <select
+                                          value={monthData.budgetId || ''}
+                                          onChange={(e) => handleBudgetChange(index, e.target.value)}
+                                          className="flex-1 border-gray-300 rounded-md shadow-sm text-black text-sm"
+                                          title={`Select budget for ${getMonthName(monthData.month)}`}
+                                        >
+                                          <option value="">No Budget</option>
+                                          {budgets.map((budget) => (
+                                            <option key={budget.id} value={budget.id}>
+                                              {budget.name}
+                                            </option>
+                                          ))}
+                                        </select>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className={`text-lg font-bold ${monthData.netWorth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                    ${monthData.netWorth.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
                   </div>
                 </div>
               ) : (
