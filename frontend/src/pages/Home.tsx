@@ -1,9 +1,24 @@
 import { Nav } from '../components/Nav'
+import { useAuth } from '../components/Auth'
 import dummyAssets from '../data/assets.json'
 import dummyDebts from '../data/debts.json'
 import dummyUser from '../data/user.json'
 
 export function Home() {
+  const { user } = useAuth()
+
+  // Use authenticated user data, fallback to dummy data
+  const currentUser = user ? {
+    name: user.attributes?.name ||
+          (user.attributes?.given_name && user.attributes?.family_name
+            ? `${user.attributes.given_name} ${user.attributes.family_name}`
+            : user.attributes?.given_name || user.attributes?.family_name) ||
+          user.username ||
+          'User',
+    email: user.attributes?.email || '',
+    birthday: user.attributes?.birthdate || dummyUser.birthday
+  } : dummyUser
+
   // Calculate totals
   const assetsTotal = dummyAssets.reduce((sum, asset) => sum + asset.currentValue, 0)
   const debtsTotal = dummyDebts.reduce((sum, debt) => sum + debt.currentBalance, 0)
@@ -11,7 +26,7 @@ export function Home() {
 
   // Calculate age
   const today = new Date()
-  const birthDate = new Date(dummyUser.birthday)
+  const birthDate = new Date(currentUser.birthday)
   const age = today.getFullYear() - birthDate.getFullYear() -
     (today < new Date(today.getFullYear(), birthDate.getMonth(), birthDate.getDate()) ? 1 : 0)
 
@@ -33,7 +48,7 @@ export function Home() {
           {/* Welcome Section */}
           <div className="bg-white shadow rounded-lg p-6 mb-8">
             <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              Welcome back, {dummyUser.name}!
+              Welcome back, {currentUser.name}!
             </h2>
             <p className="text-gray-600">
               Here's your financial overview for today.

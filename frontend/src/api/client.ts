@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { fetchAuthSession } from 'aws-amplify/auth'
 
 const API_BASE_URL = '/api'
 
@@ -10,10 +11,16 @@ const apiClient = axios.create({
 })
 
 // Add JWT token to requests
-apiClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem('authToken')
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`
+apiClient.interceptors.request.use(async (config) => {
+  try {
+    const session = await fetchAuthSession()
+    const token = session.tokens?.idToken?.toString()
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
+  } catch (error) {
+    // User not authenticated, continue without token
+    console.log('No auth session found')
   }
   return config
 })
