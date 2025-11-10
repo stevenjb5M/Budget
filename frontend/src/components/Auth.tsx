@@ -1,6 +1,6 @@
 import { Authenticator } from '@aws-amplify/ui-react'
 import '@aws-amplify/ui-react/styles.css'
-import { createContext, useContext } from 'react'
+import { createContext, useContext, useEffect, useState } from 'react'
 import './Auth.css'
 
 interface AuthProps {
@@ -23,8 +23,35 @@ export function useAuth() {
 }
 
 function AuthProvider({ children, signOut, user }: { children: React.ReactNode, signOut: (() => void) | undefined, user: any }) {
+  const [currentUser, setCurrentUser] = useState(user)
+
+  useEffect(() => {
+    if (user) {
+      // If user object doesn't have attributes, try to fetch them
+      if (!user.attributes) {
+        // Try to get current authenticated user attributes
+        import('aws-amplify/auth').then(({ fetchUserAttributes }) => {
+          fetchUserAttributes().then((attributes) => {
+            // Create a new user object with the attributes
+            const userWithAttributes = {
+              ...user,
+              attributes: attributes
+            }
+            setCurrentUser(userWithAttributes)
+          }).catch(() => {
+            setCurrentUser(user)
+          })
+        }).catch(() => {
+          setCurrentUser(user)
+        })
+      } else {
+        setCurrentUser(user)
+      }
+    }
+  }, [user])
+
   return (
-    <AuthContext.Provider value={{ user, signOut: signOut || (() => {}) }}>
+    <AuthContext.Provider value={{ user: currentUser, signOut: signOut || (() => {}) }}>
       {children}
     </AuthContext.Provider>
   )
