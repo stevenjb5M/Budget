@@ -1,0 +1,264 @@
+[
+  {
+    "id": "plan1",
+    "userId": "user1",
+    "name": "5-Year Financial Plan",
+    "description": "Comprehensive financial planning for the next 5 years",
+    "isActive": true,
+    "months": [
+      {
+        "month": "2025-01",
+        "budgetId": "budget1",
+        "netWorth": 0
+      },
+      {
+        "month": "2025-02",
+        "budgetId": "budget1",
+        "netWorth": 0
+      },
+      {
+        "month": "2025-03",
+        "budgetId": "budget1",
+        "netWorth": 0
+      },
+      {
+        "month": "2025-04",
+        "budgetId": "budget1",
+        "netWorth": 0
+      },
+      {
+        "month": "2025-05",
+        "budgetId": "budget1",
+        "netWorth": 0
+      },
+      {
+        "month": "2025-06",
+        "budgetId": "budget1",
+        "netWorth": 0
+      },
+      {
+        "month": "2025-07",
+        "budgetId": "budget1",
+        "netWorth": 0
+      },
+      {
+        "month": "2025-08",
+        "budgetId": "budget1",
+        "netWorth": 0
+      },
+      {
+        "month": "2025-09",
+        "budgetId": "budget1",
+        "netWorth": 0
+      },
+      {
+        "month": "2025-10",
+        "budgetId": "budget1",
+        "netWorth": 0
+      },
+      {
+        "month": "2025-11",
+        "budgetId": "budget1",
+        "netWorth": 0
+      },
+      {
+        "month": "2025-12",
+        "budgetId": "budget1",
+        "netWorth": 0
+      },
+      {
+        "month": "2026-01",
+        "budgetId": "budget1",
+        "netWorth": 0
+      },
+      {
+        "month": "2026-02",
+        "budgetId": "budget1",
+        "netWorth": 0
+      },
+      {
+        "month": "2026-03",
+        "budgetId": "budget1",
+        "netWorth": 0
+      },
+      {
+        "month": "2026-04",
+        "budgetId": "budget1",
+        "netWorth": 0
+      },
+      {
+        "month": "2026-05",
+        "budgetId": "budget1",
+        "netWorth": 0
+      },
+      {
+        "month": "2026-06",
+        "budgetId": "budget1",
+        "netWorth": 0
+      },
+      {
+        "month": "2026-07",
+        "budgetId": "budget1",
+        "netWorth": 0
+      },
+      {
+        "month": "2026-08",
+        "budgetId": "budget1",
+        "netWorth": 0
+      },
+      {
+        "month": "2026-09",
+        "budgetId": "budget1",
+        "netWorth": 0
+      },
+      {
+        "month": "2026-10",
+        "budgetId": "budget1",
+        "netWorth": 0
+      },
+      {
+        "month": "2026-11",
+        "budgetId": "budget1",
+        "netWorth": 0
+      },
+      {
+        "month": "2026-12",
+        "budgetId": "budget1",
+        "netWorth": 0
+      }
+    ],
+    "createdAt": "2025-01-01T00:00:00Z",
+    "updatedAt": "2025-01-01T00:00:00Z"
+  },
+  {
+    "id": "plan2",
+    "userId": "user1",
+    "name": "Retirement Savings Plan",
+    "description": "Focused on maximizing retirement contributions",
+    "isActive": false,
+    "months": [
+      {
+        "month": "2025-01",
+        "budgetId": null,
+        "netWorth": 0
+      },
+      {
+        "month": "2025-02",
+        "budgetId": null,
+        "netWorth": 0
+      },
+      {
+        "month": "2025-03",
+        "budgetId": null,
+        "netWorth": 0
+      },
+      {
+        "month": "2025-04",
+        "budgetId": null,
+        "netWorth": 0
+      },
+      {
+        "month": "2025-05",
+        "budgetId": null,
+        "netWorth": 0
+      },
+      {
+        "month": "2025-06",
+        "budgetId": null,
+        "netWorth": 0
+      },
+      {
+        "month": "2025-07",
+        "budgetId": null,
+        "netWorth": 0
+      },
+      {
+        "month": "2025-08",
+        "budgetId": null,
+        "netWorth": 0
+      },
+      {
+        "month": "2025-09",
+        "budgetId": null,
+        "netWorth": 0
+      },
+      {
+        "month": "2025-10",
+        "budgetId": null,
+        "netWorth": 0
+      },
+      {
+        "month": "2025-11",
+        "budgetId": null,
+        "netWorth": 0
+      },
+      {
+        "month": "2025-12",
+        "budgetId": null,
+        "netWorth": 0
+      },
+      {
+        "month": "2026-01",
+        "budgetId": null,
+        "netWorth": 0
+      },
+      {
+        "month": "2026-02",
+        "budgetId": null,
+        "netWorth": 0
+      },
+      {
+        "month": "2026-03",
+        "budgetId": null,
+        "netWorth": 0
+      },
+      {
+        "month": "2026-04",
+        "budgetId": null,
+        "netWorth": 0
+      },
+      {
+        "month": "2026-05",
+        "budgetId": null,
+        "netWorth": 0
+      },
+      {
+        "month": "2026-06",
+        "budgetId": null,
+        "netWorth": 0
+      },
+      {
+        "month": "2026-07",
+        "budgetId": null,
+        "netWorth": 0
+      },
+      {
+        "month": "2026-08",
+        "budgetId": null,
+        "netWorth": 0
+      },
+      {
+        "month": "2026-09",
+        "budgetId": null,
+        "netWorth": 0
+      },
+      {
+        "month": "2026-10",
+        "budgetId": null,
+        "netWorth": 0
+      },
+      {
+        "month": "2026-11",
+        "budgetId": null,
+        "netWorth": 0
+      },
+      {
+        "month": "2026-12",
+        "budgetId": null,
+        "netWorth": 0
+      }
+    ],
+    "createdAt": "2025-02-01T00:00:00Z",
+    "updatedAt": "2025-02-01T00:00:00Z"
+  }
+]

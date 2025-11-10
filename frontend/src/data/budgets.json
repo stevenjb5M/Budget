@@ -2,7 +2,7 @@
   {
     "id": "budget1",
     "userId": "user1",
-    "name": "Monthly Budget - November 2025",
+    "name": "Summer 2025",
     "isActive": true,
     "income": [
       {
@@ -62,7 +62,7 @@
   {
     "id": "budget2",
     "userId": "user1",
-    "name": "Monthly Budget - October 2025",
+    "name": "New Job",
     "isActive": false,
     "income": [
       {
