@@ -3,3 +3,4 @@
 11/07/2025 Worked on assets page - 1 hour
 11/08/2025 Net worth on assets page - .5 hours
 11/10/2025 Plans Page, Login Page -1 hours
+11/11/2025 Ssetup dynamo db .5 hours
