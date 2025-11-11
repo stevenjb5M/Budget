@@ -93,6 +93,9 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
+// Configure middleware - CORS must be first!
+app.UseCors("AllowFrontend");
+
 // Configure middleware
 if (app.Environment.IsDevelopment())
 {
@@ -101,7 +104,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
