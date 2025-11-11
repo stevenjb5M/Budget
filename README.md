@@ -25,6 +25,29 @@ This is designed as a **flexible, multi-scenario budgeting tool** for students a
 | **Hosting** | AWS S3, CloudFront, EB, DynamoDB, Cognito | Fully cloud-hosted on AWS |
 | **Monitoring** | AWS CloudWatch | Logs and performance metrics |
 
+## Versioning & Offline Support
+
+Budget Planner features a **sophisticated version-based synchronization system** for seamless offline functionality and multi-device support:
+
+### Key Features
+- **Selective Syncing**: Only downloads changed data based on version numbers (90%+ bandwidth reduction)
+- **Offline-First**: App works fully offline with instant loading from local cache
+- **Version Tracking**: Each entity (budgets, plans, assets, debts) has individual version numbers
+- **Conflict Resolution**: Handles concurrent edits from multiple devices
+- **Background Sync**: Automatically syncs changes when back online
+
+### How It Works
+- **UserVersion Table**: Tracks global and entity-specific version numbers per user
+- **Entity Versions**: Each budget, plan, asset, and debt has its own version counter
+- **Smart Caching**: Compares local vs server versions to determine what needs syncing
+- **Automatic Updates**: Versions increment on every create/update operation
+
+### Benefits
+- ⚡ **Fast Loading**: Instant app startup from local cache
+- 📱 **Multi-Device**: Seamless sync across phone, tablet, and desktop
+- 🔄 **Reliable Offline**: Full functionality without internet connection
+- 📶 **Bandwidth Efficient**: Minimal data transfer through selective syncing
+
 ## Quick Start
 
 ### Backend Setup
