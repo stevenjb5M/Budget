@@ -1,0 +1,15 @@
+{
+  "rewrites": [
+    {
+      "source": "</^[^.]+$//>",
+      "target": "/index.html"
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/<*>",
+      "status": 404,
+      "target": "/404.html"
+    }
+  ]
+}

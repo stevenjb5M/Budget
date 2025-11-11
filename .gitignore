@@ -13,3 +13,5 @@ obj/
 .project
 .classpath
 *.log
+*.zip
+budget-app*.zip
