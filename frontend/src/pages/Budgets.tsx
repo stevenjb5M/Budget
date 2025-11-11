@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { Nav } from '../components/Nav'
 import { budgetsAPI } from '../api/client'
+import { versionSyncService } from '../services/versionSyncService'
+import { getCurrentUserId } from '../utils/auth'
 
 interface Budget {
   id: string
@@ -49,11 +51,16 @@ export function Budgets() {
     const fetchBudgets = async () => {
       try {
         setError(null)
-        const response = await budgetsAPI.getBudgets()
-        setBudgets(response.data)
-        if (response.data.length > 0) {
-          const activeBudget = response.data.find(b => b.isActive)
-          setSelectedBudgetId(activeBudget?.id || response.data[0].id)
+        const userId = await getCurrentUserId()
+        // Use version sync service for cache-first loading
+        const budgetsData = await versionSyncService.getData(
+          'budgets',
+          () => budgetsAPI.getBudgets().then(r => r.data)
+        )
+        setBudgets(budgetsData)
+        if (budgetsData.length > 0) {
+          const activeBudget = budgetsData.find((b: Budget) => b.isActive)
+          setSelectedBudgetId(activeBudget?.id || budgetsData[0].id)
         }
       } catch (error) {
         console.error('Error fetching budgets:', error)
@@ -68,90 +75,188 @@ export function Budgets() {
 
   const selectedBudget = budgets.find(b => b.id === selectedBudgetId)
 
-  const handleCreateBudget = (e: React.FormEvent) => {
+  const handleCreateBudget = async (e: React.FormEvent) => {
     e.preventDefault()
-    const newBudget: Budget = {
-      id: Date.now().toString(),
-      userId: 'user1',
-      name: newBudgetName,
-      isActive: budgets.length === 0,
-      income: [],
-      expenses: [],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+    try {
+      const userId = await getCurrentUserId()
+      const newBudget = {
+        name: newBudgetName,
+        isActive: budgets.length === 0,
+        income: [],
+        expenses: []
+      }
+
+      const response = await budgetsAPI.createBudget(newBudget)
+      const updatedBudgets = [...budgets, response.data]
+
+      // Store updated data locally
+      versionSyncService.storeData('budgets', userId, updatedBudgets)
+
+      setBudgets(updatedBudgets)
+      if (budgets.length === 0) {
+        setSelectedBudgetId(response.data.id)
+      }
+      setNewBudgetName('')
+      setShowNewBudgetModal(false)
+    } catch (error) {
+      console.error('Error creating budget:', error)
+      setError('Failed to create budget. Please try again.')
     }
-    setBudgets([...budgets, newBudget])
-    if (budgets.length === 0) {
-      setSelectedBudgetId(newBudget.id)
-    }
-    setNewBudgetName('')
-    setShowNewBudgetModal(false)
   }
 
-  const handleSelectBudget = (budgetId: string) => {
-    setSelectedBudgetId(budgetId)
-    setBudgets(budgets.map(b => ({
-      ...b,
-      isActive: b.id === budgetId
-    })))
+  const handleSelectBudget = async (budgetId: string) => {
+    try {
+      const userId = await getCurrentUserId()
+      // Update all budgets to set the selected one as active
+      const updatedBudgets = await Promise.all(
+        budgets.map(async (b) => {
+          const isActive = b.id === budgetId
+          if (b.isActive !== isActive) {
+            const updatedBudget = {
+              ...b,
+              isActive,
+              updatedAt: new Date().toISOString()
+            }
+            await budgetsAPI.updateBudget(b.id, updatedBudget)
+            return updatedBudget
+          }
+          return b
+        })
+      )
+
+      setBudgets(updatedBudgets)
+      setSelectedBudgetId(budgetId)
+
+      // Store updated data locally
+      versioningService.storeData('budgets', userId, updatedBudgets)
+    } catch (error) {
+      console.error('Error selecting budget:', error)
+      setError('Failed to select budget. Please try again.')
+    }
   }
 
-  const handleAddIncome = (e: React.FormEvent) => {
+  const handleAddIncome = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!selectedBudget) return
 
-    const newIncomeItem: BudgetItem = {
-      id: Date.now().toString(),
-      name: newItem.name,
-      amount: newItem.amount,
-      category: newItem.category
-    }
+    try {
+      const userId = await getCurrentUserId()
+      const newIncomeItem: BudgetItem = {
+        id: Date.now().toString(),
+        name: newItem.name,
+        amount: newItem.amount,
+        category: newItem.category
+      }
 
-    setBudgets(budgets.map(b =>
-      b.id === selectedBudgetId
-        ? { ...b, income: [...b.income, newIncomeItem], updatedAt: new Date().toISOString() }
-        : b
-    ))
-    setNewItem({ name: '', amount: 0, category: '' })
-    setShowIncomeModal(false)
+      const updatedBudget = {
+        ...selectedBudget,
+        income: [...selectedBudget.income, newIncomeItem],
+        updatedAt: new Date().toISOString()
+      }
+
+      await budgetsAPI.updateBudget(selectedBudgetId, updatedBudget)
+      const updatedBudgets = budgets.map(b =>
+        b.id === selectedBudgetId ? updatedBudget : b
+      )
+
+      // Store updated data locally
+      versioningService.storeData('budgets', userId, updatedBudgets)
+
+      setBudgets(updatedBudgets)
+      setNewItem({ name: '', amount: 0, category: '' })
+      setShowIncomeModal(false)
+    } catch (error) {
+      console.error('Error adding income:', error)
+      setError('Failed to add income. Please try again.')
+    }
   }
 
-  const handleAddExpense = (e: React.FormEvent) => {
+  const handleAddExpense = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!selectedBudget) return
 
-    const newExpenseItem: BudgetItem = {
-      id: Date.now().toString(),
-      name: newItem.name,
-      amount: newItem.amount,
-      category: newItem.category
+    try {
+      const userId = await getCurrentUserId()
+      const newExpenseItem: BudgetItem = {
+        id: Date.now().toString(),
+        name: newItem.name,
+        amount: newItem.amount,
+        category: newItem.category
+      }
+
+      const updatedBudget = {
+        ...selectedBudget,
+        expenses: [...selectedBudget.expenses, newExpenseItem],
+        updatedAt: new Date().toISOString()
+      }
+
+      await budgetsAPI.updateBudget(selectedBudgetId, updatedBudget)
+      const updatedBudgets = budgets.map(b =>
+        b.id === selectedBudgetId ? updatedBudget : b
+      )
+
+      // Store updated data locally
+      versioningService.storeData('budgets', userId, updatedBudgets)
+
+      setBudgets(updatedBudgets)
+      setNewItem({ name: '', amount: 0, category: '' })
+      setShowExpenseModal(false)
+    } catch (error) {
+      console.error('Error adding expense:', error)
+      setError('Failed to add expense. Please try again.')
     }
-
-    setBudgets(budgets.map(b =>
-      b.id === selectedBudgetId
-        ? { ...b, expenses: [...b.expenses, newExpenseItem], updatedAt: new Date().toISOString() }
-        : b
-    ))
-    setNewItem({ name: '', amount: 0, category: '' })
-    setShowExpenseModal(false)
   }
 
-  const handleDeleteIncome = (incomeId: string) => {
+  const handleDeleteIncome = async (incomeId: string) => {
     if (!selectedBudget) return
-    setBudgets(budgets.map(b =>
-      b.id === selectedBudgetId
-        ? { ...b, income: b.income.filter(i => i.id !== incomeId), updatedAt: new Date().toISOString() }
-        : b
-    ))
+
+    try {
+      const userId = await getCurrentUserId()
+      const updatedBudget = {
+        ...selectedBudget,
+        income: selectedBudget.income.filter(i => i.id !== incomeId),
+        updatedAt: new Date().toISOString()
+      }
+
+      await budgetsAPI.updateBudget(selectedBudgetId, updatedBudget)
+      const updatedBudgets = budgets.map(b =>
+        b.id === selectedBudgetId ? updatedBudget : b
+      )
+
+      // Store updated data locally
+      versioningService.storeData('budgets', userId, updatedBudgets)
+
+      setBudgets(updatedBudgets)
+    } catch (error) {
+      console.error('Error deleting income:', error)
+      setError('Failed to delete income. Please try again.')
+    }
   }
 
-  const handleDeleteExpense = (expenseId: string) => {
+  const handleDeleteExpense = async (expenseId: string) => {
     if (!selectedBudget) return
-    setBudgets(budgets.map(b =>
-      b.id === selectedBudgetId
-        ? { ...b, expenses: b.expenses.filter(e => e.id !== expenseId), updatedAt: new Date().toISOString() }
-        : b
-    ))
+
+    try {
+      const userId = await getCurrentUserId()
+      const updatedBudget = {
+        ...selectedBudget,
+        expenses: selectedBudget.expenses.filter(e => e.id !== expenseId),
+        updatedAt: new Date().toISOString()
+      }
+
+      await budgetsAPI.updateBudget(selectedBudgetId, updatedBudget)
+      const updatedBudgets = budgets.map(b =>
+        b.id === selectedBudgetId ? updatedBudget : b
+      )
+
+      // Store updated data locally
+      versioningService.storeData('budgets', userId, updatedBudgets)
+
+      setBudgets(updatedBudgets)
+    } catch (error) {
+      console.error('Error deleting expense:', error)
+      setError('Failed to delete expense. Please try again.')
+    }
   }
 
   const handleEditBudgetName = () => {
@@ -160,15 +265,32 @@ export function Budgets() {
     setEditingBudgetName(true)
   }
 
-  const handleSaveBudgetName = () => {
+  const handleSaveBudgetName = async () => {
     if (!selectedBudget || !editValue.trim()) return
-    setBudgets(budgets.map(b =>
-      b.id === selectedBudgetId
-        ? { ...b, name: editValue.trim(), updatedAt: new Date().toISOString() }
-        : b
-    ))
-    setEditingBudgetName(false)
-    setEditValue('')
+
+    try {
+      const userId = await getCurrentUserId()
+      const updatedBudget = {
+        ...selectedBudget,
+        name: editValue.trim(),
+        updatedAt: new Date().toISOString()
+      }
+
+      await budgetsAPI.updateBudget(selectedBudgetId, updatedBudget)
+      const updatedBudgets = budgets.map(b =>
+        b.id === selectedBudgetId ? updatedBudget : b
+      )
+
+      // Store updated data locally
+      versioningService.storeData('budgets', userId, updatedBudgets)
+
+      setBudgets(updatedBudgets)
+      setEditingBudgetName(false)
+      setEditValue('')
+    } catch (error) {
+      console.error('Error updating budget name:', error)
+      setError('Failed to update budget name. Please try again.')
+    }
   }
 
   const handleEditItem = (type: 'income' | 'expenses', id: string, field: 'name' | 'amount' | 'category', currentValue: string | number) => {
@@ -176,7 +298,7 @@ export function Budgets() {
     setEditingItem({ type, id, field })
   }
 
-  const handleSaveItem = () => {
+  const handleSaveItem = async () => {
     if (!editingItem || !selectedBudget) return
 
     const { type, id, field } = editingItem
@@ -184,22 +306,33 @@ export function Budgets() {
 
     if (field === 'amount' && (isNaN(value as number) || value as number < 0)) return
 
-    setBudgets(budgets.map(b =>
-      b.id === selectedBudgetId
-        ? {
-            ...b,
-            [type]: b[type].map((item: any) =>
-              item.id === id
-                ? { ...item, [field]: value }
-                : item
-            ),
-            updatedAt: new Date().toISOString()
-          }
-        : b
-    ))
+    try {
+      const userId = await getCurrentUserId()
+      const updatedBudget = {
+        ...selectedBudget,
+        [type]: selectedBudget[type].map((item: any) =>
+          item.id === id
+            ? { ...item, [field]: value }
+            : item
+        ),
+        updatedAt: new Date().toISOString()
+      }
 
-    setEditingItem(null)
-    setEditValue('')
+      await budgetsAPI.updateBudget(selectedBudgetId, updatedBudget)
+      const updatedBudgets = budgets.map(b =>
+        b.id === selectedBudgetId ? updatedBudget : b
+      )
+
+      // Store updated data locally
+      versioningService.storeData('budgets', userId, updatedBudgets)
+
+      setBudgets(updatedBudgets)
+      setEditingItem(null)
+      setEditValue('')
+    } catch (error) {
+      console.error('Error updating item:', error)
+      setError('Failed to update item. Please try again.')
+    }
   }
 
   const handleKeyPress = (e: React.KeyboardEvent) => {

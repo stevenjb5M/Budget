@@ -28,6 +28,7 @@ apiClient.interceptors.request.use(async (config) => {
 export const usersAPI = {
   getCurrentUser: () => apiClient.get('/api/users/me'),
   updateCurrentUser: (user: any) => apiClient.put('/api/users/me', user),
+  getUserVersions: () => apiClient.get('/api/users/versions'),
 }
 
 export const plansAPI = {

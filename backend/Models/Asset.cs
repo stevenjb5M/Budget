@@ -31,4 +31,7 @@ public class Asset
 
     [DynamoDBProperty]
     public DateTime UpdatedAt { get; set; }
+
+    [DynamoDBProperty]
+    public long Version { get; set; } = 1; // Version number for this asset
 }

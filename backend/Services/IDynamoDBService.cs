@@ -37,4 +37,9 @@ public interface IDynamoDBService
     Task<Plan> CreatePlanAsync(Plan plan);
     Task<Plan> UpdatePlanAsync(Plan plan);
     Task DeletePlanAsync(string planId);
+
+    // UserVersion operations
+    Task<UserVersion?> GetUserVersionAsync(string userId);
+    Task<UserVersion> CreateUserVersionAsync(UserVersion userVersion);
+    Task<UserVersion> UpdateUserVersionAsync(UserVersion userVersion);
 }

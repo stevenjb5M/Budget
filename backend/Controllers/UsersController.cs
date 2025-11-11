@@ -79,4 +79,37 @@ public class UsersController : ControllerBase
         var updatedUser = await _dynamoDBService.UpdateUserAsync(user);
         return Ok(updatedUser);
     }
+
+    /// <summary>
+    /// Get user version information for synchronization
+    /// </summary>
+    [HttpGet("versions")]
+    public async Task<ActionResult<UserVersion>> GetUserVersions()
+    {
+        var userId = GetUserId();
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+
+        var userVersion = await _dynamoDBService.GetUserVersionAsync(userId);
+        if (userVersion == null)
+        {
+            // Create initial version record if it doesn't exist
+            userVersion = new UserVersion
+            {
+                UserId = userId,
+                GlobalVersion = 1,
+                BudgetsVersion = 1,
+                PlansVersion = 1,
+                AssetsVersion = 1,
+                DebtsVersion = 1,
+                CreatedAt = DateTime.UtcNow,
+                LastUpdated = DateTime.UtcNow
+            };
+            userVersion = await _dynamoDBService.CreateUserVersionAsync(userVersion);
+        }
+
+        return Ok(userVersion);
+    }
 }

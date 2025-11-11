@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { Nav } from '../components/Nav'
 import { plansAPI, budgetsAPI, assetsAPI, debtsAPI } from '../api/client'
+import { versionSyncService } from '../services/versionSyncService'
+import { getCurrentUserId } from '../utils/auth'
 
 interface Plan {
   id: string
@@ -43,20 +45,22 @@ export function Plans() {
     const fetchData = async () => {
       try {
         setError(null)
-        const [plansResponse, budgetsResponse, assetsResponse, debtsResponse] = await Promise.all([
-          plansAPI.getPlans(),
-          budgetsAPI.getBudgets(),
-          assetsAPI.getAssets(),
-          debtsAPI.getDebts()
+        const userId = await getCurrentUserId()
+        // Use version sync service for cache-first loading
+        const [plansData, budgetsData, assetsData, debtsData] = await Promise.all([
+          versionSyncService.getData('plans', () => plansAPI.getPlans().then(r => r.data)),
+          versionSyncService.getData('budgets', () => budgetsAPI.getBudgets().then(r => r.data)),
+          versionSyncService.getData('assets', () => assetsAPI.getAssets().then(r => r.data)),
+          versionSyncService.getData('debts', () => debtsAPI.getDebts().then(r => r.data))
         ])
-        setPlans(plansResponse.data)
-        setBudgets(budgetsResponse.data)
-        setAssets(assetsResponse.data)
-        setDebts(debtsResponse.data)
+        setPlans(plansData)
+        setBudgets(budgetsData)
+        setAssets(assetsData)
+        setDebts(debtsData)
 
-        if (plansResponse.data.length > 0) {
-          const activePlan = plansResponse.data.find(p => p.isActive)
-          setSelectedPlanId(activePlan?.id || plansResponse.data[0].id)
+        if (plansData.length > 0) {
+          const activePlan = plansData.find((p: Plan) => p.isActive)
+          setSelectedPlanId(activePlan?.id || plansData[0].id)
         }
       } catch (error) {
         console.error('Error fetching data:', error)
@@ -105,108 +109,106 @@ export function Plans() {
     )
   }, [currentNetWorth, budgets])
 
-  const handleCreatePlan = (e: React.FormEvent) => {
+  const handleCreatePlan = async (e: React.FormEvent) => {
     e.preventDefault()
-    const newPlan: Plan = {
-      id: Date.now().toString(),
-      userId: 'user1',
-      name: newPlanName,
-      description: newPlanDescription,
-      isActive: plans.length === 0,
-      months: Array.from({ length: 24 }, (_, i) => {
-        const date = new Date(2025, i, 1)
-        return {
-          month: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`,
-          budgetId: null,
-          netWorth: currentNetWorth
-        }
-      }),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    }
-    setPlans([...plans, newPlan])
-    if (plans.length === 0) {
-      setSelectedPlanId(newPlan.id)
-    }
-    setNewPlanName('')
-    setNewPlanDescription('')
-    setShowNewPlanModal(false)
-  }
-
-  const handleSelectPlan = (planId: string) => {
-    setSelectedPlanId(planId)
-    setPlans(plans.map(p => ({
-      ...p,
-      isActive: p.id === planId
-    })))
-  }
-
-  const handleBudgetChange = (monthIndex: number, budgetId: string) => {
-    if (!selectedPlan) return
-
-    setPlans(plans.map(p =>
-      p.id === selectedPlanId
-        ? {
-            ...p,
-            months: p.months.map((month, index) => {
-              if (index < monthIndex) {
-                // Keep previous months unchanged
-                return month
-              } else if (index === monthIndex) {
-                // Update this month
-                if (!budgetId) {
-                  // No budget selected - use previous month's net worth
-                  const previousNetWorth = index === 0 ? currentNetWorth : p.months[index - 1].netWorth
-                  return {
-                    ...month,
-                    budgetId: null,
-                    netWorth: previousNetWorth
-                  }
-                } else {
-                  // Budget selected - calculate new net worth
-                  const selectedBudget = budgets.find(b => b.id === budgetId)
-                  if (!selectedBudget) return month
-
-                  const budgetIncome = selectedBudget.income.reduce((sum, item) => sum + item.amount, 0)
-                  const budgetExpenses = selectedBudget.expenses.reduce((sum, item) => sum + item.amount, 0)
-                  const budgetNet = budgetIncome - budgetExpenses
-
-                  const previousNetWorth = index === 0 ? currentNetWorth : p.months[index - 1].netWorth
-                  return {
-                    ...month,
-                    budgetId,
-                    netWorth: previousNetWorth + budgetNet
-                  }
-                }
-              } else {
-                // Recalculate all future months
-                const prevMonth = p.months[index - 1]
-                if (!prevMonth.budgetId) {
-                  // Previous month has no budget, so this month should match
-                  return {
-                    ...month,
-                    netWorth: prevMonth.netWorth
-                  }
-                } else {
-                  // Previous month has budget, continue with same calculation
-                  const selectedBudget = budgets.find(b => b.id === prevMonth.budgetId)
-                  if (!selectedBudget) return month
-
-                  const budgetIncome = selectedBudget.income.reduce((sum, item) => sum + item.amount, 0)
-                  const budgetExpenses = selectedBudget.expenses.reduce((sum, item) => sum + item.amount, 0)
-                  const budgetNet = budgetIncome - budgetExpenses
-
-                  return {
-                    ...month,
-                    netWorth: prevMonth.netWorth + budgetNet
-                  }
-                }
-              }
-            }),
-            updatedAt: new Date().toISOString()
+    try {
+      const userId = await getCurrentUserId()
+      const newPlan = {
+        name: newPlanName,
+        description: newPlanDescription,
+        isActive: plans.length === 0,
+        months: Array.from({ length: 24 }, (_, i) => {
+          const date = new Date(2025, i, 1)
+          return {
+            month: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`,
+            budgetId: null,
+            netWorth: currentNetWorth
           }
-        : p
-    ))
+        })
+      }
+      
+      const response = await plansAPI.createPlan(newPlan)
+      const updatedPlans = [...plans, response.data]
+
+      // Store updated data locally
+      versioningService.storeData('plans', userId, updatedPlans)
+
+      setPlans(updatedPlans)
+      if (plans.length === 0) {
+        setSelectedPlanId(response.data.id)
+      }
+      setNewPlanName('')
+      setNewPlanDescription('')
+      setShowNewPlanModal(false)
+    } catch (error) {
+      console.error('Error creating plan:', error)
+      setError('Failed to create plan. Please try again.')
+    }
+  }
+
+  const handleSelectPlan = async (planId: string) => {
+    try {
+      const userId = await getCurrentUserId()
+      // Update all plans to set the selected one as active
+      const updatedPlans = await Promise.all(
+        plans.map(async (p) => {
+          const isActive = p.id === planId
+          if (p.isActive !== isActive) {
+            const updatedPlan = {
+              ...p,
+              isActive,
+              updatedAt: new Date().toISOString()
+            }
+            await plansAPI.updatePlan(p.id, updatedPlan)
+            return updatedPlan
+          }
+          return p
+        })
+      )
+
+      setPlans(updatedPlans)
+      setSelectedPlanId(planId)
+
+      // Store updated data locally
+      versioningService.storeData('plans', userId, updatedPlans)
+    } catch (error) {
+      console.error('Error selecting plan:', error)
+      setError('Failed to select plan. Please try again.')
+    }
+  }
+
+  const handleBudgetChange = async (monthIndex: number, budgetId: string) => {
+    try {
+      const userId = await getCurrentUserId()
+      const plan = plans.find(p => p.id === selectedPlanId)
+      if (!plan) return
+
+      const updatedMonths = [...plan.months]
+      updatedMonths[monthIndex] = {
+        ...updatedMonths[monthIndex],
+        budgetId: budgetId || null
+      }
+
+      const updatedPlan = {
+        ...plan,
+        months: updatedMonths,
+        updatedAt: new Date().toISOString()
+      }
+
+      await plansAPI.updatePlan(selectedPlanId, updatedPlan)
+
+      const updatedPlans = plans.map(p =>
+        p.id === selectedPlanId ? updatedPlan : p
+      )
+
+      setPlans(updatedPlans)
+
+      // Store updated data locally
+      versioningService.storeData('plans', userId, updatedPlans)
+    } catch (error) {
+      console.error('Error updating budget:', error)
+      setError('Failed to update budget. Please try again.')
+    }
   }
 
   const getMonthName = (monthString: string) => {

@@ -28,4 +28,7 @@ public class User
 
     [DynamoDBProperty]
     public DateTime UpdatedAt { get; set; }
+
+    [DynamoDBProperty]
+    public long Version { get; set; } = 1; // Global version number for the user
 }

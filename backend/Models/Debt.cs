@@ -34,4 +34,7 @@ public class Debt
 
     [DynamoDBProperty]
     public DateTime UpdatedAt { get; set; }
+
+    [DynamoDBProperty]
+    public long Version { get; set; } = 1; // Version number for this debt
 }

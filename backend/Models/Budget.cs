@@ -33,6 +33,9 @@ public class Budget
 
     [DynamoDBProperty]
     public DateTime UpdatedAt { get; set; }
+
+    [DynamoDBProperty]
+    public long Version { get; set; } = 1; // Version number for this budget
 }
 
 public class IncomeItem
