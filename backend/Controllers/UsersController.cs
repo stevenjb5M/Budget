@@ -57,7 +57,9 @@ public class UsersController : ControllerBase
                 UpdatedAt = DateTime.UtcNow
             };
 
+            _logger.LogInformation($"Creating new user with ID: {userId}");
             user = await _dynamoDBService.CreateUserAsync(newUser);
+            _logger.LogInformation($"Successfully created/retrieved user: {userId}");
         }
 
         return Ok(user);
@@ -107,7 +109,10 @@ public class UsersController : ControllerBase
                 CreatedAt = DateTime.UtcNow,
                 LastUpdated = DateTime.UtcNow
             };
+
+            _logger.LogInformation($"Creating UserVersion for user: {userId}");
             userVersion = await _dynamoDBService.CreateUserVersionAsync(userVersion);
+            _logger.LogInformation($"Successfully created/retrieved UserVersion for user: {userId}");
         }
 
         return Ok(userVersion);

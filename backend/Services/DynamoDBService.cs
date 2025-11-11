@@ -20,8 +20,16 @@ public class DynamoDBService : IDynamoDBService
 
     public async Task<User> CreateUserAsync(User user)
     {
+        // Check if user already exists to prevent duplicates
+        var existingUser = await _context.LoadAsync<User>(user.Id);
+        if (existingUser != null)
+        {
+            return existingUser;
+        }
+
         user.CreatedAt = DateTime.UtcNow;
         user.UpdatedAt = DateTime.UtcNow;
+        user.Version = 1; // Start with version 1
         await _context.SaveAsync(user);
         return user;
     }
@@ -221,6 +229,13 @@ public class DynamoDBService : IDynamoDBService
 
     public async Task<UserVersion> CreateUserVersionAsync(UserVersion userVersion)
     {
+        // Check if UserVersion already exists to prevent duplicates
+        var existingUserVersion = await _context.LoadAsync<UserVersion>(userVersion.UserId);
+        if (existingUserVersion != null)
+        {
+            return existingUserVersion;
+        }
+
         userVersion.CreatedAt = DateTime.UtcNow;
         userVersion.LastUpdated = DateTime.UtcNow;
         await _context.SaveAsync(userVersion);
