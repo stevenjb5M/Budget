@@ -1,18 +1,46 @@
+using Amazon.DynamoDBv2.DataModel;
+
 namespace BudgetPlanner.Models;
 
 /// <summary>
-/// Represents a 3-year (36 month) financial plan with budgets, net worth, and asset projections
+/// Represents a financial plan with monthly projections
 /// </summary>
+[DynamoDBTable("BudgetPlanner-Plans")]
 public class Plan
 {
-    public string Id { get; set; } // UUID
-    public string UserId { get; set; } // Owner of the plan
-    public string Name { get; set; } // e.g., "Best Case", "Baseline", "Reduced Income"
-    public string Description { get; set; }
-    public DateTime StartDate { get; set; } // First month of the plan
-    public DateTime EndDate { get; set; } // Last month (36 months later)
-    public List<string> BudgetIds { get; set; } = new(); // References to Budget IDs
-    public List<string> TransactionIds { get; set; } = new(); // References to Transaction IDs
+    [DynamoDBHashKey]
+    public string? Id { get; set; } // UUID
+
+    [DynamoDBGlobalSecondaryIndexHashKey("UserIndex")]
+    public string? UserId { get; set; } // Owner of the plan
+
+    [DynamoDBProperty]
+    public string? Name { get; set; } // e.g., "5-Year Financial Plan"
+
+    [DynamoDBProperty]
+    public string? Description { get; set; }
+
+    [DynamoDBProperty]
+    public bool IsActive { get; set; }
+
+    [DynamoDBProperty]
+    public List<PlanMonth> Months { get; set; } = new();
+
+    [DynamoDBProperty]
     public DateTime CreatedAt { get; set; }
+
+    [DynamoDBProperty]
     public DateTime UpdatedAt { get; set; }
+}
+
+public class PlanMonth
+{
+    [DynamoDBProperty]
+    public string? Month { get; set; } // YYYY-MM format
+
+    [DynamoDBProperty]
+    public string? BudgetId { get; set; }
+
+    [DynamoDBProperty]
+    public decimal NetWorth { get; set; }
 }

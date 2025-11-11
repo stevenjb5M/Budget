@@ -1,6 +1,8 @@
 using BudgetPlanner.Models;
+using BudgetPlanner.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace BudgetPlanner.Controllers;
 
@@ -10,10 +12,17 @@ namespace BudgetPlanner.Controllers;
 public class DebtsController : ControllerBase
 {
     private readonly ILogger<DebtsController> _logger;
+    private readonly IDynamoDBService _dynamoDBService;
 
-    public DebtsController(ILogger<DebtsController> logger)
+    public DebtsController(ILogger<DebtsController> logger, IDynamoDBService dynamoDBService)
     {
         _logger = logger;
+        _dynamoDBService = dynamoDBService;
+    }
+
+    private string GetUserId()
+    {
+        return User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value ?? "";
     }
 
     /// <summary>
@@ -22,8 +31,14 @@ public class DebtsController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Debt>>> GetDebts()
     {
-        // TODO: Implement - query DynamoDB
-        return Ok(new List<Debt>());
+        var userId = GetUserId();
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+
+        var debts = await _dynamoDBService.GetDebtsByUserAsync(userId);
+        return Ok(debts);
     }
 
     /// <summary>
@@ -32,8 +47,20 @@ public class DebtsController : ControllerBase
     [HttpGet("{debtId}")]
     public async Task<ActionResult<Debt>> GetDebt(string debtId)
     {
-        // TODO: Implement - get from DynamoDB
-        return Ok(new Debt());
+        var debt = await _dynamoDBService.GetDebtAsync(debtId);
+        if (debt == null)
+        {
+            return NotFound();
+        }
+
+        // Ensure the debt belongs to the current user
+        var userId = GetUserId();
+        if (debt.UserId != userId)
+        {
+            return Forbid();
+        }
+
+        return Ok(debt);
     }
 
     /// <summary>
@@ -42,8 +69,17 @@ public class DebtsController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<Debt>> CreateDebt([FromBody] Debt debt)
     {
-        // TODO: Implement - save to DynamoDB
-        return CreatedAtAction(nameof(GetDebt), new { debtId = debt.Id }, debt);
+        var userId = GetUserId();
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+
+        debt.UserId = userId; // Set the user ID
+        debt.Id = Guid.NewGuid().ToString(); // Generate new ID
+
+        var createdDebt = await _dynamoDBService.CreateDebtAsync(debt);
+        return CreatedAtAction(nameof(GetDebt), new { debtId = createdDebt.Id }, createdDebt);
     }
 
     /// <summary>
@@ -52,8 +88,29 @@ public class DebtsController : ControllerBase
     [HttpPut("{debtId}")]
     public async Task<ActionResult<Debt>> UpdateDebt(string debtId, [FromBody] Debt debt)
     {
-        // TODO: Implement - update DynamoDB
-        return Ok(debt);
+        var userId = GetUserId();
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+
+        // Verify the debt exists and belongs to the user
+        var existingDebt = await _dynamoDBService.GetDebtAsync(debtId);
+        if (existingDebt == null)
+        {
+            return NotFound();
+        }
+
+        if (existingDebt.UserId != userId)
+        {
+            return Forbid();
+        }
+
+        debt.Id = debtId; // Ensure ID matches
+        debt.UserId = userId; // Ensure user ID matches
+
+        var updatedDebt = await _dynamoDBService.UpdateDebtAsync(debt);
+        return Ok(updatedDebt);
     }
 
     /// <summary>
@@ -62,7 +119,25 @@ public class DebtsController : ControllerBase
     [HttpDelete("{debtId}")]
     public async Task<IActionResult> DeleteDebt(string debtId)
     {
-        // TODO: Implement - delete from DynamoDB
+        var userId = GetUserId();
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+
+        // Verify the debt exists and belongs to the user
+        var existingDebt = await _dynamoDBService.GetDebtAsync(debtId);
+        if (existingDebt == null)
+        {
+            return NotFound();
+        }
+
+        if (existingDebt.UserId != userId)
+        {
+            return Forbid();
+        }
+
+        await _dynamoDBService.DeleteDebtAsync(debtId);
         return NoContent();
     }
 }

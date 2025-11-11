@@ -1,23 +1,66 @@
 import { Nav } from '../components/Nav'
 import { useAuth } from '../components/Auth'
+import { useEffect, useState } from 'react'
+import { generateClient } from 'aws-amplify/api'
 import dummyAssets from '../data/assets.json'
 import dummyDebts from '../data/debts.json'
 import dummyUser from '../data/user.json'
 
 export function Home() {
   const { user } = useAuth()
+  const [currentUser, setCurrentUser] = useState(dummyUser)
+  const [loading, setLoading] = useState(true)
 
-  // Use authenticated user data, fallback to dummy data
-  const currentUser = user ? {
-    name: user.attributes?.name ||
-          (user.attributes?.given_name && user.attributes?.family_name
-            ? `${user.attributes.given_name} ${user.attributes.family_name}`
-            : user.attributes?.given_name || user.attributes?.family_name) ||
-          user.username ||
-          'User',
-    email: user.attributes?.email || '',
-    birthday: user.attributes?.birthdate || dummyUser.birthday
-  } : dummyUser
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (user) {
+        try {
+          const client = generateClient()
+
+          // Try to get user from API
+          const userData = await client.models.User.list({
+            filter: {
+              id: {
+                eq: user.username // Using username as user ID for now
+              }
+            }
+          })
+
+          if (userData.data && userData.data.length > 0) {
+            setCurrentUser(userData.data[0])
+          } else {
+            // If no user data in API, use authenticated user info
+            setCurrentUser({
+              id: user.username,
+              name: user.attributes?.name || user.attributes?.given_name || 'User',
+              email: user.attributes?.email || '',
+              birthday: user.attributes?.birthdate || dummyUser.birthday,
+              retirementAge: dummyUser.retirementAge,
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString()
+            })
+          }
+        } catch (error) {
+          console.error('Error fetching user data:', error)
+          // Fallback to authenticated user data
+          setCurrentUser({
+            id: user.username,
+            name: user.attributes?.name || user.attributes?.given_name || 'User',
+            email: user.attributes?.email || '',
+            birthday: user.attributes?.birthdate || dummyUser.birthday,
+            retirementAge: dummyUser.retirementAge,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          })
+        }
+      } else {
+        setCurrentUser(dummyUser)
+      }
+      setLoading(false)
+    }
+
+    fetchUserData()
+  }, [user])
 
   // Calculate totals
   const assetsTotal = dummyAssets.reduce((sum, asset) => sum + asset.currentValue, 0)

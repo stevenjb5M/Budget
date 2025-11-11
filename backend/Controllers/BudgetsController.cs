@@ -1,6 +1,8 @@
 using BudgetPlanner.Models;
+using BudgetPlanner.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace BudgetPlanner.Controllers;
 
@@ -10,10 +12,17 @@ namespace BudgetPlanner.Controllers;
 public class BudgetsController : ControllerBase
 {
     private readonly ILogger<BudgetsController> _logger;
+    private readonly IDynamoDBService _dynamoDBService;
 
-    public BudgetsController(ILogger<BudgetsController> logger)
+    public BudgetsController(ILogger<BudgetsController> logger, IDynamoDBService dynamoDBService)
     {
         _logger = logger;
+        _dynamoDBService = dynamoDBService;
+    }
+
+    private string GetUserId()
+    {
+        return User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value ?? "";
     }
 
     /// <summary>
@@ -22,8 +31,14 @@ public class BudgetsController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Budget>>> GetBudgets()
     {
-        // TODO: Implement - query DynamoDB
-        return Ok(new List<Budget>());
+        var userId = GetUserId();
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+
+        var budgets = await _dynamoDBService.GetBudgetsByUserAsync(userId);
+        return Ok(budgets);
     }
 
     /// <summary>
@@ -32,8 +47,20 @@ public class BudgetsController : ControllerBase
     [HttpGet("{budgetId}")]
     public async Task<ActionResult<Budget>> GetBudget(string budgetId)
     {
-        // TODO: Implement - get from DynamoDB
-        return Ok(new Budget());
+        var budget = await _dynamoDBService.GetBudgetAsync(budgetId);
+        if (budget == null)
+        {
+            return NotFound();
+        }
+
+        // Ensure the budget belongs to the current user
+        var userId = GetUserId();
+        if (budget.UserId != userId)
+        {
+            return Forbid();
+        }
+
+        return Ok(budget);
     }
 
     /// <summary>
@@ -42,8 +69,17 @@ public class BudgetsController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<Budget>> CreateBudget([FromBody] Budget budget)
     {
-        // TODO: Implement - save to DynamoDB
-        return CreatedAtAction(nameof(GetBudget), new { budgetId = budget.Id }, budget);
+        var userId = GetUserId();
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+
+        budget.UserId = userId; // Set the user ID
+        budget.Id = Guid.NewGuid().ToString(); // Generate new ID
+
+        var createdBudget = await _dynamoDBService.CreateBudgetAsync(budget);
+        return CreatedAtAction(nameof(GetBudget), new { budgetId = createdBudget.Id }, createdBudget);
     }
 
     /// <summary>
@@ -52,8 +88,29 @@ public class BudgetsController : ControllerBase
     [HttpPut("{budgetId}")]
     public async Task<ActionResult<Budget>> UpdateBudget(string budgetId, [FromBody] Budget budget)
     {
-        // TODO: Implement - update DynamoDB
-        return Ok(budget);
+        var userId = GetUserId();
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+
+        // Verify the budget exists and belongs to the user
+        var existingBudget = await _dynamoDBService.GetBudgetAsync(budgetId);
+        if (existingBudget == null)
+        {
+            return NotFound();
+        }
+
+        if (existingBudget.UserId != userId)
+        {
+            return Forbid();
+        }
+
+        budget.Id = budgetId; // Ensure ID matches
+        budget.UserId = userId; // Ensure user ID matches
+
+        var updatedBudget = await _dynamoDBService.UpdateBudgetAsync(budget);
+        return Ok(updatedBudget);
     }
 
     /// <summary>
@@ -62,7 +119,25 @@ public class BudgetsController : ControllerBase
     [HttpDelete("{budgetId}")]
     public async Task<IActionResult> DeleteBudget(string budgetId)
     {
-        // TODO: Implement - delete from DynamoDB
+        var userId = GetUserId();
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+
+        // Verify the budget exists and belongs to the user
+        var existingBudget = await _dynamoDBService.GetBudgetAsync(budgetId);
+        if (existingBudget == null)
+        {
+            return NotFound();
+        }
+
+        if (existingBudget.UserId != userId)
+        {
+            return Forbid();
+        }
+
+        await _dynamoDBService.DeleteBudgetAsync(budgetId);
         return NoContent();
     }
 }

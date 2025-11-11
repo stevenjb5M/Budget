@@ -1,7 +1,29 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Amazon.DynamoDBv2;
+using Amazon.DynamoDBv2.DataModel;
+using Amazon.Extensions.NETCore.Setup;
+using BudgetPlanner.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure AWS
+builder.Services.AddDefaultAWSOptions(builder.Configuration.GetAWSOptions());
+builder.Services.AddAWSService<IAmazonDynamoDB>();
+
+// Configure DynamoDB context
+builder.Services.AddSingleton<IDynamoDBContext>(sp =>
+{
+    var config = new DynamoDBContextConfig
+    {
+        TableNamePrefix = builder.Configuration["DynamoDB:TablePrefix"] ?? "BudgetPlanner-",
+        Conversion = DynamoDBEntryConversion.V2
+    };
+    return new DynamoDBContext(sp.GetRequiredService<IAmazonDynamoDB>(), config);
+});
+
+// Register DynamoDB service
+builder.Services.AddScoped<IDynamoDBService, DynamoDBService>();
 
 // Add authentication
 var authority = builder.Configuration["Cognito:Authority"];

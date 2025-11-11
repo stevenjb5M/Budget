@@ -1,40 +1,69 @@
+using Amazon.DynamoDBv2.DataModel;
+
 namespace BudgetPlanner.Models;
 
 /// <summary>
 /// Represents a monthly budget with income sources and expense categories
 /// </summary>
+[DynamoDBTable("BudgetPlanner-Budgets")]
 public class Budget
 {
-    public string Id { get; set; } // UUID
-    public string UserId { get; set; } // Owner
-    public string PlanId { get; set; } // Optional: associated plan
-    public DateTime Month { get; set; } // The month this budget covers
-    
+    [DynamoDBHashKey]
+    public string? Id { get; set; } // UUID
+
+    [DynamoDBGlobalSecondaryIndexHashKey("UserIndex")]
+    public string? UserId { get; set; } // Owner
+
+    [DynamoDBProperty]
+    public string? Name { get; set; }
+
+    [DynamoDBProperty]
+    public bool IsActive { get; set; }
+
     // Income data
-    public List<IncomeItem> IncomeItems { get; set; } = new();
-    public decimal TotalIncome { get; set; }
-    
+    [DynamoDBProperty]
+    public List<IncomeItem> Income { get; set; } = new();
+
     // Expense data
-    public List<ExpenseItem> ExpenseItems { get; set; } = new();
-    public decimal TotalExpenses { get; set; }
-    
-    // Summary
-    public decimal NetTotal => TotalIncome - TotalExpenses;
-    
+    [DynamoDBProperty]
+    public List<ExpenseItem> Expenses { get; set; } = new();
+
+    [DynamoDBProperty]
     public DateTime CreatedAt { get; set; }
+
+    [DynamoDBProperty]
     public DateTime UpdatedAt { get; set; }
 }
 
 public class IncomeItem
 {
-    public string Id { get; set; }
-    public string Name { get; set; } // e.g., "Salary", "Freelance"
+    [DynamoDBProperty]
+    public string? Id { get; set; }
+
+    [DynamoDBProperty]
+    public string? Name { get; set; } // e.g., "Salary", "Freelance"
+
+    [DynamoDBProperty]
     public decimal Amount { get; set; }
+
+    [DynamoDBProperty]
+    public string? Category { get; set; }
 }
 
 public class ExpenseItem
 {
-    public string Id { get; set; }
-    public string Category { get; set; } // e.g., "Rent", "Food", "Utilities"
+    [DynamoDBProperty]
+    public string? Id { get; set; }
+
+    [DynamoDBProperty]
+    public string? Name { get; set; }
+
+    [DynamoDBProperty]
     public decimal Amount { get; set; }
+
+    [DynamoDBProperty]
+    public string? Category { get; set; }
+
+    [DynamoDBProperty]
+    public bool IsFixed { get; set; }
 }
