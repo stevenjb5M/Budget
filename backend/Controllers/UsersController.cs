@@ -26,7 +26,7 @@ public class UsersController : ControllerBase
     }
 
     /// <summary>
-    /// Get current user profile
+    /// Get current user profile (creates user if they don't exist)
     /// </summary>
     [HttpGet("me")]
     public async Task<ActionResult<User>> GetCurrentUser()
@@ -40,7 +40,24 @@ public class UsersController : ControllerBase
         var user = await _dynamoDBService.GetUserAsync(userId);
         if (user == null)
         {
-            return NotFound();
+            // User doesn't exist, create them automatically
+            var claimsIdentity = User.Identity as ClaimsIdentity;
+            var email = claimsIdentity?.FindFirst("email")?.Value ?? "";
+            var name = claimsIdentity?.FindFirst("name")?.Value ??
+                      claimsIdentity?.FindFirst("given_name")?.Value ?? "User";
+
+            var newUser = new User
+            {
+                Id = userId,
+                Email = email,
+                DisplayName = name,
+                Birthday = DateTime.Parse("1990-01-01"), // Default birthday
+                RetirementAge = 65, // Default retirement age
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            user = await _dynamoDBService.CreateUserAsync(newUser);
         }
 
         return Ok(user);

@@ -1,15 +1,16 @@
-import { useState } from 'react'
-import dummyAssets from '../data/assets.json'
-import dummyDebts from '../data/debts.json'
+import { useState, useEffect } from 'react'
 import { Nav } from '../components/Nav'
 import { SortableAssetItem, Asset } from '../components/SortableAssetItem'
 import { SortableDebtItem, Debt } from '../components/SortableDebtItem'
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable'
+import { assetsAPI, debtsAPI } from '../api/client'
 
 export function Assets() {
-  const [assets, setAssets] = useState<Asset[]>(dummyAssets)
-  const [debts, setDebts] = useState<Debt[]>(dummyDebts)
+  const [assets, setAssets] = useState<Asset[]>([])
+  const [debts, setDebts] = useState<Debt[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [showModal, setShowModal] = useState(false)
   const [showDebtModal, setShowDebtModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
@@ -20,6 +21,28 @@ export function Assets() {
   const [editingDebt, setEditingDebt] = useState<Debt | null>(null)
   const [newAsset, setNewAsset] = useState({ name: '', currentValue: 0, annualAPY: 0, notes: '' })
   const [newDebt, setNewDebt] = useState({ name: '', currentBalance: 0, interestRate: 0, minimumPayment: 0, notes: '' })
+
+  // Fetch data on component mount
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setError(null)
+        const [assetsResponse, debtsResponse] = await Promise.all([
+          assetsAPI.getAssets(),
+          debtsAPI.getDebts()
+        ])
+        setAssets(assetsResponse.data)
+        setDebts(debtsResponse.data)
+      } catch (error) {
+        console.error('Error fetching data:', error)
+        setError('Failed to load assets and debts. Please try again.')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [])
 
   // Calculate totals
   const assetsTotal = assets.reduce((sum, asset) => sum + asset.currentValue, 0)
@@ -46,21 +69,24 @@ export function Assets() {
     }
   }
 
-  const handleCreate = (e: React.FormEvent) => {
+  const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault()
-    const asset: Asset = {
-      id: Date.now().toString(),
-      userId: 'user1',
-      name: newAsset.name,
-      currentValue: newAsset.currentValue,
-      annualAPY: newAsset.annualAPY,
-      notes: newAsset.notes,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+    try {
+      const assetData = {
+        name: newAsset.name,
+        currentValue: newAsset.currentValue,
+        annualAPY: newAsset.annualAPY,
+        notes: newAsset.notes || undefined
+      }
+
+      const response = await assetsAPI.createAsset(assetData)
+      setAssets([...assets, response.data])
+      setNewAsset({ name: '', currentValue: 0, annualAPY: 0, notes: '' })
+      setShowModal(false)
+    } catch (error) {
+      console.error('Error creating asset:', error)
+      setError('Failed to create asset. Please try again.')
     }
-    setAssets([...assets, asset])
-    setNewAsset({ name: '', currentValue: 0, annualAPY: 0, notes: '' })
-    setShowModal(false)
   }
 
   const handleEdit = (asset: Asset) => {
@@ -69,26 +95,43 @@ export function Assets() {
     setShowEditModal(true)
   }
 
-  const handleUpdate = (e: React.FormEvent) => {
+  const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (editingAsset) {
+    if (!editingAsset) return
+
+    try {
+      const assetData = {
+        name: newAsset.name,
+        currentValue: newAsset.currentValue,
+        annualAPY: newAsset.annualAPY,
+        notes: newAsset.notes || undefined
+      }
+
+      const response = await assetsAPI.updateAsset(editingAsset.id, assetData)
       setAssets(assets.map(asset =>
-        asset.id === editingAsset.id
-          ? { ...asset, name: newAsset.name, currentValue: newAsset.currentValue, annualAPY: newAsset.annualAPY, notes: newAsset.notes, updatedAt: new Date().toISOString() }
-          : asset
+        asset.id === editingAsset.id ? response.data : asset
       ))
       setShowEditModal(false)
       setEditingAsset(null)
       setNewAsset({ name: '', currentValue: 0, annualAPY: 0, notes: '' })
+    } catch (error) {
+      console.error('Error updating asset:', error)
+      setError('Failed to update asset. Please try again.')
     }
   }
 
-  const handleDelete = () => {
-    if (editingAsset) {
+  const handleDelete = async () => {
+    if (!editingAsset) return
+
+    try {
+      await assetsAPI.deleteAsset(editingAsset.id)
       setAssets(assets.filter(asset => asset.id !== editingAsset.id))
-      setShowEditModal(false)
+      setShowDeleteModal(false)
       setEditingAsset(null)
       setNewAsset({ name: '', currentValue: 0, annualAPY: 0, notes: '' })
+    } catch (error) {
+      console.error('Error deleting asset:', error)
+      setError('Failed to delete asset. Please try again.')
     }
   }
 
@@ -105,22 +148,25 @@ export function Assets() {
     }
   }
 
-  const handleDebtCreate = (e: React.FormEvent) => {
+  const handleDebtCreate = async (e: React.FormEvent) => {
     e.preventDefault()
-    const debt: Debt = {
-      id: Date.now().toString(),
-      userId: 'user1',
-      name: newDebt.name,
-      currentBalance: newDebt.currentBalance,
-      interestRate: newDebt.interestRate,
-      minimumPayment: newDebt.minimumPayment,
-      notes: newDebt.notes,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+    try {
+      const debtData = {
+        name: newDebt.name,
+        currentBalance: newDebt.currentBalance,
+        interestRate: newDebt.interestRate,
+        minimumPayment: newDebt.minimumPayment,
+        notes: newDebt.notes || undefined
+      }
+
+      const response = await debtsAPI.createDebt(debtData)
+      setDebts([...debts, response.data])
+      setNewDebt({ name: '', currentBalance: 0, interestRate: 0, minimumPayment: 0, notes: '' })
+      setShowDebtModal(false)
+    } catch (error) {
+      console.error('Error creating debt:', error)
+      setError('Failed to create debt. Please try again.')
     }
-    setDebts([...debts, debt])
-    setNewDebt({ name: '', currentBalance: 0, interestRate: 0, minimumPayment: 0, notes: '' })
-    setShowDebtModal(false)
   }
 
   const handleDebtEdit = (debt: Debt) => {
@@ -129,26 +175,44 @@ export function Assets() {
     setShowDebtEditModal(true)
   }
 
-  const handleDebtUpdate = (e: React.FormEvent) => {
+  const handleDebtUpdate = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (editingDebt) {
+    if (!editingDebt) return
+
+    try {
+      const debtData = {
+        name: newDebt.name,
+        currentBalance: newDebt.currentBalance,
+        interestRate: newDebt.interestRate,
+        minimumPayment: newDebt.minimumPayment,
+        notes: newDebt.notes || undefined
+      }
+
+      const response = await debtsAPI.updateDebt(editingDebt.id, debtData)
       setDebts(debts.map(debt =>
-        debt.id === editingDebt.id
-          ? { ...debt, name: newDebt.name, currentBalance: newDebt.currentBalance, interestRate: newDebt.interestRate, minimumPayment: newDebt.minimumPayment, notes: newDebt.notes, updatedAt: new Date().toISOString() }
-          : debt
+        debt.id === editingDebt.id ? response.data : debt
       ))
       setShowDebtEditModal(false)
       setEditingDebt(null)
       setNewDebt({ name: '', currentBalance: 0, interestRate: 0, minimumPayment: 0, notes: '' })
+    } catch (error) {
+      console.error('Error updating debt:', error)
+      setError('Failed to update debt. Please try again.')
     }
   }
 
-  const handleDebtDelete = () => {
-    if (editingDebt) {
+  const handleDebtDelete = async () => {
+    if (!editingDebt) return
+
+    try {
+      await debtsAPI.deleteDebt(editingDebt.id)
       setDebts(debts.filter(debt => debt.id !== editingDebt.id))
-      setShowDebtEditModal(false)
+      setShowDebtDeleteModal(false)
       setEditingDebt(null)
       setNewDebt({ name: '', currentBalance: 0, interestRate: 0, minimumPayment: 0, notes: '' })
+    } catch (error) {
+      console.error('Error deleting debt:', error)
+      setError('Failed to delete debt. Please try again.')
     }
   }
 
@@ -162,7 +226,37 @@ export function Assets() {
       <Nav />
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
-          {/* Net Worth Display */}
+          {/* Loading State */}
+          {loading && (
+            <div className="bg-white shadow rounded-lg p-6">
+              <div className="animate-pulse">
+                <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
+                <div className="h-4 bg-gray-200 rounded w-1/2 mb-6"></div>
+                <div className="space-y-3">
+                  <div className="h-4 bg-gray-200 rounded"></div>
+                  <div className="h-4 bg-gray-200 rounded"></div>
+                  <div className="h-4 bg-gray-200 rounded"></div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Error State */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-6 mb-6">
+              <div className="text-red-800">
+                <strong>Error:</strong> {error}
+                <button
+                  onClick={() => window.location.reload()}
+                  className="ml-4 px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700"
+                >
+                  Retry
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Main Content */}
           <div className="bg-white shadow rounded-lg p-4 mb-6">
             <h1 className="text-2xl font-bold text-gray-900 text-center">Net Worth</h1>
             <p className={`text-3xl font-bold text-center mt-1 ${netWorth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
@@ -263,7 +357,6 @@ export function Assets() {
             </div>
           </div>
         </div>
-      </main>
 
       {/* Modal */}
       {showModal && (
@@ -625,9 +718,10 @@ export function Assets() {
             </div>
           </div>
         </div>
-      )}
+        )}
+      </main>
 
-      {/* Debt Delete Confirmation Modal */}
+      {/* Modals */}
       {showDebtDeleteModal && editingDebt && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full" onClick={() => setShowDebtDeleteModal(false)}>
           <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white" onClick={(e) => e.stopPropagation()}>

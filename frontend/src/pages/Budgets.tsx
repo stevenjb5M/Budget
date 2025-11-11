@@ -1,6 +1,6 @@
-import { useState } from 'react'
-import dummyBudgets from '../data/budgets.json'
+import { useState, useEffect } from 'react'
 import { Nav } from '../components/Nav'
+import { budgetsAPI } from '../api/client'
 
 interface Budget {
   id: string
@@ -31,10 +31,10 @@ interface BudgetItem {
 }
 
 export function Budgets() {
-  const [budgets, setBudgets] = useState<Budget[]>(dummyBudgets)
-  const [selectedBudgetId, setSelectedBudgetId] = useState<string>(
-    budgets.find(b => b.isActive)?.id || budgets[0]?.id || ''
-  )
+  const [budgets, setBudgets] = useState<Budget[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [selectedBudgetId, setSelectedBudgetId] = useState<string>('')
   const [showNewBudgetModal, setShowNewBudgetModal] = useState(false)
   const [showIncomeModal, setShowIncomeModal] = useState(false)
   const [showExpenseModal, setShowExpenseModal] = useState(false)
@@ -43,6 +43,28 @@ export function Budgets() {
   const [editingBudgetName, setEditingBudgetName] = useState(false)
   const [editingItem, setEditingItem] = useState<{ type: 'income' | 'expenses', id: string, field: 'name' | 'amount' | 'category' } | null>(null)
   const [editValue, setEditValue] = useState('')
+
+  // Fetch budgets on component mount
+  useEffect(() => {
+    const fetchBudgets = async () => {
+      try {
+        setError(null)
+        const response = await budgetsAPI.getBudgets()
+        setBudgets(response.data)
+        if (response.data.length > 0) {
+          const activeBudget = response.data.find(b => b.isActive)
+          setSelectedBudgetId(activeBudget?.id || response.data[0].id)
+        }
+      } catch (error) {
+        console.error('Error fetching budgets:', error)
+        setError('Failed to load budgets. Please try again.')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchBudgets()
+  }, [])
 
   const selectedBudget = budgets.find(b => b.id === selectedBudgetId)
 
@@ -208,6 +230,34 @@ export function Budgets() {
       <Nav />
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
+          {/* Loading Overlay */}
+          {loading && (
+            <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white rounded-lg p-6">
+                <div className="animate-pulse">
+                  <div className="h-8 bg-gray-200 rounded w-48 mb-4"></div>
+                  <div className="h-4 bg-gray-200 rounded w-32"></div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Error Banner */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+              <div className="text-red-800">
+                <strong>Error:</strong> {error}
+                <button
+                  onClick={() => window.location.reload()}
+                  className="ml-4 px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700"
+                >
+                  Retry
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Main Content */}
           <div className="flex justify-between items-center mb-8">
             <h2 className="text-2xl font-bold text-gray-900">Budgets</h2>
             <button

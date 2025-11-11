@@ -1,9 +1,0 @@
-{
-  "id": "user1",
-  "name": "John Doe",
-  "email": "john.doe@example.com",
-  "birthday": "2001-09-05",
-  "retirementAge": 67,
-  "createdAt": "2023-01-01T00:00:00Z",
-  "updatedAt": "2023-01-01T00:00:00Z"
-}

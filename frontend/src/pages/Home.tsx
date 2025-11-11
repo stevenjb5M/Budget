@@ -1,77 +1,93 @@
 import { Nav } from '../components/Nav'
 import { useAuth } from '../components/Auth'
 import { useEffect, useState } from 'react'
-import { generateClient } from 'aws-amplify/api'
-import dummyAssets from '../data/assets.json'
-import dummyDebts from '../data/debts.json'
-import dummyUser from '../data/user.json'
+import { usersAPI, assetsAPI, debtsAPI } from '../api/client'
+
+interface User {
+  id: string
+  name: string
+  email: string
+  birthday: string
+  retirementAge: number
+  createdAt: string
+  updatedAt: string
+}
+
+interface Asset {
+  id: string
+  name: string
+  currentValue: number
+  annualAPY: number
+  notes?: string
+  userId: string
+  createdAt: string
+  updatedAt: string
+}
+
+interface Debt {
+  id: string
+  name: string
+  currentBalance: number
+  interestRate: number
+  minimumPayment: number
+  notes?: string
+  userId: string
+  createdAt: string
+  updatedAt: string
+}
 
 export function Home() {
   const { user } = useAuth()
-  const [currentUser, setCurrentUser] = useState(dummyUser)
+  const [currentUser, setCurrentUser] = useState<User | null>(null)
+  const [assets, setAssets] = useState<Asset[]>([])
+  const [debts, setDebts] = useState<Debt[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      if (user) {
-        try {
-          const client = generateClient()
-
-          // Try to get user from API
-          const userData = await client.models.User.list({
-            filter: {
-              id: {
-                eq: user.username // Using username as user ID for now
-              }
-            }
-          })
-
-          if (userData.data && userData.data.length > 0) {
-            setCurrentUser(userData.data[0])
-          } else {
-            // If no user data in API, use authenticated user info
-            setCurrentUser({
-              id: user.username,
-              name: user.attributes?.name || user.attributes?.given_name || 'User',
-              email: user.attributes?.email || '',
-              birthday: user.attributes?.birthdate || dummyUser.birthday,
-              retirementAge: dummyUser.retirementAge,
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString()
-            })
-          }
-        } catch (error) {
-          console.error('Error fetching user data:', error)
-          // Fallback to authenticated user data
-          setCurrentUser({
-            id: user.username,
-            name: user.attributes?.name || user.attributes?.given_name || 'User',
-            email: user.attributes?.email || '',
-            birthday: user.attributes?.birthdate || dummyUser.birthday,
-            retirementAge: dummyUser.retirementAge,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
-          })
-        }
-      } else {
-        setCurrentUser(dummyUser)
+    const fetchData = async () => {
+      if (!user) {
+        setLoading(false)
+        return
       }
-      setLoading(false)
+
+      try {
+        setError(null)
+
+        // Fetch user data
+        const userResponse = await usersAPI.getCurrentUser()
+        setCurrentUser(userResponse.data)
+
+        // Fetch assets and debts for net worth calculation
+        const [assetsResponse, debtsResponse] = await Promise.all([
+          assetsAPI.getAssets(),
+          debtsAPI.getDebts()
+        ])
+
+        setAssets(assetsResponse.data)
+        setDebts(debtsResponse.data)
+
+      } catch (error) {
+        console.error('Error fetching data:', error)
+        setError('Failed to load financial data. Please try again.')
+      } finally {
+        setLoading(false)
+      }
     }
 
-    fetchUserData()
+    fetchData()
   }, [user])
 
   // Calculate totals
-  const assetsTotal = dummyAssets.reduce((sum, asset) => sum + asset.currentValue, 0)
-  const debtsTotal = dummyDebts.reduce((sum, debt) => sum + debt.currentBalance, 0)
+  const assetsTotal = assets.reduce((sum: number, asset: Asset) => sum + asset.currentValue, 0)
+  const debtsTotal = debts.reduce((sum: number, debt: Debt) => sum + debt.currentBalance, 0)
   const netWorth = assetsTotal - debtsTotal
 
   // Calculate age
   const today = new Date()
-  const birthDate = new Date(currentUser.birthday)
-  const age = today.getFullYear() - birthDate.getFullYear() -
-    (today < new Date(today.getFullYear(), birthDate.getMonth(), birthDate.getDate()) ? 1 : 0)
+  const birthDate = currentUser ? new Date(currentUser.birthday) : new Date()
+  const age = currentUser ? today.getFullYear() - birthDate.getFullYear() -
+    (today < new Date(today.getFullYear(), birthDate.getMonth(), birthDate.getDate()) ? 1 : 0) : 0
 
   // Format dates
   const formatDate = (date: Date) => {
@@ -88,18 +104,40 @@ export function Home() {
       <Nav />
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
+          {/* Loading State */}
+          {loading && (
+            <div className="bg-white shadow rounded-lg p-6 mb-8">
+              <div className="animate-pulse">
+                <div className="h-8 bg-gray-200 rounded w-1/4 mb-2"></div>
+                <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+              </div>
+            </div>
+          )}
+
+          {/* Error State */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-6 mb-8">
+              <div className="text-red-800">
+                <strong>Error:</strong> {error}
+              </div>
+            </div>
+          )}
+
           {/* Welcome Section */}
-          <div className="bg-white shadow rounded-lg p-6 mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              Welcome back, {currentUser.name}!
-            </h2>
-            <p className="text-gray-600">
-              Here's your financial overview for today.
-            </p>
-          </div>
+          {!loading && !error && currentUser && (
+            <div className="bg-white shadow rounded-lg p-6 mb-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                Welcome back, {currentUser.name}!
+              </h2>
+              <p className="text-gray-600">
+                Here's your financial overview for today.
+              </p>
+            </div>
+          )}
 
           {/* Main Overview Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {!loading && !error && currentUser && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Date & Age Information */}
             <div className="bg-white shadow rounded-lg p-6">
               <h3 className="text-xl font-bold text-gray-900 mb-6">Date & Age</h3>
@@ -118,7 +156,7 @@ export function Home() {
                 </div>
                 <div className="flex justify-between items-center py-2">
                   <span className="text-gray-600">Retirement Age</span>
-                  <span className="font-medium text-gray-900">{dummyUser.retirementAge} years old</span>
+                  <span className="font-medium text-gray-900">{currentUser?.retirementAge || 65} years old</span>
                 </div>
               </div>
             </div>
@@ -148,9 +186,11 @@ export function Home() {
               </div>
             </div>
           </div>
+          )}
 
           {/* Settings Section */}
-          <div className="mt-8 bg-white shadow rounded-lg p-6">
+          {!loading && !error && currentUser && (
+            <div className="mt-8 bg-white shadow rounded-lg p-6">
             <h3 className="text-xl font-bold text-gray-900 mb-4">Settings</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
@@ -169,6 +209,7 @@ export function Home() {
               </div>
             </div>
           </div>
+          )}
         </div>
       </main>
     </div>

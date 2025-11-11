@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { fetchAuthSession } from 'aws-amplify/auth'
 
-const API_BASE_URL = '/api'
+const API_BASE_URL = 'http://localhost:5001'
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -26,40 +26,40 @@ apiClient.interceptors.request.use(async (config) => {
 })
 
 export const usersAPI = {
-  getCurrentUser: () => apiClient.get('/users/me'),
-  updateCurrentUser: (user: any) => apiClient.put('/users/me', user),
+  getCurrentUser: () => apiClient.get('/api/users/me'),
+  updateCurrentUser: (user: any) => apiClient.put('/api/users/me', user),
 }
 
 export const plansAPI = {
-  getPlans: () => apiClient.get('/plans'),
-  getPlan: (planId: string) => apiClient.get(`/plans/${planId}`),
-  createPlan: (plan: any) => apiClient.post('/plans', plan),
-  updatePlan: (planId: string, plan: any) => apiClient.put(`/plans/${planId}`, plan),
-  deletePlan: (planId: string) => apiClient.delete(`/plans/${planId}`),
+  getPlans: () => apiClient.get('/api/plans'),
+  getPlan: (planId: string) => apiClient.get(`/api/plans/${planId}`),
+  createPlan: (plan: any) => apiClient.post('/api/plans', plan),
+  updatePlan: (planId: string, plan: any) => apiClient.put(`/api/plans/${planId}`, plan),
+  deletePlan: (planId: string) => apiClient.delete(`/api/plans/${planId}`),
 }
 
 export const budgetsAPI = {
-  getBudgets: () => apiClient.get('/budgets'),
-  getBudget: (budgetId: string) => apiClient.get(`/budgets/${budgetId}`),
-  createBudget: (budget: any) => apiClient.post('/budgets', budget),
-  updateBudget: (budgetId: string, budget: any) => apiClient.put(`/budgets/${budgetId}`, budget),
-  deleteBudget: (budgetId: string) => apiClient.delete(`/budgets/${budgetId}`),
+  getBudgets: () => apiClient.get('/api/budgets'),
+  getBudget: (budgetId: string) => apiClient.get(`/api/budgets/${budgetId}`),
+  createBudget: (budget: any) => apiClient.post('/api/budgets', budget),
+  updateBudget: (budgetId: string, budget: any) => apiClient.put(`/api/budgets/${budgetId}`, budget),
+  deleteBudget: (budgetId: string) => apiClient.delete(`/api/budgets/${budgetId}`),
 }
 
 export const assetsAPI = {
-  getAssets: () => apiClient.get('/assets'),
-  getAsset: (assetId: string) => apiClient.get(`/assets/${assetId}`),
-  createAsset: (asset: any) => apiClient.post('/assets', asset),
-  updateAsset: (assetId: string, asset: any) => apiClient.put(`/assets/${assetId}`, asset),
-  deleteAsset: (assetId: string) => apiClient.delete(`/assets/${assetId}`),
+  getAssets: () => apiClient.get('/api/assets'),
+  getAsset: (assetId: string) => apiClient.get(`/api/assets/${assetId}`),
+  createAsset: (asset: any) => apiClient.post('/api/assets', asset),
+  updateAsset: (assetId: string, asset: any) => apiClient.put(`/api/assets/${assetId}`, asset),
+  deleteAsset: (assetId: string) => apiClient.delete(`/api/assets/${assetId}`),
 }
 
 export const debtsAPI = {
-  getDebts: () => apiClient.get('/debts'),
-  getDebt: (debtId: string) => apiClient.get(`/debts/${debtId}`),
-  createDebt: (debt: any) => apiClient.post('/debts', debt),
-  updateDebt: (debtId: string, debt: any) => apiClient.put(`/debts/${debtId}`, debt),
-  deleteDebt: (debtId: string) => apiClient.delete(`/debts/${debtId}`),
+  getDebts: () => apiClient.get('/api/debts'),
+  getDebt: (debtId: string) => apiClient.get(`/api/debts/${debtId}`),
+  createDebt: (debt: any) => apiClient.post('/api/debts', debt),
+  updateDebt: (debtId: string, debt: any) => apiClient.put(`/api/debts/${debtId}`, debt),
+  deleteDebt: (debtId: string) => apiClient.delete(`/api/debts/${debtId}`),
 }
 
 export default apiClient

@@ -16,7 +16,6 @@ builder.Services.AddSingleton<IDynamoDBContext>(sp =>
 {
     var config = new DynamoDBContextConfig
     {
-        TableNamePrefix = builder.Configuration["DynamoDB:TablePrefix"] ?? "BudgetPlanner-",
         Conversion = DynamoDBEntryConversion.V2
     };
     return new DynamoDBContext(sp.GetRequiredService<IAmazonDynamoDB>(), config);

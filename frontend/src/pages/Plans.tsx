@@ -1,9 +1,6 @@
 import { useState, useEffect } from 'react'
-import dummyPlans from '../data/plans.json'
-import dummyBudgets from '../data/budgets.json'
-import dummyAssets from '../data/assets.json'
-import dummyDebts from '../data/debts.json'
 import { Nav } from '../components/Nav'
+import { plansAPI, budgetsAPI, assetsAPI, debtsAPI } from '../api/client'
 
 interface Plan {
   id: string
@@ -28,22 +25,55 @@ interface Budget {
 }
 
 export function Plans() {
-  const [plans, setPlans] = useState<Plan[]>(dummyPlans)
-  const [selectedPlanId, setSelectedPlanId] = useState<string>(
-    plans.find(p => p.isActive)?.id || plans[0]?.id || ''
-  )
+  const [plans, setPlans] = useState<Plan[]>([])
+  const [budgets, setBudgets] = useState<Budget[]>([])
+  const [assets, setAssets] = useState<any[]>([])
+  const [debts, setDebts] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [selectedPlanId, setSelectedPlanId] = useState<string>('')
   const [showNewPlanModal, setShowNewPlanModal] = useState(false)
   const [newPlanName, setNewPlanName] = useState('')
   const [newPlanDescription, setNewPlanDescription] = useState('')
   const [plansMinimized, setPlansMinimized] = useState(false)
   const [budgetPlanningMinimized, setBudgetPlanningMinimized] = useState(false)
 
+  // Fetch data on component mount
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setError(null)
+        const [plansResponse, budgetsResponse, assetsResponse, debtsResponse] = await Promise.all([
+          plansAPI.getPlans(),
+          budgetsAPI.getBudgets(),
+          assetsAPI.getAssets(),
+          debtsAPI.getDebts()
+        ])
+        setPlans(plansResponse.data)
+        setBudgets(budgetsResponse.data)
+        setAssets(assetsResponse.data)
+        setDebts(debtsResponse.data)
+
+        if (plansResponse.data.length > 0) {
+          const activePlan = plansResponse.data.find(p => p.isActive)
+          setSelectedPlanId(activePlan?.id || plansResponse.data[0].id)
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error)
+        setError('Failed to load plans data. Please try again.')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [])
+
   const selectedPlan = plans.find(p => p.id === selectedPlanId)
-  const budgets = dummyBudgets as Budget[]
 
   // Calculate current net worth (assets - debts)
-  const currentAssetsTotal = dummyAssets.reduce((sum, asset) => sum + asset.currentValue, 0)
-  const currentDebtsTotal = dummyDebts.reduce((sum, debt) => sum + debt.currentBalance, 0)
+  const currentAssetsTotal = assets.reduce((sum: number, asset: any) => sum + asset.currentValue, 0)
+  const currentDebtsTotal = debts.reduce((sum: number, debt: any) => sum + debt.currentBalance, 0)
   const currentNetWorth = currentAssetsTotal - currentDebtsTotal
 
   // Recalculate net worth values when component mounts or current net worth changes
@@ -195,6 +225,33 @@ export function Plans() {
       <Nav />
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
+          {/* Loading Overlay */}
+          {loading && (
+            <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white rounded-lg p-6">
+                <div className="animate-pulse">
+                  <div className="h-8 bg-gray-200 rounded w-48 mb-4"></div>
+                  <div className="h-4 bg-gray-200 rounded w-32"></div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Error Banner */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+              <div className="text-red-800">
+                <strong>Error:</strong> {error}
+                <button
+                  onClick={() => window.location.reload()}
+                  className="ml-4 px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700"
+                >
+                  Retry
+                </button>
+              </div>
+            </div>
+          )}
+
           <div className="mb-8">
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-bold text-gray-900">Financial Plans</h2>
