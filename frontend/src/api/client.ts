@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { fetchAuthSession } from 'aws-amplify/auth'
 
-const API_BASE_URL = 'http://localhost:5001'
+const API_BASE_URL = 'http://localhost:5000'
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
