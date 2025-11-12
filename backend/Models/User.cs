@@ -1,4 +1,6 @@
 using Amazon.DynamoDBv2.DataModel;
+using System.Globalization;
+using System.Text.Json.Serialization;
 
 namespace BudgetPlanner.Models;
 
@@ -17,8 +19,37 @@ public class User
     [DynamoDBProperty]
     public string? DisplayName { get; set; }
 
-    [DynamoDBProperty]
-    public DateTime Birthday { get; set; }
+    [DynamoDBProperty("Birthday")]
+    public string? BirthdayString { get; set; } // Store as YYYY-MM-DD string to preserve date exactly
+    
+    [JsonIgnore]
+    [DynamoDBIgnore]
+    public DateTime Birthday 
+    { 
+        get 
+        { 
+            if (string.IsNullOrEmpty(BirthdayString))
+            {
+                return DateTime.Parse("1990-01-01");
+            }
+            // Parse the stored YYYY-MM-DD format
+            if (DateTime.TryParse(BirthdayString, null, System.Globalization.DateTimeStyles.None, out var date))
+            {
+                return date;
+            }
+            return DateTime.Parse("1990-01-01");
+        }
+        set 
+        { 
+            // Ensure we only store the date portion as YYYY-MM-DD
+            if (value.Kind == DateTimeKind.Utc)
+            {
+                // If it's UTC, convert to local first to get the correct date
+                value = value.ToLocalTime();
+            }
+            BirthdayString = value.ToString("yyyy-MM-dd");
+        }
+    }
 
     [DynamoDBProperty]
     public int RetirementAge { get; set; }

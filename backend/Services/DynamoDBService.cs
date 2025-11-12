@@ -37,6 +37,11 @@ public class DynamoDBService : IDynamoDBService
     public async Task<User> UpdateUserAsync(User user)
     {
         user.UpdatedAt = DateTime.UtcNow;
+        // Ensure birthday is valid - if it's MinValue, set it to a default
+        if (user.Birthday == DateTime.MinValue || user.Birthday == default(DateTime))
+        {
+            user.Birthday = DateTime.Parse("1990-01-01");
+        }
         await _context.SaveAsync(user);
         return user;
     }

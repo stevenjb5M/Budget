@@ -45,21 +45,72 @@ public class UsersController : ControllerBase
             var email = claimsIdentity?.FindFirst("email")?.Value ?? "";
             var name = claimsIdentity?.FindFirst("name")?.Value ??
                       claimsIdentity?.FindFirst("given_name")?.Value ?? "User";
+            
+            // Log all claims to debug
+            _logger.LogInformation($"==== Available claims for user {userId} ====");
+            if (claimsIdentity?.Claims != null)
+            {
+                foreach (var claim in claimsIdentity.Claims)
+                {
+                    _logger.LogInformation($"  Claim: Type='{claim.Type}' Value='{claim.Value}'");
+                }
+            }
+            _logger.LogInformation($"==== End of claims ====");
+            
+            // Get birthdate from Cognito claims - try multiple possible claim types
+            var birthdateStr = claimsIdentity?.FindFirst("birthdate")?.Value ?? 
+                              claimsIdentity?.FindFirst("custom:birthday")?.Value ??
+                              claimsIdentity?.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/dateofbirth")?.Value;
+            
+            var birthday = DateTime.Parse("1990-01-01");
+            
+            if (!string.IsNullOrEmpty(birthdateStr))
+            {
+                _logger.LogInformation($"Parsing birthdate from Cognito: {birthdateStr}");
+                try
+                {
+                    // Cognito sends birthdate as YYYY-MM-DD
+                    // Treat it as a date-only value (no timezone conversion)
+                    if (DateTime.TryParseExact(birthdateStr, "yyyy-MM-dd", null, System.Globalization.DateTimeStyles.None, out var parsedDate))
+                    {
+                        birthday = parsedDate;
+                        _logger.LogInformation($"Successfully parsed birthdate: {birthday:yyyy-MM-dd} (Kind: {birthday.Kind})");
+                    }
+                    else
+                    {
+                        _logger.LogWarning($"Failed to parse birthdate with format yyyy-MM-dd: {birthdateStr}");
+                        // Try other common formats
+                        if (DateTime.TryParse(birthdateStr, null, System.Globalization.DateTimeStyles.None, out var altDate))
+                        {
+                            birthday = altDate;
+                            _logger.LogInformation($"Successfully parsed birthdate with generic parser: {birthday:yyyy-MM-dd}");
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Error parsing birthdate: {ex.Message}");
+                }
+            }
+            else
+            {
+                _logger.LogWarning($"No birthdate claim found in Cognito token");
+            }
 
             var newUser = new User
             {
                 Id = userId,
                 Email = email,
                 DisplayName = name,
-                Birthday = DateTime.Parse("1990-01-01"), // Default birthday
+                BirthdayString = birthday.ToString("yyyy-MM-dd"),
                 RetirementAge = 65, // Default retirement age
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
 
-            _logger.LogInformation($"Creating new user with ID: {userId}");
+            _logger.LogInformation($"Creating user with BirthdayString: {newUser.BirthdayString}");
             user = await _dynamoDBService.CreateUserAsync(newUser);
-            _logger.LogInformation($"Successfully created/retrieved user: {userId}");
+            _logger.LogInformation($"Successfully created/retrieved user: {userId}, Retrieved Birthday: {user.Birthday:yyyy-MM-dd}, BirthdayString: {user.BirthdayString}");
         }
 
         return Ok(user);
@@ -78,6 +129,8 @@ public class UsersController : ControllerBase
         }
 
         user.Id = userId; // Ensure the ID matches the authenticated user
+        user.UpdatedAt = DateTime.UtcNow; // Update the timestamp
+        
         var updatedUser = await _dynamoDBService.UpdateUserAsync(user);
         return Ok(updatedUser);
     }

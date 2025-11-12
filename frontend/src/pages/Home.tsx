@@ -7,7 +7,7 @@ interface User {
   id: string
   name: string
   email: string
-  birthday: string
+  birthdayString: string
   retirementAge: number
   createdAt: string
   updatedAt: string
@@ -85,13 +85,17 @@ export function Home() {
 
   // Calculate age
   const today = new Date()
-  const birthDate = currentUser ? new Date(currentUser.birthday) : new Date()
+  const birthDate = currentUser ? new Date(currentUser.birthdayString.split('T')[0]) : new Date()
   const age = currentUser ? today.getFullYear() - birthDate.getFullYear() -
     (today < new Date(today.getFullYear(), birthDate.getMonth(), birthDate.getDate()) ? 1 : 0) : 0
 
   // Format dates
   const formatDate = (date: Date) => {
     return date.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })
+  }
+
+  const formatBirthdayDate = (date: Date) => {
+    return date.toLocaleDateString('en-US', { timeZone: 'UTC', month: '2-digit', day: '2-digit', year: 'numeric' })
   }
 
   return (
@@ -148,7 +152,7 @@ export function Home() {
                 </div>
                 <div className="flex justify-between items-center py-2 border-b border-gray-100">
                   <span className="text-gray-600">Your Birthday</span>
-                  <span className="font-medium text-gray-900">{formatDate(birthDate)}</span>
+                  <span className="font-medium text-gray-900">{formatBirthdayDate(birthDate)}</span>
                 </div>
                 <div className="flex justify-between items-center py-2 border-b border-gray-100">
                   <span className="text-gray-600">Your Age</span>
