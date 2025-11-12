@@ -5,7 +5,7 @@ import { usersAPI, assetsAPI, debtsAPI } from '../api/client'
 
 interface User {
   id: string
-  name: string
+  displayName: string
   email: string
   birthdayString: string
   retirementAge: number
@@ -131,7 +131,7 @@ export function Home() {
           {!loading && !error && currentUser && (
             <div className="bg-white shadow rounded-lg p-6 mb-8">
               <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                Welcome back, {currentUser.name}!
+                Welcome back, {currentUser.displayName}!
               </h2>
               <p className="text-gray-600">
                 Here's your financial overview for today.
