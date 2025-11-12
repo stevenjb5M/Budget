@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Nav } from '../components/Nav'
 import { budgetsAPI } from '../api/client'
 import { versionSyncService } from '../services/versionSyncService'
+import { versioningService } from '../services/versioningService'
 import { getCurrentUserId } from '../utils/auth'
 
 interface Budget {

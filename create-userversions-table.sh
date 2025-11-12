@@ -7,23 +7,9 @@ echo "Creating BudgetPlanner-UserVersions table..."
 aws dynamodb create-table \
     --table-name BudgetPlanner-UserVersions \
     --attribute-definitions \
-        AttributeName=Id,AttributeType=S \
         AttributeName=UserId,AttributeType=S \
     --key-schema \
-        AttributeName=Id,KeyType=HASH \
-    --global-secondary-indexes \
-        "[{
-            \"IndexName\": \"UserIndex\",
-            \"KeySchema\": [
-                {
-                    \"AttributeName\": \"UserId\",
-                    \"KeyType\": \"HASH\"
-                }
-            ],
-            \"Projection\": {
-                \"ProjectionType\": \"ALL\"
-            }
-        }]" \
+        AttributeName=UserId,KeyType=HASH \
     --billing-mode PAY_PER_REQUEST \
     --tags Key=Application,Value=BudgetPlanner
 
