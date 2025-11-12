@@ -54,8 +54,27 @@ export function Plans() {
           versionSyncService.getData('assets', () => assetsAPI.getAssets().then(r => r.data)),
           versionSyncService.getData('debts', () => debtsAPI.getDebts().then(r => r.data))
         ])
+        
+        // Validate and clean up orphaned expense links in budgets
+        const cleanedBudgets = validateAndCleanBudgets(budgetsData, assetsData, debtsData)
+        
+        // If any expenses were removed, update them in the backend
+        const budgetsWithChanges = cleanedBudgets.filter((cleanedBudget: any, index: number) => {
+          const originalExpenseCount = budgetsData[index].expenses.length
+          const cleanedExpenseCount = cleanedBudget.expenses.length
+          return originalExpenseCount !== cleanedExpenseCount
+        })
+        
+        if (budgetsWithChanges.length > 0) {
+          // Update budgets that had orphaned expenses removed
+          for (const budget of budgetsWithChanges) {
+            await budgetsAPI.updateBudget(budget.id, budget)
+          }
+          console.log(`Cleaned up ${budgetsWithChanges.length} budget(s) with orphaned expenses`)
+        }
+        
         setPlans(plansData)
-        setBudgets(budgetsData)
+        setBudgets(cleanedBudgets)
         setAssets(assetsData)
         setDebts(debtsData)
 
@@ -76,10 +95,83 @@ export function Plans() {
 
   const selectedPlan = plans.find(p => p.id === selectedPlanId)
 
+  // Helper function to validate and clean up orphaned expense links
+  const validateAndCleanBudgets = (budgetsToValidate: Budget[], assetsList: any[], debtsList: any[]): Budget[] => {
+    const assetIds = new Set(assetsList.map((a: any) => a.id))
+    const debtIds = new Set(debtsList.map((d: any) => d.id))
+
+    return budgetsToValidate.map((budget: any) => ({
+      ...budget,
+      expenses: budget.expenses
+        .filter((expense: any) => {
+          // Keep regular expenses
+          if (expense.type === 'regular') return true
+          
+          // Remove asset expenses if asset no longer exists
+          if (expense.type === 'asset' && expense.linkedAssetId && !assetIds.has(expense.linkedAssetId)) {
+            console.warn(`Removed orphaned asset expense "${expense.name}" - asset no longer exists`)
+            return false
+          }
+          
+          // Remove debt expenses if debt no longer exists
+          if (expense.type === 'debt' && expense.linkedDebtId && !debtIds.has(expense.linkedDebtId)) {
+            console.warn(`Removed orphaned debt expense "${expense.name}" - debt no longer exists`)
+            return false
+          }
+          
+          return true
+        })
+    }))
+  }
+
   // Calculate current net worth (assets - debts)
   const currentAssetsTotal = assets.reduce((sum: number, asset: any) => sum + asset.currentValue, 0)
   const currentDebtsTotal = debts.reduce((sum: number, debt: any) => sum + debt.currentBalance, 0)
   const currentNetWorth = currentAssetsTotal - currentDebtsTotal
+
+  // Helper function to calculate asset value for a given month
+  const calculateAssetValueForMonth = (asset: any, monthString: string): number => {
+    if (!selectedPlan) return asset.currentValue
+
+    const monthIndex = selectedPlan.months.findIndex(m => m.month === monthString)
+    if (monthIndex === -1) return asset.currentValue
+
+    // Get the budget for this month
+    const monthData = selectedPlan.months[monthIndex]
+    if (!monthData.budgetId) return asset.currentValue
+
+    const budget = budgets.find(b => b.id === monthData.budgetId)
+    if (!budget) return asset.currentValue
+
+    // Sum all expenses linked to this asset
+    const assetDeposits = budget.expenses
+      .filter((exp: any) => exp.type === 'asset' && exp.linkedAssetId === asset.id)
+      .reduce((sum: number, exp: any) => sum + exp.amount, 0)
+
+    return asset.currentValue + assetDeposits
+  }
+
+  // Helper function to calculate debt remaining for a given month
+  const calculateDebtRemainingForMonth = (debt: any, monthString: string): number => {
+    if (!selectedPlan) return debt.currentBalance
+
+    const monthIndex = selectedPlan.months.findIndex(m => m.month === monthString)
+    if (monthIndex === -1) return debt.currentBalance
+
+    // Get the budget for this month
+    const monthData = selectedPlan.months[monthIndex]
+    if (!monthData.budgetId) return debt.currentBalance
+
+    const budget = budgets.find(b => b.id === monthData.budgetId)
+    if (!budget) return debt.currentBalance
+
+    // Sum all expenses linked to this debt
+    const debtPayments = budget.expenses
+      .filter((exp: any) => exp.type === 'debt' && exp.linkedDebtId === debt.id)
+      .reduce((sum: number, exp: any) => sum + exp.amount, 0)
+
+    return Math.max(0, debt.currentBalance - debtPayments)
+  }
 
   // Recalculate net worth values when component mounts or current net worth changes
   useEffect(() => {
@@ -414,6 +506,72 @@ export function Plans() {
                         })}
                       </div>
                     )}
+                  </div>
+
+                  {/* Assets & Debts Projection */}
+                  <div className="bg-white shadow rounded-lg p-6">
+                    <h4 className="text-lg font-medium text-gray-900 mb-4">Assets & Debts Projection</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {/* Assets */}
+                      <div>
+                        <h5 className="font-medium text-gray-700 mb-3">Assets</h5>
+                        {assets.length > 0 ? (
+                          <div className="space-y-2">
+                            {assets.map((asset) => (
+                              <div key={asset.id} className="p-3 bg-gray-50 rounded-md">
+                                <div className="flex justify-between items-start">
+                                  <div>
+                                    <div className="font-medium text-gray-900">{asset.name}</div>
+                                    <div className="text-sm text-gray-600">
+                                      {selectedPlan?.months[0]
+                                        ? `${getMonthName(selectedPlan.months[0].month)}: $${calculateAssetValueForMonth(asset, selectedPlan.months[0].month).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                                        : 'N/A'
+                                      }
+                                    </div>
+                                  </div>
+                                  <div className="text-right">
+                                    <div className="text-sm text-gray-600">Current:</div>
+                                    <div className="font-medium text-green-600">${asset.currentValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-gray-500 text-sm">No assets created yet</div>
+                        )}
+                      </div>
+
+                      {/* Debts */}
+                      <div>
+                        <h5 className="font-medium text-gray-700 mb-3">Debts</h5>
+                        {debts.length > 0 ? (
+                          <div className="space-y-2">
+                            {debts.map((debt) => (
+                              <div key={debt.id} className="p-3 bg-gray-50 rounded-md">
+                                <div className="flex justify-between items-start">
+                                  <div>
+                                    <div className="font-medium text-gray-900">{debt.name}</div>
+                                    <div className="text-sm text-gray-600">
+                                      {selectedPlan?.months[0]
+                                        ? `${getMonthName(selectedPlan.months[0].month)}: $${calculateDebtRemainingForMonth(debt, selectedPlan.months[0].month).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                                        : 'N/A'
+                                      }
+                                    </div>
+                                  </div>
+                                  <div className="text-right">
+                                    <div className="text-sm text-gray-600">Current:</div>
+                                    <div className="font-medium text-red-600">${debt.currentBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-gray-500 text-sm">No debts created yet</div>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
               ) : (

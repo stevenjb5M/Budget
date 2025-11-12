@@ -69,4 +69,14 @@ public class ExpenseItem
 
     [DynamoDBProperty]
     public bool IsFixed { get; set; }
+
+    // Link to asset or debt
+    [DynamoDBProperty]
+    public string? LinkedAssetId { get; set; } // If category is an asset
+
+    [DynamoDBProperty]
+    public string? LinkedDebtId { get; set; } // If category is a debt
+
+    [DynamoDBProperty]
+    public string? Type { get; set; } // "regular", "asset", "debt"
 }

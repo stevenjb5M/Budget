@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Nav } from '../components/Nav'
-import { budgetsAPI } from '../api/client'
+import { budgetsAPI, assetsAPI, debtsAPI } from '../api/client'
 import { versionSyncService } from '../services/versionSyncService'
 import { versioningService } from '../services/versioningService'
 import { getCurrentUserId } from '../utils/auth'
@@ -21,6 +21,9 @@ interface Budget {
     name: string
     amount: number
     category: string
+    linkedAssetId?: string
+    linkedDebtId?: string
+    type?: 'regular' | 'asset' | 'debt'
   }>
   createdAt: string
   updatedAt: string
@@ -31,10 +34,27 @@ interface BudgetItem {
   name: string
   amount: number
   category: string
+  linkedAssetId?: string
+  linkedDebtId?: string
+  type?: 'regular' | 'asset' | 'debt'
+}
+
+interface Asset {
+  id: string
+  name: string
+  currentValue: number
+}
+
+interface Debt {
+  id: string
+  name: string
+  amount: number
 }
 
 export function Budgets() {
   const [budgets, setBudgets] = useState<Budget[]>([])
+  const [assets, setAssets] = useState<Asset[]>([])
+  const [debts, setDebts] = useState<Debt[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [selectedBudgetId, setSelectedBudgetId] = useState<string>('')
@@ -42,39 +62,92 @@ export function Budgets() {
   const [showIncomeModal, setShowIncomeModal] = useState(false)
   const [showExpenseModal, setShowExpenseModal] = useState(false)
   const [newBudgetName, setNewBudgetName] = useState('')
-  const [newItem, setNewItem] = useState({ name: '', amount: 0, category: '' })
+  const [newItem, setNewItem] = useState({ name: '', amount: 0, category: '', type: 'regular' as 'regular' | 'asset' | 'debt', linkedAssetId: '', linkedDebtId: '' })
   const [editingBudgetName, setEditingBudgetName] = useState(false)
   const [editingItem, setEditingItem] = useState<{ type: 'income' | 'expenses', id: string, field: 'name' | 'amount' | 'category' } | null>(null)
   const [editValue, setEditValue] = useState('')
 
-  // Fetch budgets on component mount
+  // Fetch budgets, assets, and debts on component mount
   useEffect(() => {
-    const fetchBudgets = async () => {
+    const fetchData = async () => {
       try {
         setError(null)
         const userId = await getCurrentUserId()
-        // Use version sync service for cache-first loading
-        const budgetsData = await versionSyncService.getData(
-          'budgets',
-          () => budgetsAPI.getBudgets().then(r => r.data)
-        )
-        setBudgets(budgetsData)
-        if (budgetsData.length > 0) {
-          const activeBudget = budgetsData.find((b: Budget) => b.isActive)
-          setSelectedBudgetId(activeBudget?.id || budgetsData[0].id)
+        
+        // Fetch budgets, assets, and debts in parallel
+        const [budgetsData, assetsData, debtsData] = await Promise.all([
+          versionSyncService.getData('budgets', () => budgetsAPI.getBudgets().then(r => r.data)),
+          versionSyncService.getData('assets', () => assetsAPI.getAssets().then(r => r.data)),
+          versionSyncService.getData('debts', () => debtsAPI.getDebts().then(r => r.data))
+        ])
+        
+        // Validate and clean up orphaned expense links
+        const cleanedBudgets = validateAndCleanBudgets(budgetsData, assetsData, debtsData)
+        
+        // If any expenses were removed, update them in the backend
+        const budgetsWithChanges = cleanedBudgets.filter((cleanedBudget, index) => {
+          const originalExpenseCount = budgetsData[index].expenses.length
+          const cleanedExpenseCount = cleanedBudget.expenses.length
+          return originalExpenseCount !== cleanedExpenseCount
+        })
+        
+        if (budgetsWithChanges.length > 0) {
+          // Update budgets that had orphaned expenses removed
+          for (const budget of budgetsWithChanges) {
+            await budgetsAPI.updateBudget(budget.id, budget)
+          }
+          console.log(`Cleaned up ${budgetsWithChanges.length} budget(s) with orphaned expenses`)
+        }
+        
+        setBudgets(cleanedBudgets)
+        setAssets(assetsData)
+        setDebts(debtsData)
+        
+        if (cleanedBudgets.length > 0) {
+          const activeBudget = cleanedBudgets.find((b: Budget) => b.isActive)
+          setSelectedBudgetId(activeBudget?.id || cleanedBudgets[0].id)
         }
       } catch (error) {
-        console.error('Error fetching budgets:', error)
-        setError('Failed to load budgets. Please try again.')
+        console.error('Error fetching data:', error)
+        setError('Failed to load data. Please try again.')
       } finally {
         setLoading(false)
       }
     }
 
-    fetchBudgets()
+    fetchData()
   }, [])
 
   const selectedBudget = budgets.find(b => b.id === selectedBudgetId)
+
+  // Helper function to validate and clean up orphaned expense links
+  const validateAndCleanBudgets = (budgetsToValidate: Budget[], assetsList: Asset[], debtsList: Debt[]): Budget[] => {
+    const assetIds = new Set(assetsList.map(a => a.id))
+    const debtIds = new Set(debtsList.map(d => d.id))
+
+    return budgetsToValidate.map(budget => ({
+      ...budget,
+      expenses: budget.expenses
+        .filter(expense => {
+          // Keep regular expenses
+          if (expense.type === 'regular') return true
+          
+          // Remove asset expenses if asset no longer exists
+          if (expense.type === 'asset' && expense.linkedAssetId && !assetIds.has(expense.linkedAssetId)) {
+            console.warn(`Removed orphaned asset expense "${expense.name}" - asset no longer exists`)
+            return false
+          }
+          
+          // Remove debt expenses if debt no longer exists
+          if (expense.type === 'debt' && expense.linkedDebtId && !debtIds.has(expense.linkedDebtId)) {
+            console.warn(`Removed orphaned debt expense "${expense.name}" - debt no longer exists`)
+            return false
+          }
+          
+          return true
+        })
+    }))
+  }
 
   const handleCreateBudget = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -164,7 +237,7 @@ export function Budgets() {
       versioningService.storeData('budgets', userId, updatedBudgets)
 
       setBudgets(updatedBudgets)
-      setNewItem({ name: '', amount: 0, category: '' })
+      setNewItem({ name: '', amount: 0, category: '', type: 'regular', linkedAssetId: '', linkedDebtId: '' })
       setShowIncomeModal(false)
     } catch (error) {
       console.error('Error adding income:', error)
@@ -182,7 +255,10 @@ export function Budgets() {
         id: Date.now().toString(),
         name: newItem.name,
         amount: newItem.amount,
-        category: newItem.category
+        category: newItem.type === 'regular' ? newItem.category : '',
+        type: newItem.type,
+        linkedAssetId: newItem.type === 'asset' ? newItem.linkedAssetId : undefined,
+        linkedDebtId: newItem.type === 'debt' ? newItem.linkedDebtId : undefined
       }
 
       const updatedBudget = {
@@ -200,7 +276,7 @@ export function Budgets() {
       versioningService.storeData('budgets', userId, updatedBudgets)
 
       setBudgets(updatedBudgets)
-      setNewItem({ name: '', amount: 0, category: '' })
+      setNewItem({ name: '', amount: 0, category: '', type: 'regular', linkedAssetId: '', linkedDebtId: '' })
       setShowExpenseModal(false)
     } catch (error) {
       console.error('Error adding expense:', error)
@@ -799,6 +875,19 @@ export function Budgets() {
               <form onSubmit={handleAddExpense}>
                 <div className="space-y-4">
                   <div>
+                    <label htmlFor="expenseType" className="block text-sm font-medium text-gray-700">Type</label>
+                    <select
+                      id="expenseType"
+                      value={newItem.type}
+                      onChange={(e) => setNewItem({ ...newItem, type: e.target.value as 'regular' | 'asset' | 'debt', linkedAssetId: '', linkedDebtId: '' })}
+                      className="mt-1 w-full border-gray-300 rounded-md shadow-sm text-black"
+                    >
+                      <option value="regular">Regular Expense</option>
+                      <option value="asset">Asset Deposit</option>
+                      <option value="debt">Debt Payment</option>
+                    </select>
+                  </div>
+                  <div>
                     <label htmlFor="expenseName" className="block text-sm font-medium text-gray-700">Name</label>
                     <input
                       type="text"
@@ -821,26 +910,62 @@ export function Budgets() {
                       required
                     />
                   </div>
-                  <div>
-                    <label htmlFor="expenseCategory" className="block text-sm font-medium text-gray-700">Category</label>
-                    <select
-                      id="expenseCategory"
-                      value={newItem.category}
-                      onChange={(e) => setNewItem({ ...newItem, category: e.target.value })}
-                      className="mt-1 w-full border-gray-300 rounded-md shadow-sm text-black"
-                      required
-                    >
-                      <option value="">Select Category</option>
-                      <option value="Housing">Housing</option>
-                      <option value="Food">Food</option>
-                      <option value="Transportation">Transportation</option>
-                      <option value="Entertainment">Entertainment</option>
-                      <option value="Insurance">Insurance</option>
-                      <option value="Utilities">Utilities</option>
-                      <option value="Healthcare">Healthcare</option>
-                      <option value="Other">Other</option>
-                    </select>
-                  </div>
+                  {newItem.type === 'regular' && (
+                    <div>
+                      <label htmlFor="expenseCategory" className="block text-sm font-medium text-gray-700">Category</label>
+                      <select
+                        id="expenseCategory"
+                        value={newItem.category}
+                        onChange={(e) => setNewItem({ ...newItem, category: e.target.value })}
+                        className="mt-1 w-full border-gray-300 rounded-md shadow-sm text-black"
+                        required
+                      >
+                        <option value="">Select Category</option>
+                        <option value="Housing">Housing</option>
+                        <option value="Food">Food</option>
+                        <option value="Transportation">Transportation</option>
+                        <option value="Entertainment">Entertainment</option>
+                        <option value="Insurance">Insurance</option>
+                        <option value="Utilities">Utilities</option>
+                        <option value="Healthcare">Healthcare</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </div>
+                  )}
+                  {newItem.type === 'asset' && (
+                    <div>
+                      <label htmlFor="linkedAsset" className="block text-sm font-medium text-gray-700">Asset</label>
+                      <select
+                        id="linkedAsset"
+                        value={newItem.linkedAssetId}
+                        onChange={(e) => setNewItem({ ...newItem, linkedAssetId: e.target.value })}
+                        className="mt-1 w-full border-gray-300 rounded-md shadow-sm text-black"
+                        required
+                      >
+                        <option value="">Select Asset</option>
+                        {assets.map((asset) => (
+                          <option key={asset.id} value={asset.id}>{asset.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                  {newItem.type === 'debt' && (
+                    <div>
+                      <label htmlFor="linkedDebt" className="block text-sm font-medium text-gray-700">Debt</label>
+                      <select
+                        id="linkedDebt"
+                        value={newItem.linkedDebtId}
+                        onChange={(e) => setNewItem({ ...newItem, linkedDebtId: e.target.value })}
+                        className="mt-1 w-full border-gray-300 rounded-md shadow-sm text-black"
+                        required
+                      >
+                        <option value="">Select Debt</option>
+                        {debts.map((debt) => (
+                          <option key={debt.id} value={debt.id}>{debt.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
                 </div>
                 <div className="flex justify-end space-x-2 mt-6">
                   <button
