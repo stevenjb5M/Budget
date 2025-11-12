@@ -40,6 +40,8 @@ export function Plans() {
   const [newPlanDescription, setNewPlanDescription] = useState('')
   const [plansMinimized, setPlansMinimized] = useState(false)
   const [budgetPlanningMinimized, setBudgetPlanningMinimized] = useState(false)
+  const [showMonthDetailsModal, setShowMonthDetailsModal] = useState(false)
+  const [selectedMonthForDetails, setSelectedMonthForDetails] = useState<string>('')
 
   // Fetch data on component mount
   useEffect(() => {
@@ -495,6 +497,16 @@ export function Plans() {
                                         </select>
                                       </div>
                                     </div>
+                                    <button
+                                      onClick={() => {
+                                        setSelectedMonthForDetails(monthData.month)
+                                        setShowMonthDetailsModal(true)
+                                      }}
+                                      className="px-3 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                                      title={`View assets & debts for ${getMonthName(monthData.month)}`}
+                                    >
+                                      View Details
+                                    </button>
                                   </div>
                                   <div className={`text-lg font-bold ${monthData.netWorth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                                     ${monthData.netWorth.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
@@ -630,6 +642,100 @@ export function Plans() {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Month Details Modal */}
+      {showMonthDetailsModal && selectedMonthForDetails && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full" onClick={() => setShowMonthDetailsModal(false)}>
+          <div className="relative top-20 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white" onClick={(e) => e.stopPropagation()}>
+            <div className="mt-3">
+              <h3 className="text-lg font-medium text-gray-900 mb-6">{getMonthName(selectedMonthForDetails)} - Assets & Debts Breakdown</h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Assets */}
+                <div>
+                  <h4 className="font-bold text-gray-900 mb-4 border-b pb-2">Assets</h4>
+                  {assets.length > 0 ? (
+                    <div className="space-y-3">
+                      {assets.map((asset) => {
+                        const projectedValue = calculateAssetValueForMonth(asset, selectedMonthForDetails)
+                        const depositAmount = projectedValue - asset.currentValue
+                        return (
+                          <div key={asset.id} className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                            <div className="flex justify-between items-start mb-2">
+                              <div className="font-medium text-gray-900">{asset.name}</div>
+                              <div className="text-right">
+                                <div className="text-sm text-gray-600">Projected</div>
+                                <div className="text-lg font-bold text-green-600">${projectedValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                              </div>
+                            </div>
+                            <div className="text-sm text-gray-600 border-t pt-2">
+                              <div className="flex justify-between">
+                                <span>Starting:</span>
+                                <span>${asset.currentValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                              </div>
+                              <div className="flex justify-between text-green-600">
+                                <span>Deposits:</span>
+                                <span>+${depositAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                              </div>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  ) : (
+                    <div className="text-gray-500 text-sm">No assets created yet</div>
+                  )}
+                </div>
+
+                {/* Debts */}
+                <div>
+                  <h4 className="font-bold text-gray-900 mb-4 border-b pb-2">Debts</h4>
+                  {debts.length > 0 ? (
+                    <div className="space-y-3">
+                      {debts.map((debt) => {
+                        const remainingBalance = calculateDebtRemainingForMonth(debt, selectedMonthForDetails)
+                        const paymentAmount = debt.currentBalance - remainingBalance
+                        return (
+                          <div key={debt.id} className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                            <div className="flex justify-between items-start mb-2">
+                              <div className="font-medium text-gray-900">{debt.name}</div>
+                              <div className="text-right">
+                                <div className="text-sm text-gray-600">Remaining</div>
+                                <div className="text-lg font-bold text-red-600">${remainingBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                              </div>
+                            </div>
+                            <div className="text-sm text-gray-600 border-t pt-2">
+                              <div className="flex justify-between">
+                                <span>Starting:</span>
+                                <span>${debt.currentBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                              </div>
+                              <div className="flex justify-between text-red-600">
+                                <span>Payments:</span>
+                                <span>-${paymentAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                              </div>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  ) : (
+                    <div className="text-gray-500 text-sm">No debts created yet</div>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex justify-end mt-6">
+                <button
+                  onClick={() => setShowMonthDetailsModal(false)}
+                  className="px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 transition-colors"
+                >
+                  Close
+                </button>
+              </div>
             </div>
           </div>
         </div>
