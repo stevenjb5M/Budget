@@ -26,9 +26,8 @@ function AuthProvider({ children, signOut, user }: { children: React.ReactNode, 
   const [currentUser, setCurrentUser] = useState(user)
 
   useEffect(() => {
-    if (user) {
-      // If user object doesn't have attributes, try to fetch them
-      if (!user.attributes) {
+    const fetchAttributes = () => {
+      if (user) {
         // Try to get current authenticated user attributes
         import('aws-amplify/auth').then(({ fetchUserAttributes }) => {
           fetchUserAttributes().then((attributes) => {
@@ -44,9 +43,26 @@ function AuthProvider({ children, signOut, user }: { children: React.ReactNode, 
         }).catch(() => {
           setCurrentUser(user)
         })
+      }
+    }
+
+    if (user) {
+      // If user object doesn't have attributes, try to fetch them
+      if (!user.attributes) {
+        fetchAttributes()
       } else {
         setCurrentUser(user)
       }
+    }
+
+    // Listen for user update events to refresh attributes
+    const handleUserUpdate = () => {
+      fetchAttributes()
+    }
+    window.addEventListener('userUpdated', handleUserUpdate)
+
+    return () => {
+      window.removeEventListener('userUpdated', handleUserUpdate)
     }
   }, [user])
 

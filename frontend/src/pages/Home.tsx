@@ -76,6 +76,16 @@ export function Home() {
     }
 
     fetchData()
+
+    // Listen for user update events
+    const handleUserUpdate = () => {
+      fetchData()
+    }
+    window.addEventListener('userUpdated', handleUserUpdate)
+
+    return () => {
+      window.removeEventListener('userUpdated', handleUserUpdate)
+    }
   }, [user])
 
   // Calculate totals
@@ -192,28 +202,6 @@ export function Home() {
           </div>
           )}
 
-          {/* Settings Section */}
-          {!loading && !error && currentUser && (
-            <div className="mt-8 bg-white shadow rounded-lg p-6">
-            <h3 className="text-xl font-bold text-gray-900 mb-4">Settings</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <h4 className="font-medium text-gray-900 mb-2">Account Information</h4>
-                <p className="text-sm text-gray-600">Update your personal details and preferences</p>
-                <button className="mt-2 px-4 py-2 bg-[#0171bd] text-white rounded-md hover:bg-[#0156a3] transition-colors">
-                  Edit Profile
-                </button>
-              </div>
-              <div>
-                <h4 className="font-medium text-gray-900 mb-2">Financial Goals</h4>
-                <p className="text-sm text-gray-600">Set and track your financial objectives</p>
-                <button className="mt-2 px-4 py-2 bg-[#0171bd] text-white rounded-md hover:bg-[#0156a3] transition-colors">
-                  Manage Goals
-                </button>
-              </div>
-            </div>
-          </div>
-          )}
         </div>
       </main>
     </div>
