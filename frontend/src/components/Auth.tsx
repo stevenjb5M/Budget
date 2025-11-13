@@ -94,6 +94,18 @@ function autoFillTestCredentials() {
     inputElement.dispatchEvent(new Event('change', { bubbles: true }))
   })
 
+  // Also fill inputs with "enter your email" or "enter your username" placeholder (for sign-in field)
+  const allInputs = document.querySelectorAll('input')
+  allInputs.forEach((input: Element) => {
+    const inputElement = input as HTMLInputElement
+    const placeholder = inputElement.placeholder?.toLowerCase() || ''
+    if ((placeholder === 'enter your email' || placeholder === 'enter your username') && inputElement.type !== 'password') {
+      inputElement.value = testEmail
+      inputElement.dispatchEvent(new Event('input', { bubbles: true }))
+      inputElement.dispatchEvent(new Event('change', { bubbles: true }))
+    }
+  })
+
   // Fill password fields
   let passwordCount = 0
   passwordInputs.forEach((input: Element) => {
@@ -104,11 +116,17 @@ function autoFillTestCredentials() {
     passwordCount++
   })
 
-  // Fill name and text fields (look for name placeholder)
+  // Fill name and text fields (look for name or username placeholder)
   textInputs.forEach((input: Element) => {
     const inputElement = input as HTMLInputElement
-    if (inputElement.placeholder && inputElement.placeholder.toLowerCase().includes('name')) {
+    const placeholder = inputElement.placeholder?.toLowerCase() || ''
+    
+    if (placeholder === 'name' || placeholder.includes('full name')) {
       inputElement.value = testName
+      inputElement.dispatchEvent(new Event('input', { bubbles: true }))
+      inputElement.dispatchEvent(new Event('change', { bubbles: true }))
+    } else if (placeholder === 'username') {
+      inputElement.value = testEmail
       inputElement.dispatchEvent(new Event('input', { bubbles: true }))
       inputElement.dispatchEvent(new Event('change', { bubbles: true }))
     }
