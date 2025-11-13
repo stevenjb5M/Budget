@@ -75,7 +75,10 @@ export function Budgets() {
         setError(null)
         const userId = await getCurrentUserId()
         
-        // Fetch budgets, assets, and debts in parallel
+        // Use version sync to check if cache is fresh
+        await versionSyncService.syncData()
+        
+        // Now fetch from cache (which will be fresh if server versions are newer)
         const [budgetsData, assetsData, debtsData] = await Promise.all([
           versionSyncService.getData('budgets', () => budgetsAPI.getBudgets().then(r => r.data)),
           versionSyncService.getData('assets', () => assetsAPI.getAssets().then(r => r.data)),
@@ -211,6 +214,7 @@ export function Budgets() {
   }
 
   const handleAddIncome = async (e: React.FormEvent) => {
+    debugger;
     e.preventDefault()
     if (!selectedBudget) return
 
@@ -229,9 +233,10 @@ export function Budgets() {
         updatedAt: new Date().toISOString()
       }
 
-      await budgetsAPI.updateBudget(selectedBudgetId, updatedBudget)
+      const response = await budgetsAPI.updateBudget(selectedBudgetId, updatedBudget)
+      const savedBudget = response.data
       const updatedBudgets = budgets.map(b =>
-        b.id === selectedBudgetId ? updatedBudget : b
+        b.id === selectedBudgetId ? savedBudget : b
       )
 
       // Store updated data locally
@@ -268,9 +273,10 @@ export function Budgets() {
         updatedAt: new Date().toISOString()
       }
 
-      await budgetsAPI.updateBudget(selectedBudgetId, updatedBudget)
+      const response = await budgetsAPI.updateBudget(selectedBudgetId, updatedBudget)
+      const savedBudget = response.data
       const updatedBudgets = budgets.map(b =>
-        b.id === selectedBudgetId ? updatedBudget : b
+        b.id === selectedBudgetId ? savedBudget : b
       )
 
       // Store updated data locally
@@ -296,9 +302,10 @@ export function Budgets() {
         updatedAt: new Date().toISOString()
       }
 
-      await budgetsAPI.updateBudget(selectedBudgetId, updatedBudget)
+      const response = await budgetsAPI.updateBudget(selectedBudgetId, updatedBudget)
+      const savedBudget = response.data
       const updatedBudgets = budgets.map(b =>
-        b.id === selectedBudgetId ? updatedBudget : b
+        b.id === selectedBudgetId ? savedBudget : b
       )
 
       // Store updated data locally
@@ -322,9 +329,10 @@ export function Budgets() {
         updatedAt: new Date().toISOString()
       }
 
-      await budgetsAPI.updateBudget(selectedBudgetId, updatedBudget)
+      const response = await budgetsAPI.updateBudget(selectedBudgetId, updatedBudget)
+      const savedBudget = response.data
       const updatedBudgets = budgets.map(b =>
-        b.id === selectedBudgetId ? updatedBudget : b
+        b.id === selectedBudgetId ? savedBudget : b
       )
 
       // Store updated data locally
@@ -354,9 +362,10 @@ export function Budgets() {
         updatedAt: new Date().toISOString()
       }
 
-      await budgetsAPI.updateBudget(selectedBudgetId, updatedBudget)
+      const response = await budgetsAPI.updateBudget(selectedBudgetId, updatedBudget)
+      const savedBudget = response.data
       const updatedBudgets = budgets.map(b =>
-        b.id === selectedBudgetId ? updatedBudget : b
+        b.id === selectedBudgetId ? savedBudget : b
       )
 
       // Store updated data locally
@@ -396,9 +405,10 @@ export function Budgets() {
         updatedAt: new Date().toISOString()
       }
 
-      await budgetsAPI.updateBudget(selectedBudgetId, updatedBudget)
+      const response = await budgetsAPI.updateBudget(selectedBudgetId, updatedBudget)
+      const savedBudget = response.data
       const updatedBudgets = budgets.map(b =>
-        b.id === selectedBudgetId ? updatedBudget : b
+        b.id === selectedBudgetId ? savedBudget : b
       )
 
       // Store updated data locally
