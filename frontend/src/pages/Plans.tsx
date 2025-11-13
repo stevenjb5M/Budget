@@ -39,6 +39,7 @@ export function Plans() {
   const [showNewPlanModal, setShowNewPlanModal] = useState(false)
   const [newPlanName, setNewPlanName] = useState('')
   const [newPlanDescription, setNewPlanDescription] = useState('')
+  const [autofillBudgetId, setAutofillBudgetId] = useState<string>('')
   const [plansMinimized, setPlansMinimized] = useState(false)
   const [budgetPlanningMinimized, setBudgetPlanningMinimized] = useState(false)
   const [showMonthDetailsModal, setShowMonthDetailsModal] = useState(false)
@@ -230,7 +231,7 @@ export function Plans() {
         })
       }))
     )
-  }, [currentNetWorth, currentAssetsTotal, currentDebtsTotal, budgets])
+  }, [currentNetWorth, currentAssetsTotal, currentDebtsTotal, budgets, plans])
 
   const handleCreatePlan = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -244,7 +245,7 @@ export function Plans() {
           const date = new Date(2025, i, 1)
           return {
             month: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`,
-            budgetId: null,
+            budgetId: autofillBudgetId || null,
             netWorth: currentNetWorth
           }
         })
@@ -257,11 +258,10 @@ export function Plans() {
       versioningService.storeData('plans', userId, updatedPlans)
 
       setPlans(updatedPlans)
-      if (plans.length === 0) {
-        setSelectedPlanId(response.data.id)
-      }
+      setSelectedPlanId(response.data.id)
       setNewPlanName('')
       setNewPlanDescription('')
+      setAutofillBudgetId('')
       setShowNewPlanModal(false)
     } catch (error) {
       console.error('Error creating plan:', error)
@@ -547,72 +547,6 @@ export function Plans() {
                       </div>
                     )}
                   </div>
-
-                  {/* Assets & Debts Projection */}
-                  <div className="bg-white shadow rounded-lg p-6">
-                    <h4 className="text-lg font-medium text-gray-900 mb-4">Assets & Debts Projection</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {/* Assets */}
-                      <div>
-                        <h5 className="font-medium text-gray-700 mb-3">Assets</h5>
-                        {assets.length > 0 ? (
-                          <div className="space-y-2">
-                            {assets.map((asset) => (
-                              <div key={asset.id} className="p-3 bg-gray-50 rounded-md">
-                                <div className="flex justify-between items-start">
-                                  <div>
-                                    <div className="font-medium text-gray-900">{asset.name}</div>
-                                    <div className="text-sm text-gray-600">
-                                      {selectedPlan?.months[0]
-                                        ? `${getMonthName(selectedPlan.months[0].month)}: $${calculateAssetValueForMonth(asset, selectedPlan.months[0].month).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                                        : 'N/A'
-                                      }
-                                    </div>
-                                  </div>
-                                  <div className="text-right">
-                                    <div className="text-sm text-gray-600">Current:</div>
-                                    <div className="font-medium text-green-600">${asset.currentValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <div className="text-gray-500 text-sm">No assets created yet</div>
-                        )}
-                      </div>
-
-                      {/* Debts */}
-                      <div>
-                        <h5 className="font-medium text-gray-700 mb-3">Debts</h5>
-                        {debts.length > 0 ? (
-                          <div className="space-y-2">
-                            {debts.map((debt) => (
-                              <div key={debt.id} className="p-3 bg-gray-50 rounded-md">
-                                <div className="flex justify-between items-start">
-                                  <div>
-                                    <div className="font-medium text-gray-900">{debt.name}</div>
-                                    <div className="text-sm text-gray-600">
-                                      {selectedPlan?.months[0]
-                                        ? `${getMonthName(selectedPlan.months[0].month)}: $${calculateDebtRemainingForMonth(debt, selectedPlan.months[0].month).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                                        : 'N/A'
-                                      }
-                                    </div>
-                                  </div>
-                                  <div className="text-right">
-                                    <div className="text-sm text-gray-600">Current:</div>
-                                    <div className="font-medium text-red-600">${debt.currentBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <div className="text-gray-500 text-sm">No debts created yet</div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
                 </div>
               ) : (
                 <div className="bg-white shadow rounded-lg p-6 text-center">
@@ -653,6 +587,20 @@ export function Plans() {
                     placeholder="Describe your financial plan..."
                     rows={3}
                   />
+                </div>
+                <div className="mb-4">
+                  <label htmlFor="autofillBudget" className="block text-sm font-medium text-gray-700 mb-2">Autofill All Months With Budget (Optional)</label>
+                  <select
+                    id="autofillBudget"
+                    value={autofillBudgetId}
+                    onChange={(e) => setAutofillBudgetId(e.target.value)}
+                    className="w-full border-gray-300 rounded-md shadow-sm text-black"
+                  >
+                    <option value="">None - Set manually later</option>
+                    {budgets.map((budget) => (
+                      <option key={budget.id} value={budget.id}>{budget.name}</option>
+                    ))}
+                  </select>
                 </div>
                 <div className="flex justify-end space-x-2">
                   <button
