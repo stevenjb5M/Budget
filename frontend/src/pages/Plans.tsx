@@ -435,7 +435,7 @@ export function Plans() {
 
           <div className="mb-8">
             <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold text-gray-900">Financial Plans</h2>
+              <h2 className="text-2xl font-bold text-gray-900">Financial Forecaster</h2>
               <button
                 onClick={() => setShowNewPlanModal(true)}
                 className="bg-[#0171bd] text-white px-4 py-2 rounded-md hover:bg-[#0156a3] transition-colors"

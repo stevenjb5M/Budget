@@ -67,6 +67,7 @@ export function Budgets() {
   const [editingBudgetName, setEditingBudgetName] = useState(false)
   const [editingItem, setEditingItem] = useState<{ type: 'income' | 'expenses', id: string, field: 'name' | 'amount' | 'category' } | null>(null)
   const [editValue, setEditValue] = useState('')
+  const [budgetsMinimized, setBudgetsMinimized] = useState(true)
 
   // Fetch budgets, assets, and debts on component mount
   useEffect(() => {
@@ -480,7 +481,7 @@ export function Budgets() {
 
           {/* Main Content */}
           <div className="budgets-section-header">
-            <h2 className="budgets-section-title">Budgets</h2>
+            <h2 className="text-2xl font-bold text-gray-900">Budgets</h2>
             <button
               onClick={() => setShowNewBudgetModal(true)}
               className="budgets-create-button"
@@ -489,34 +490,60 @@ export function Budgets() {
             </button>
           </div>
 
+          {budgetsMinimized && (
+            <div className="mt-4 mb-4">
+              <button
+                onClick={() => setBudgetsMinimized(false)}
+                className="text-gray-500 hover:text-gray-700 transition-colors flex items-center space-x-2"
+                title="Show budgets list"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+                <span className="text-sm">Show Budgets</span>
+              </button>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
             {/* Budgets List */}
-            <div className="lg:col-span-1">
-              <div className="bg-white shadow rounded-lg p-4">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Your Budgets</h3>
-                <div className="space-y-2">
-                  {budgets.map((budget) => (
-                    <div
-                      key={budget.id}
-                      onClick={() => handleSelectBudget(budget.id)}
-                      className={`p-3 rounded-md cursor-pointer transition-colors ${
-                        budget.id === selectedBudgetId
-                          ? 'bg-[#0171bd] text-white'
-                          : 'bg-gray-50 text-gray-900 hover:bg-gray-100'
-                      }`}
+            {!budgetsMinimized && (
+              <div className="lg:col-span-1">
+                <div className="bg-white shadow rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-medium text-gray-900">Your Budgets</h3>
+                    <button
+                      onClick={() => setBudgetsMinimized(!budgetsMinimized)}
+                      className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
+                      title={budgetsMinimized ? "Show all budgets" : "Hide budgets"}
                     >
-                      <div className="font-medium">{budget.name}</div>
-                      <div className={`text-sm ${budget.id === selectedBudgetId ? 'text-blue-100' : 'text-gray-500'}`}>
-                        ${budget.income.reduce((sum, i) => sum + i.amount, 0).toLocaleString()} income
+                      {budgetsMinimized ? "Show All Budgets" : "Hide Budgets"}
+                    </button>
+                  </div>
+                  <div className="space-y-2">
+                    {budgets.map((budget) => (
+                      <div
+                        key={budget.id}
+                        onClick={() => handleSelectBudget(budget.id)}
+                        className={`p-3 rounded-md cursor-pointer transition-colors ${
+                          budget.id === selectedBudgetId
+                            ? 'bg-[#0171bd] text-white'
+                            : 'bg-gray-50 text-gray-900 hover:bg-gray-100'
+                        }`}
+                      >
+                        <div className="font-medium">{budget.name}</div>
+                        <div className={`text-sm ${budget.id === selectedBudgetId ? 'text-blue-100' : 'text-gray-500'}`}>
+                          ${budget.income.reduce((sum, i) => sum + i.amount, 0).toLocaleString()} income
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
 
             {/* Budget Details */}
-            <div className="lg:col-span-3">
+            <div className={budgetsMinimized ? "lg:col-span-4" : "lg:col-span-3"}>
               {selectedBudget ? (
                 <div className="space-y-6">
                   {/* Budget Header */}
