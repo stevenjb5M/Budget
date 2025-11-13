@@ -73,7 +73,74 @@ function AuthProvider({ children, signOut, user }: { children: React.ReactNode, 
   )
 }
 
+// Helper function to auto-fill form fields
+function autoFillTestCredentials() {
+  const testEmail = 'stevenjbrown95@gmail.com'
+  const testPassword = 'Happy123!'
+  const testName = 'Steven Brown'
+  const testBirthdate = '2001-09-05'  // Must be in YYYY-MM-DD format for date inputs
+
+  // Find all input fields on the page
+  const emailInputs = document.querySelectorAll('input[type="email"], input[placeholder*="email" i]')
+  const passwordInputs = document.querySelectorAll('input[type="password"]')
+  const textInputs = document.querySelectorAll('input[type="text"]')
+  const dateInputs = document.querySelectorAll('input[type="date"]')
+
+  // Fill email fields
+  emailInputs.forEach((input: Element) => {
+    const inputElement = input as HTMLInputElement
+    inputElement.value = testEmail
+    inputElement.dispatchEvent(new Event('input', { bubbles: true }))
+    inputElement.dispatchEvent(new Event('change', { bubbles: true }))
+  })
+
+  // Fill password fields
+  let passwordCount = 0
+  passwordInputs.forEach((input: Element) => {
+    const inputElement = input as HTMLInputElement
+    inputElement.value = testPassword
+    inputElement.dispatchEvent(new Event('input', { bubbles: true }))
+    inputElement.dispatchEvent(new Event('change', { bubbles: true }))
+    passwordCount++
+  })
+
+  // Fill name and text fields (look for name placeholder)
+  textInputs.forEach((input: Element) => {
+    const inputElement = input as HTMLInputElement
+    if (inputElement.placeholder && inputElement.placeholder.toLowerCase().includes('name')) {
+      inputElement.value = testName
+      inputElement.dispatchEvent(new Event('input', { bubbles: true }))
+      inputElement.dispatchEvent(new Event('change', { bubbles: true }))
+    }
+  })
+
+  // Fill date fields
+  dateInputs.forEach((input: Element) => {
+    const inputElement = input as HTMLInputElement
+    inputElement.value = testBirthdate
+    inputElement.dispatchEvent(new Event('input', { bubbles: true }))
+    inputElement.dispatchEvent(new Event('change', { bubbles: true }))
+  })
+}
+
 export function Auth({ children }: AuthProps) {
+  useEffect(() => {
+    // Add keyboard listener for hotkey (Ctrl+Shift+T)
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Ctrl+Shift+T: Auto-fill test credentials
+      if (event.ctrlKey && event.key === 'a') {
+        event.preventDefault()
+        autoFillTestCredentials()
+        console.log('Test credentials auto-filled. Use Ctrl+Shift+T to fill again.')
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [])
+
   return (
     <div className="auth-container">
       <div className="auth-card">
