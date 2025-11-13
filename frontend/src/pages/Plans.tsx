@@ -44,6 +44,9 @@ export function Plans() {
   const [budgetPlanningMinimized, setBudgetPlanningMinimized] = useState(false)
   const [showMonthDetailsModal, setShowMonthDetailsModal] = useState(false)
   const [selectedMonthForDetails, setSelectedMonthForDetails] = useState<string>('')
+  const [showPlanSettingsModal, setShowPlanSettingsModal] = useState(false)
+  const [editingPlanName, setEditingPlanName] = useState('')
+  const [showDeleteConfirmationModal, setShowDeleteConfirmationModal] = useState(false)
 
   // Fetch data on component mount
   useEffect(() => {
@@ -231,7 +234,7 @@ export function Plans() {
         })
       }))
     )
-  }, [currentNetWorth, currentAssetsTotal, currentDebtsTotal, budgets, plans])
+  }, [currentNetWorth, currentAssetsTotal, currentDebtsTotal, budgets, assets, debts])
 
   const handleCreatePlan = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -297,6 +300,53 @@ export function Plans() {
     } catch (error) {
       console.error('Error selecting plan:', error)
       setError('Failed to select plan. Please try again.')
+    }
+  }
+
+  const handleRenamePlan = async () => {
+    if (!selectedPlan || !editingPlanName.trim()) return
+
+    try {
+      const userId = await getCurrentUserId()
+      const updatedPlan = {
+        ...selectedPlan,
+        name: editingPlanName.trim()
+      }
+
+      await plansAPI.updatePlan(selectedPlanId, updatedPlan)
+      const updatedPlans = plans.map(p => p.id === selectedPlanId ? updatedPlan : p)
+
+      setPlans(updatedPlans)
+      versioningService.storeData('plans', userId, updatedPlans)
+      setShowPlanSettingsModal(false)
+      setEditingPlanName('')
+    } catch (error) {
+      console.error('Error renaming plan:', error)
+      setError('Failed to rename plan. Please try again.')
+    }
+  }
+
+  const handleDeletePlan = async () => {
+    if (!selectedPlan) return
+
+    try {
+      const userId = await getCurrentUserId()
+      await plansAPI.deletePlan(selectedPlanId)
+
+      const updatedPlans = plans.filter(p => p.id !== selectedPlanId)
+      setPlans(updatedPlans)
+      versioningService.storeData('plans', userId, updatedPlans)
+
+      if (updatedPlans.length > 0) {
+        setSelectedPlanId(updatedPlans[0].id)
+      } else {
+        setSelectedPlanId('')
+      }
+
+      setShowPlanSettingsModal(false)
+    } catch (error) {
+      console.error('Error deleting plan:', error)
+      setError('Failed to delete plan. Please try again.')
     }
   }
 
@@ -454,7 +504,19 @@ export function Plans() {
                 <div className="space-y-6">
                   {/* Plan Header */}
                   <div className="bg-white shadow rounded-lg p-6">
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">{selectedPlan.name}</h3>
+                    <div className="relative mb-2">
+                      <h3 className="text-xl font-bold text-gray-900 text-center">{selectedPlan.name}</h3>
+                      <button
+                        onClick={() => {
+                          setEditingPlanName(selectedPlan.name)
+                          setShowPlanSettingsModal(true)
+                        }}
+                        className="absolute right-0 top-0 px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
+                        title="Plan settings"
+                      >
+                        Edit Plan
+                      </button>
+                    </div>
                     <p className="text-gray-600 mb-4">{selectedPlan.description}</p>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
@@ -712,6 +774,85 @@ export function Plans() {
                   Close
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Plan Settings Modal */}
+      {showPlanSettingsModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full mx-4">
+            <h2 className="text-lg font-bold text-gray-900 mb-4">Plan Settings</h2>
+
+            {/* Rename Section */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Plan Name</label>
+              <input
+                type="text"
+                value={editingPlanName}
+                onChange={(e) => setEditingPlanName(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-900"
+                placeholder="Enter plan name"
+              />
+              <button
+                onClick={handleRenamePlan}
+                disabled={!editingPlanName.trim() || editingPlanName === selectedPlan?.name}
+                className="mt-2 w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+              >
+                Rename Plan
+              </button>
+            </div>
+
+            {/* Delete Section */}
+            <div className="border-t pt-4 mb-4">
+              <button
+                onClick={() => setShowDeleteConfirmationModal(true)}
+                className="w-full px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+              >
+                Delete Plan
+              </button>
+            </div>
+
+            {/* Close Button */}
+            <button
+              onClick={() => {
+                setShowPlanSettingsModal(false)
+                setEditingPlanName('')
+              }}
+              className="w-full px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirmationModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full mx-4">
+            <h2 className="text-lg font-bold text-gray-900 mb-4">Delete Plan</h2>
+            <p className="text-gray-700 mb-6">
+              Are you sure you want to delete "{selectedPlan?.name}"? This action cannot be undone.
+            </p>
+
+            <div className="flex space-x-3">
+              <button
+                onClick={() => setShowDeleteConfirmationModal(false)}
+                className="flex-1 px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setShowDeleteConfirmationModal(false)
+                  handleDeletePlan()
+                }}
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+              >
+                Delete
+              </button>
             </div>
           </div>
         </div>
