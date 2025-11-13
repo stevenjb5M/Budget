@@ -2,6 +2,7 @@ import { Nav } from '../components/Nav'
 import { useAuth } from '../components/Auth'
 import { useEffect, useState } from 'react'
 import { usersAPI, assetsAPI, debtsAPI } from '../api/client'
+import './Home.css'
 
 interface User {
   id: string
@@ -109,29 +110,29 @@ export function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto py-6 px-4">
-          <h1 className="text-3xl font-bold text-gray-900">Budget Planner</h1>
+    <div className="home-page">
+      <header className="home-header">
+        <div className="home-header-container">
+          <h1 className="home-header-title">Budget Planner</h1>
         </div>
       </header>
       <Nav />
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 py-6 sm:px-0">
+      <main className="home-main">
+        <div className="home-content">
           {/* Loading State */}
           {loading && (
-            <div className="bg-white shadow rounded-lg p-6 mb-8">
-              <div className="animate-pulse">
-                <div className="h-8 bg-gray-200 rounded w-1/4 mb-2"></div>
-                <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+            <div className="home-loading-container">
+              <div className="home-loading-pulse">
+                <div className="home-loading-title"></div>
+                <div className="home-loading-subtitle"></div>
               </div>
             </div>
           )}
 
           {/* Error State */}
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-6 mb-8">
-              <div className="text-red-800">
+            <div className="home-error-container">
+              <div className="home-error-text">
                 <strong>Error:</strong> {error}
               </div>
             </div>
@@ -139,11 +140,11 @@ export function Home() {
 
           {/* Welcome Section */}
           {!loading && !error && currentUser && (
-            <div className="bg-white shadow rounded-lg p-6 mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            <div className="home-welcome-card">
+              <h2 className="home-welcome-title">
                 Welcome back, {currentUser.displayName}!
               </h2>
-              <p className="text-gray-600">
+              <p className="home-welcome-subtitle">
                 Here's your financial overview for today.
               </p>
             </div>
@@ -151,51 +152,51 @@ export function Home() {
 
           {/* Main Overview Grid */}
           {!loading && !error && currentUser && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="home-dashboard-grid">
             {/* Date & Age Information */}
-            <div className="bg-white shadow rounded-lg p-6">
-              <h3 className="text-xl font-bold text-gray-900 mb-6">Date & Age</h3>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                  <span className="text-gray-600">Today's Date</span>
-                  <span className="font-medium text-gray-900">{formatDate(today)}</span>
+            <div className="home-info-card">
+              <h3 className="home-info-card-title">Date & Age</h3>
+              <div className="home-info-list">
+                <div className="home-info-item">
+                  <span className="home-info-label">Today's Date</span>
+                  <span className="home-info-value">{formatDate(today)}</span>
                 </div>
-                <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                  <span className="text-gray-600">Your Birthday</span>
-                  <span className="font-medium text-gray-900">{formatBirthdayDate(birthDate)}</span>
+                <div className="home-info-item">
+                  <span className="home-info-label">Your Birthday</span>
+                  <span className="home-info-value">{formatBirthdayDate(birthDate)}</span>
                 </div>
-                <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                  <span className="text-gray-600">Your Age</span>
-                  <span className="font-medium text-gray-900">{age} years old</span>
+                <div className="home-info-item">
+                  <span className="home-info-label">Your Age</span>
+                  <span className="home-info-value">{age} years old</span>
                 </div>
-                <div className="flex justify-between items-center py-2">
-                  <span className="text-gray-600">Retirement Age</span>
-                  <span className="font-medium text-gray-900">{currentUser?.retirementAge || 65} years old</span>
+                <div className="home-info-item">
+                  <span className="home-info-label">Retirement Age</span>
+                  <span className="home-info-value">{currentUser?.retirementAge || 65} years old</span>
                 </div>
               </div>
             </div>
 
             {/* Net Worth Summary */}
-            <div className="bg-white shadow rounded-lg p-6">
-              <h3 className="text-xl font-bold text-gray-900 mb-6">Net Worth</h3>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                  <span className="text-gray-600">Total Assets</span>
-                  <span className="font-bold text-lg text-gray-900">
+            <div className="home-summary-card">
+              <h3 className="home-summary-title">Net Worth</h3>
+              <div className="home-summary-grid">
+                <div className="home-summary-item">
+                  <div className="home-summary-amount home-summary-amount-neutral">
                     ${assetsTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  </span>
+                  </div>
+                  <div className="home-summary-label">Total Assets</div>
                 </div>
-                <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                  <span className="text-gray-600">Total Debts</span>
-                  <span className="font-bold text-lg text-red-600">
+                <div className="home-summary-item">
+                  <div className="home-summary-amount home-summary-amount-negative">
                     ${debtsTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  </span>
+                  </div>
+                  <div className="home-summary-label">Total Debts</div>
                 </div>
-                <div className="flex justify-between items-center py-2">
-                  <span className="text-gray-600">Net Worth</span>
-                  <span className={`font-bold text-xl ${netWorth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                <div className="home-net-worth">
+                  <div className="home-net-worth-label">Net Worth</div>
+                  <div className={`home-net-worth-amount ${netWorth >= 0 ? 'home-summary-amount-positive' : 'home-summary-amount-negative'}`}>
                     ${netWorth.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  </span>
+                  </div>
                 </div>
               </div>
             </div>

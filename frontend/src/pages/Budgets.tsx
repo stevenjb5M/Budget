@@ -4,6 +4,7 @@ import { budgetsAPI, assetsAPI, debtsAPI } from '../api/client'
 import { versionSyncService } from '../services/versionSyncService'
 import { versioningService } from '../services/versioningService'
 import { getCurrentUserId } from '../utils/auth'
+import './Budgets.css'
 
 interface Budget {
   id: string
@@ -431,22 +432,22 @@ export function Budgets() {
   const netAmount = totalIncome - totalExpenses
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto py-6 px-4">
-          <h1 className="text-3xl font-bold text-gray-900">Budget Planner</h1>
+    <div className="budgets-page">
+      <header className="budgets-header">
+        <div className="budgets-header-container">
+          <h1 className="budgets-header-title">Budget Planner</h1>
         </div>
       </header>
       <Nav />
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 py-6 sm:px-0">
+      <main className="budgets-main">
+        <div className="budgets-content">
           {/* Loading Overlay */}
           {loading && (
-            <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
-              <div className="bg-white rounded-lg p-6">
-                <div className="animate-pulse">
-                  <div className="h-8 bg-gray-200 rounded w-48 mb-4"></div>
-                  <div className="h-4 bg-gray-200 rounded w-32"></div>
+            <div className="budgets-loading-overlay">
+              <div className="budgets-loading-container">
+                <div className="budgets-loading-pulse">
+                  <div className="budgets-loading-title"></div>
+                  <div className="budgets-loading-subtitle"></div>
                 </div>
               </div>
             </div>
@@ -454,12 +455,12 @@ export function Budgets() {
 
           {/* Error Banner */}
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-              <div className="text-red-800">
+            <div className="budgets-error-container">
+              <div className="budgets-error-text">
                 <strong>Error:</strong> {error}
                 <button
                   onClick={() => window.location.reload()}
-                  className="ml-4 px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700"
+                  className="budgets-error-retry-button"
                 >
                   Retry
                 </button>
@@ -468,11 +469,11 @@ export function Budgets() {
           )}
 
           {/* Main Content */}
-          <div className="flex justify-between items-center mb-8">
-            <h2 className="text-2xl font-bold text-gray-900">Budgets</h2>
+          <div className="budgets-section-header">
+            <h2 className="budgets-section-title">Budgets</h2>
             <button
               onClick={() => setShowNewBudgetModal(true)}
-              className="bg-[#0171bd] text-white px-4 py-2 rounded-md hover:bg-[#0156a3] transition-colors"
+              className="budgets-create-button"
             >
               Create New Budget
             </button>

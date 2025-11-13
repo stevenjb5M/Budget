@@ -1,0 +1,94 @@
+/* SortableDebtItem Component Styles */
+
+.sortable-debt-item {
+  display: grid;
+  grid-template-columns: 60px 1fr 120px 120px 100px;
+  gap: 1rem;
+  padding: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+  transition: background-color 0.2s ease;
+}
+
+.sortable-debt-item:hover {
+  background-color: #f9fafb;
+}
+
+.sortable-debt-item.is-dragging {
+  opacity: 0.5;
+}
+
+.debt-drag-handle-container {
+  display: flex;
+  justify-content: center;
+}
+
+.debt-drag-handle {
+  color: #9ca3af;
+  padding: 0.25rem;
+  background: transparent;
+  border: none;
+  cursor: grab;
+  transition: color 0.2s ease;
+}
+
+.debt-drag-handle:hover {
+  color: #4b5563;
+}
+
+.debt-drag-handle:active {
+  cursor: grabbing;
+}
+
+.debt-drag-icon {
+  width: 0.75rem;
+  height: 0.75rem;
+  fill: none;
+  stroke: #9ca3af;
+  stroke-width: 2;
+}
+
+.debt-info {
+  text-align: left;
+}
+
+.debt-name {
+  font-weight: 500;
+  color: #000000;
+}
+
+.debt-notes {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-top: 0.25rem;
+}
+
+.debt-balance, .debt-rate {
+  color: #4b5563;
+  text-align: center;
+}
+
+.debt-edit-button-container {
+  display: flex;
+  justify-content: center;
+}
+
+.debt-edit-button {
+  color: #9ca3af;
+  padding: 0.5rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.debt-edit-button:hover {
+  color: #4b5563;
+}
+
+.debt-edit-icon {
+  height: 1.25rem;
+  width: 1.25rem;
+  fill: none;
+  stroke: #9ca3af;
+  stroke-width: 2;
+}

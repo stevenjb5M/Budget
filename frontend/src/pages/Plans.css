@@ -1,0 +1,479 @@
+/* Plans Page Styles */
+
+.plans-page {
+  min-height: 100vh;
+  background-color: #f9fafb;
+}
+
+.plans-header {
+  background-color: white;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+.plans-header-container {
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: 1.5rem 1rem;
+}
+
+.plans-header-title {
+  font-size: 1.875rem;
+  font-weight: bold;
+  color: #111827;
+}
+
+.plans-main {
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: 1.5rem 1.5rem;
+}
+
+.plans-content {
+  padding: 1.5rem 0;
+}
+
+/* Loading States */
+.plans-loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(75, 85, 99, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.plans-loading-container {
+  background-color: white;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+}
+
+.plans-loading-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.plans-loading-title {
+  height: 2rem;
+  background-color: #e5e7eb;
+  border-radius: 0.25rem;
+  width: 12rem;
+  margin-bottom: 1rem;
+}
+
+.plans-loading-subtitle {
+  height: 1rem;
+  background-color: #e5e7eb;
+  border-radius: 0.25rem;
+  width: 8rem;
+}
+
+/* Error State */
+.plans-error-container {
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.plans-error-text {
+  color: #991b1b;
+}
+
+.plans-error-retry-button {
+  margin-left: 1rem;
+  padding: 0.25rem 0.75rem;
+  background-color: #dc2626;
+  color: white;
+  border-radius: 0.25rem;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.plans-error-retry-button:hover {
+  background-color: #b91c1c;
+}
+
+/* Section Headers */
+.plans-section-header {
+  margin-bottom: 2rem;
+}
+
+.plans-section-title-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.plans-section-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #111827;
+}
+
+.plans-create-button {
+  background-color: #0171bd;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.plans-create-button:hover {
+  background-color: #0156a3;
+}
+
+.plans-sync-button {
+  color: #6b7280;
+  margin-top: 1rem;
+  transition: color 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.plans-sync-button:hover {
+  color: #374151;
+}
+
+.plans-sync-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+/* Plans List */
+.plans-list-container {
+  background-color: white;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.plans-list-title {
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: #111827;
+  margin-bottom: 1rem;
+}
+
+.plans-list {
+  max-height: 12rem;
+  overflow-y: auto;
+}
+
+.plans-list-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  margin-bottom: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.plans-list-item:hover {
+  background-color: #f3f4f6;
+}
+
+.plans-list-item.active {
+  background-color: #dbeafe;
+}
+
+.plans-list-item-content {
+  flex: 1;
+}
+
+.plans-list-item-name {
+  font-weight: 500;
+  color: #111827;
+}
+
+.plans-list-item-description {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.plans-delete-button {
+  color: #ef4444;
+  padding: 0.25rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 0.25rem;
+  transition: background-color 0.2s ease;
+}
+
+.plans-delete-button:hover {
+  background-color: #fee2e2;
+}
+
+.plans-delete-icon {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* Planning Grid */
+.plans-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+}
+
+@media (min-width: 1024px) {
+  .plans-grid {
+    grid-template-columns: 1fr 3fr;
+  }
+}
+
+/* Planning Table */
+.plans-table-container {
+  background-color: white;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.plans-table-title {
+  background-color: #f9fafb;
+  padding: 1rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.plans-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.plans-table-header {
+  background-color: #f9fafb;
+}
+
+.plans-table-header-cell {
+  padding: 0.75rem;
+  text-align: left;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #6b7280;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.plans-table-row {
+  transition: background-color 0.2s ease;
+}
+
+.plans-table-row:hover {
+  background-color: #f9fafb;
+}
+
+.plans-table-cell {
+  padding: 0.75rem;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.plans-table-month {
+  font-weight: 500;
+  color: #111827;
+}
+
+.plans-table-budget {
+  font-size: 0.875rem;
+  color: #4b5563;
+}
+
+.plans-table-net-worth {
+  font-weight: 600;
+}
+
+.plans-table-net-worth.positive {
+  color: #059669;
+}
+
+.plans-table-net-worth.negative {
+  color: #dc2626;
+}
+
+.plans-table-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.plans-table-button {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  border-radius: 0.25rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.plans-table-button.primary {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.plans-table-button.primary:hover {
+  background-color: #2563eb;
+}
+
+.plans-table-button.secondary {
+  background-color: #6b7280;
+  color: white;
+}
+
+.plans-table-button.secondary:hover {
+  background-color: #4b5563;
+}
+
+/* Modal Styles */
+.plans-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.plans-modal-content {
+  background-color: white;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  width: 100%;
+  max-width: 32rem;
+  margin: 0 1rem;
+}
+
+.plans-modal-title {
+  font-size: 1.25rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  color: #111827;
+}
+
+.plans-modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.plans-form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.plans-form-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.25rem;
+}
+
+.plans-form-input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  color: #111827;
+  transition: all 0.2s ease;
+}
+
+.plans-form-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(1, 113, 189, 0.1);
+  border-color: #0171bd;
+}
+
+.plans-form-textarea {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  color: #111827;
+  resize: vertical;
+  min-height: 4rem;
+  transition: all 0.2s ease;
+}
+
+.plans-form-textarea:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(1, 113, 189, 0.1);
+  border-color: #0171bd;
+}
+
+.plans-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.plans-modal-cancel-button {
+  padding: 0.5rem 1rem;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  background: white;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.plans-modal-cancel-button:hover {
+  background-color: #f9fafb;
+}
+
+.plans-modal-submit-button {
+  padding: 0.5rem 1rem;
+  background-color: #0171bd;
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.plans-modal-submit-button:hover {
+  background-color: #0156a3;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: .5;
+  }
+}
+
+@media (min-width: 640px) {
+  .plans-main {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .plans-main {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}

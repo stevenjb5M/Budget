@@ -3,6 +3,7 @@ import { useAuth } from './Auth'
 import { useState, useEffect } from 'react'
 import { usersAPI } from '../api/client'
 import { updateUserAttributes } from 'aws-amplify/auth'
+import './Nav.css'
 
 export function Nav() {
   const { user, signOut } = useAuth()
@@ -60,16 +61,16 @@ export function Nav() {
   }
 
   return (
-    <nav className="bg-white shadow">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="flex justify-between items-center">
-          <div className="flex space-x-8">
+    <nav className="nav">
+      <div className="nav-container">
+        <div className="nav-content">
+          <div className="nav-links">
             <NavLink
               to="/"
               className={({ isActive }) =>
                 isActive
-                  ? "border-[#0171bd] text-gray-900 border-b-2 py-4 px-1 text-sm font-medium"
-                  : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 border-b-2 py-4 px-1 text-sm font-medium"
+                  ? "nav-link nav-link-active"
+                  : "nav-link nav-link-inactive"
               }
             >
               Home
@@ -78,8 +79,8 @@ export function Nav() {
               to="/plans"
               className={({ isActive }) =>
                 isActive
-                  ? "border-[#0171bd] text-gray-900 border-b-2 py-4 px-1 text-sm font-medium"
-                  : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 border-b-2 py-4 px-1 text-sm font-medium"
+                  ? "nav-link nav-link-active"
+                  : "nav-link nav-link-inactive"
               }
             >
               Plans
@@ -88,8 +89,8 @@ export function Nav() {
               to="/budgets"
               className={({ isActive }) =>
                 isActive
-                  ? "border-[#0171bd] text-gray-900 border-b-2 py-4 px-1 text-sm font-medium"
-                  : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 border-b-2 py-4 px-1 text-sm font-medium"
+                  ? "nav-link nav-link-active"
+                  : "nav-link nav-link-inactive"
               }
             >
               Budgets
@@ -98,33 +99,33 @@ export function Nav() {
               to="/assets"
               className={({ isActive }) =>
                 isActive
-                  ? "border-[#0171bd] text-gray-900 border-b-2 py-4 px-1 text-sm font-medium"
-                  : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 border-b-2 py-4 px-1 text-sm font-medium"
+                  ? "nav-link nav-link-active"
+                  : "nav-link nav-link-inactive"
               }
             >
               Assets & Debts
             </NavLink>
           </div>
 
-          <div className="flex items-center space-x-4">
+          <div className="nav-user-section">
             {user && (
               <>
-                <span className="text-sm text-gray-600">
+                <span className="nav-user-name">
                   {user.attributes?.name || user.attributes?.email}
                 </span>
                 <button
                   onClick={() => setIsSettingsOpen(true)}
-                  className="text-gray-600 hover:text-gray-900 p-2 rounded-md hover:bg-gray-100 transition-colors"
+                  className="nav-settings-button"
                   title="Settings"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="nav-settings-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
                 </button>
                 <button
                   onClick={signOut}
-                  className="bg-gray-600 text-white px-3 py-1 rounded-md hover:bg-gray-700 transition-colors text-sm"
+                  className="nav-sign-out-button"
                 >
                   Sign Out
                 </button>
@@ -136,58 +137,58 @@ export function Nav() {
 
       {/* Settings Modal */}
       {isSettingsOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-            <h2 className="text-xl font-bold mb-4 text-gray-900">Edit Profile</h2>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-900 mb-1">
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h2 className="modal-title">Edit Profile</h2>
+            <div>
+              <div className="form-group">
+                <label className="form-label">
                   Display Name
                 </label>
                 <input
                   type="text"
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0171bd] text-gray-900"
+                  className="form-input"
                   placeholder="Enter your display name"
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-900 mb-1">
+              <div className="form-group">
+                <label className="form-label">
                   Birthday
                 </label>
                 <input
                   type="date"
                   value={birthday}
                   onChange={(e) => setBirthday(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0171bd] text-gray-900"
+                  className="form-input"
                   placeholder="YYYY-MM-DD"
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-900 mb-1">
+              <div className="form-group">
+                <label className="form-label">
                   Retirement Age
                 </label>
                 <input
                   type="number"
                   value={retirementAge}
                   onChange={(e) => setRetirementAge(Number(e.target.value))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0171bd] text-gray-900"
+                  className="form-input"
                   placeholder="65"
                 />
               </div>
             </div>
-            <div className="flex justify-end space-x-3 mt-6">
+            <div className="modal-actions">
               <button
                 onClick={() => setIsSettingsOpen(false)}
-                className="px-4 py-2 text-gray-700 hover:text-gray-900"
+                className="modal-cancel-button"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSave}
                 disabled={loading}
-                className="px-4 py-2 bg-[#0171bd] text-white rounded-md hover:bg-[#0156a3] disabled:opacity-50"
+                className="modal-save-button"
               >
                 {loading ? 'Saving...' : 'Save'}
               </button>

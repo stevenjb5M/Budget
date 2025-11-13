@@ -4,6 +4,7 @@ import { plansAPI, budgetsAPI, assetsAPI, debtsAPI } from '../api/client'
 import { versionSyncService } from '../services/versionSyncService'
 import { versioningService } from '../services/versioningService'
 import { getCurrentUserId } from '../utils/auth'
+import './Plans.css'
 
 interface Plan {
   id: string
@@ -313,22 +314,22 @@ export function Plans() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto py-6 px-4">
-          <h1 className="text-3xl font-bold text-gray-900">Budget Planner</h1>
+    <div className="plans-page">
+      <header className="plans-header">
+        <div className="plans-header-container">
+          <h1 className="plans-header-title">Budget Planner</h1>
         </div>
       </header>
       <Nav />
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 py-6 sm:px-0">
+      <main className="plans-main">
+        <div className="plans-content">
           {/* Loading Overlay */}
           {loading && (
-            <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
-              <div className="bg-white rounded-lg p-6">
-                <div className="animate-pulse">
-                  <div className="h-8 bg-gray-200 rounded w-48 mb-4"></div>
-                  <div className="h-4 bg-gray-200 rounded w-32"></div>
+            <div className="plans-loading-overlay">
+              <div className="plans-loading-container">
+                <div className="plans-loading-pulse">
+                  <div className="plans-loading-title"></div>
+                  <div className="plans-loading-subtitle"></div>
                 </div>
               </div>
             </div>
@@ -336,12 +337,12 @@ export function Plans() {
 
           {/* Error Banner */}
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-              <div className="text-red-800">
+            <div className="plans-error-container">
+              <div className="plans-error-text">
                 <strong>Error:</strong> {error}
                 <button
                   onClick={() => window.location.reload()}
-                  className="ml-4 px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700"
+                  className="plans-error-retry-button"
                 >
                   Retry
                 </button>

@@ -5,6 +5,7 @@ import { SortableDebtItem, Debt } from '../components/SortableDebtItem'
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { assetsAPI, debtsAPI } from '../api/client'
+import './Assets.css'
 
 export function Assets() {
   const [assets, setAssets] = useState<Asset[]>([])
@@ -217,25 +218,25 @@ export function Assets() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto py-6 px-4">
-          <h1 className="text-3xl font-bold text-gray-900">Budget Planner</h1>
+    <div className="assets-page">
+      <header className="assets-header">
+        <div className="assets-header-container">
+          <h1 className="assets-header-title">Budget Planner</h1>
         </div>
       </header>
       <Nav />
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 py-6 sm:px-0">
+      <main className="assets-main">
+        <div className="assets-content">
           {/* Loading State */}
           {loading && (
-            <div className="bg-white shadow rounded-lg p-6">
-              <div className="animate-pulse">
-                <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
-                <div className="h-4 bg-gray-200 rounded w-1/2 mb-6"></div>
-                <div className="space-y-3">
-                  <div className="h-4 bg-gray-200 rounded"></div>
-                  <div className="h-4 bg-gray-200 rounded"></div>
-                  <div className="h-4 bg-gray-200 rounded"></div>
+            <div className="loading-container">
+              <div className="loading-pulse">
+                <div className="loading-title"></div>
+                <div className="loading-subtitle"></div>
+                <div className="loading-lines">
+                  <div className="loading-line"></div>
+                  <div className="loading-line"></div>
+                  <div className="loading-line"></div>
                 </div>
               </div>
             </div>
@@ -243,12 +244,12 @@ export function Assets() {
 
           {/* Error State */}
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-6 mb-6">
-              <div className="text-red-800">
+            <div className="error-container">
+              <div className="error-text">
                 <strong>Error:</strong> {error}
                 <button
                   onClick={() => window.location.reload()}
-                  className="ml-4 px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700"
+                  className="error-retry-button"
                 >
                   Retry
                 </button>
@@ -257,26 +258,26 @@ export function Assets() {
           )}
 
           {/* Main Content */}
-          <div className="bg-white shadow rounded-lg p-4 mb-6">
-            <h1 className="text-2xl font-bold text-gray-900 text-center">Net Worth</h1>
-            <p className={`text-3xl font-bold text-center mt-1 ${netWorth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+          <div className="net-worth-card">
+            <h1 className="net-worth-title">Net Worth</h1>
+            <p className={`net-worth-amount ${netWorth >= 0 ? 'net-worth-positive' : 'net-worth-negative'}`}>
               ${netWorth.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </p>
-            <div className="flex justify-center space-x-6 mt-2 text-sm text-gray-600">
+            <div className="net-worth-details">
               <span>Assets: ${assetsTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               <span>Debts: ${debtsTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
             </div>
           </div>
 
-          <h2 className="text-2xl font-bold text-gray-900 text-left">Assets</h2>
-          <div className="mt-8">
-            <div className="mt-4 bg-white shadow rounded-lg overflow-hidden">
-              <div className="grid grid-cols-[60px_1fr_120px_120px_100px] gap-4 p-4 bg-gray-50 font-medium text-gray-700 border-b">
+          <h2 className="section-title">Assets</h2>
+          <div className="section-container">
+            <div className="table-container">
+              <div className="table-header">
                 <div></div>
-                <div className="text-left">Name</div>
-                <div className="text-center">Value</div>
-                <div className="text-center">APY</div>
-                <div className="text-center">Actions</div>
+                <div className="table-header-cell-left">Name</div>
+                <div className="table-header-cell-center">Value</div>
+                <div className="table-header-cell-center">APY</div>
+                <div className="table-header-cell-center">Actions</div>
               </div>
               <DndContext
                 sensors={sensors}
@@ -290,21 +291,21 @@ export function Assets() {
                 </SortableContext>
               </DndContext>
             </div>
-            <div className="bg-gray-50 px-4 py-3 border-t border-gray-200">
-              <div className="flex justify-end items-center">
-                <span className="font-medium text-gray-900 mr-4">Total Assets</span>
-                <span className="font-bold text-lg text-gray-900">
+            <div className="table-footer">
+              <div className="table-footer-content">
+                <span className="table-footer-label">Total Assets</span>
+                <span className="table-footer-amount">
                   ${assetsTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>
               </div>
             </div>
-            <div className="flex justify-center py-4">
+            <div className="add-button-container">
               <button
                 onClick={() => setShowModal(true)}
-                className="group text-[#0171bd] hover:text-[#0156a3] p-2 rounded-full transition-colors"
+                className="add-button"
                 title="Add new asset"
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="add-button-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                 </svg>
               </button>
@@ -313,16 +314,16 @@ export function Assets() {
         </div>
 
         {/* Debts Section */}
-        <div className="mt-12">
-          <h2 className="text-2xl font-bold text-gray-900 text-left">Debts</h2>
-          <div className="mt-8">
-            <div className="mt-4 bg-white shadow rounded-lg overflow-hidden">
-              <div className="grid grid-cols-[60px_1fr_120px_120px_100px] gap-4 p-4 bg-gray-50 font-medium text-gray-700 border-b">
+        <div className="debts-section-container">
+          <h2 className="section-title">Debts</h2>
+          <div className="section-container">
+            <div className="table-container">
+              <div className="table-header">
                 <div></div>
-                <div className="text-left">Name</div>
-                <div className="text-center">Balance</div>
-                <div className="text-center">Rate</div>
-                <div className="text-center">Actions</div>
+                <div className="table-header-cell-left">Name</div>
+                <div className="table-header-cell-center">Balance</div>
+                <div className="table-header-cell-center">Rate</div>
+                <div className="table-header-cell-center">Actions</div>
               </div>
               <DndContext
                 sensors={sensors}
@@ -336,21 +337,21 @@ export function Assets() {
                 </SortableContext>
               </DndContext>
             </div>
-            <div className="bg-gray-50 px-4 py-3 border-t border-gray-200">
-              <div className="flex justify-end items-center">
-                <span className="font-medium text-gray-900 mr-4">Total Debts</span>
-                <span className="font-bold text-lg text-red-600">
+            <div className="table-footer">
+              <div className="table-footer-content">
+                <span className="table-footer-label">Total Debts</span>
+                <span className="table-footer-amount-negative">
                   ${debtsTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>
               </div>
             </div>
-            <div className="flex justify-center py-4">
+            <div className="add-button-container">
               <button
                 onClick={() => setShowDebtModal(true)}
-                className="group text-[#0171bd] hover:text-[#0156a3] p-2 rounded-full transition-colors"
+                className="add-button"
                 title="Add new debt"
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="add-button-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                 </svg>
               </button>
@@ -360,66 +361,66 @@ export function Assets() {
 
       {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full" onClick={() => setShowModal(false)}>
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white" onClick={(e) => e.stopPropagation()}>
-            <div className="mt-3">
-              <h3 className="text-lg font-medium text-gray-900">Create New Asset</h3>
-              <form onSubmit={handleCreate} className="mt-4 space-y-4 px-6">
-                <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700">Name</label>
+        <div className="modal-overlay" onClick={() => setShowModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-title">
+              <h3>Create New Asset</h3>
+              <form onSubmit={handleCreate} className="modal-form">
+                <div className="form-field">
+                  <label htmlFor="name" className="form-label">Name</label>
                   <input
                     type="text"
                     id="name"
                     value={newAsset.name}
                     onChange={(e) => setNewAsset({ ...newAsset, name: e.target.value })}
-                    className="mt-1 mb-2 block w-4/5 mx-auto border-gray-300 rounded-md shadow-sm text-black"
+                    className="form-input"
                     required
                   />
                 </div>
-                <div>
-                  <label htmlFor="currentValue" className="block text-sm font-medium text-gray-700">Current Value</label>
+                <div className="form-field">
+                  <label htmlFor="currentValue" className="form-label">Current Value</label>
                   <input
                     type="number"
                     id="currentValue"
                     value={newAsset.currentValue}
                     onChange={(e) => setNewAsset({ ...newAsset, currentValue: parseFloat(e.target.value) })}
-                    className="mt-1 mb-2 block w-4/5 mx-auto border-gray-300 rounded-md shadow-sm text-black"
+                    className="form-input"
                     required
                   />
                 </div>
-                <div>
-                  <label htmlFor="annualAPY" className="block text-sm font-medium text-gray-700">Annual APY (%)</label>
+                <div className="form-field">
+                  <label htmlFor="annualAPY" className="form-label">Annual APY (%)</label>
                   <input
                     type="number"
                     step="0.01"
                     id="annualAPY"
                     value={newAsset.annualAPY}
                     onChange={(e) => setNewAsset({ ...newAsset, annualAPY: parseFloat(e.target.value) })}
-                    className="mt-1 mb-2 block w-4/5 mx-auto border-gray-300 rounded-md shadow-sm text-black"
+                    className="form-input"
                     required
                   />
                 </div>
-                <div>
-                  <label htmlFor="notes" className="block text-sm font-medium text-gray-700">Notes</label>
+                <div className="form-field">
+                  <label htmlFor="notes" className="form-label">Notes</label>
                   <textarea
                     id="notes"
                     value={newAsset.notes}
                     onChange={(e) => setNewAsset({ ...newAsset, notes: e.target.value })}
-                    className="mt-1 mb-2 block w-4/5 mx-auto border-gray-300 rounded-md shadow-sm text-black"
+                    className="form-textarea"
                     rows={3}
                   />
                 </div>
-                <div className="flex justify-end space-x-2">
+                <div className="modal-actions">
                   <button
                     type="button"
                     onClick={() => setShowModal(false)}
-                    className="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                    className="modal-cancel-button"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-[#0171bd] hover:bg-[#0156a3]"
+                    className="modal-submit-button"
                   >
                     Create Asset
                   </button>
@@ -432,11 +433,11 @@ export function Assets() {
 
       {/* Edit Modal */}
       {showEditModal && editingAsset && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full" onClick={() => setShowEditModal(false)}>
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white" onClick={(e) => e.stopPropagation()}>
-            <div className="mt-3">
-              <h3 className="text-lg font-medium text-gray-900">Edit Asset</h3>
-              <form onSubmit={handleUpdate} className="mt-4 space-y-4 px-6">
+        <div className="modal-overlay" onClick={() => setShowEditModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-title">
+              <h3>Edit Asset</h3>
+              <form onSubmit={handleUpdate} className="modal-form">
                 <div>
                   <label htmlFor="edit-name" className="block text-sm font-medium text-gray-700">Name</label>
                   <input
