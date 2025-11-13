@@ -47,6 +47,7 @@ export function Plans() {
   const [showPlanSettingsModal, setShowPlanSettingsModal] = useState(false)
   const [editingPlanName, setEditingPlanName] = useState('')
   const [showDeleteConfirmationModal, setShowDeleteConfirmationModal] = useState(false)
+  const [selectedAssetIds, setSelectedAssetIds] = useState<string[]>([])
 
   // Fetch data on component mount
   useEffect(() => {
@@ -84,6 +85,11 @@ export function Plans() {
         setBudgets(cleanedBudgets)
         setAssets(assetsData)
         setDebts(debtsData)
+
+        // Initialize selected assets with first 3 assets
+        if (assetsData.length > 0) {
+          setSelectedAssetIds(assetsData.slice(0, 3).map((asset: any) => asset.id))
+        }
 
         if (plansData.length > 0) {
           const activePlan = plansData.find((p: Plan) => p.isActive)
@@ -545,59 +551,105 @@ export function Plans() {
                       </button>
                     </div>
                     {!budgetPlanningMinimized && (
-                      <div className="space-y-3">
-                        {selectedPlan.months.map((monthData, index) => {
-                          const isNewYear = monthData.month.endsWith('-01') // January indicates new year
-                          const year = monthData.month.split('-')[0]
+                      <div>
+                        {/* Column Headers */}
+                        <div className="grid grid-cols-7 gap-4 mb-3 pb-2 border-b border-gray-200">
+                          <div className="font-medium text-gray-700">Month</div>
+                          <div className="font-medium text-gray-700">Budget</div>
+                          {[0, 1, 2].map((index) => (
+                              <div key={index} className="text-center">
+                                <select
+                                  value={selectedAssetIds[index] || ''}
+                                  onChange={(e) => {
+                                    const newSelectedAssetIds = [...selectedAssetIds]
+                                    newSelectedAssetIds[index] = e.target.value
+                                    setSelectedAssetIds(newSelectedAssetIds)
+                                  }}
+                                  className="w-full border-gray-300 rounded-md shadow-sm text-xs font-medium text-gray-700 bg-transparent"
+                                  title={`Select asset ${index + 1} to display`}
+                                >
+                                  <option value="">None</option>
+                                  {assets.map((assetOption: any) => (
+                                    <option key={assetOption.id} value={assetOption.id}>
+                                      {assetOption.name}
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
+                            ))}
+                          <div className="font-medium text-gray-700 text-center">Net Worth</div>
+                          <div className="font-medium text-gray-700 text-center">Details</div>
+                        </div>
+                        
+                        <div className="space-y-3">
+                          {selectedPlan.months.map((monthData, index) => {
+                            const isNewYear = monthData.month.endsWith('-01') // January indicates new year
+                            const year = monthData.month.split('-')[0]
 
-                          return (
-                            <div key={`month-${monthData.month}`}>
-                              {isNewYear && index > 0 && (
-                                <div className="flex items-center justify-center py-2 my-2 bg-blue-50 border border-blue-100 rounded-md">
-                                  <span className="text-sm font-medium text-blue-700">{year}</span>
-                                </div>
-                              )}
-                              <div className="border border-gray-200 rounded-lg p-4">
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center space-x-4">
-                                    <h5 className="font-medium text-gray-900 w-24">{getMonthName(monthData.month)}</h5>
-                                    <div className="flex-1 max-w-xs">
-                                      <div className="flex items-center space-x-2">
-                                        <label className="text-sm font-medium text-gray-700">Budget:</label>
-                                        <select
-                                          value={monthData.budgetId || ''}
-                                          onChange={(e) => handleBudgetChange(index, e.target.value)}
-                                          className="flex-1 border-gray-300 rounded-md shadow-sm text-black text-sm"
-                                          title={`Select budget for ${getMonthName(monthData.month)}`}
-                                        >
-                                          <option value="">No Budget</option>
-                                          {budgets.map((budget) => (
-                                            <option key={budget.id} value={budget.id}>
-                                              {budget.name}
-                                            </option>
-                                          ))}
-                                        </select>
+                            return (
+                              <div key={`month-${monthData.month}`}>
+                                {isNewYear && index > 0 && (
+                                  <div className="flex items-center justify-center py-2 my-2 bg-blue-50 border border-blue-100 rounded-md">
+                                    <span className="text-sm font-medium text-blue-700">{year}</span>
+                                  </div>
+                                )}
+                                <div className="border border-gray-200 rounded-lg p-4">
+                                  <div className="grid grid-cols-7 gap-4 items-center">
+                                    <div>
+                                      <h5 className="font-medium text-gray-900">{getMonthName(monthData.month)}</h5>
+                                    </div>
+                                    <div>
+                                      <select
+                                        value={monthData.budgetId || ''}
+                                        onChange={(e) => handleBudgetChange(index, e.target.value)}
+                                        className="w-full border-gray-300 rounded-md shadow-sm text-black text-sm"
+                                        title={`Select budget for ${getMonthName(monthData.month)}`}
+                                      >
+                                        <option value="">No Budget</option>
+                                        {budgets.map((budget) => (
+                                          <option key={budget.id} value={budget.id}>
+                                            {budget.name}
+                                          </option>
+                                        ))}
+                                      </select>
+                                    </div>
+                                    {[0, 1, 2].map((assetIndex) => {
+                                      const assetId = selectedAssetIds[assetIndex]
+                                      const asset = assets.find((a: any) => a.id === assetId)
+                                      const assetValue = asset ? calculateAssetValueForMonth(asset, monthData.month) : 0
+                                      return (
+                                        <div key={assetIndex} className="text-center">
+                                          <div className="text-sm font-medium text-gray-900">
+                                            {assetId ? `$${assetValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '-'}
+                                          </div>
+                                        </div>
+                                      )
+                                    })}
+                                    <div className="text-center">
+                                      <div className={`text-lg font-bold ${monthData.netWorth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                        ${monthData.netWorth.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                       </div>
                                     </div>
-                                    <button
-                                      onClick={() => {
-                                        setSelectedMonthForDetails(monthData.month)
-                                        setShowMonthDetailsModal(true)
-                                      }}
-                                      className="px-3 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-                                      title={`View assets & debts for ${getMonthName(monthData.month)}`}
-                                    >
-                                      View Details
-                                    </button>
-                                  </div>
-                                  <div className={`text-lg font-bold ${monthData.netWorth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                    ${monthData.netWorth.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                    <div className="text-center">
+                                      <button
+                                        onClick={() => {
+                                          setSelectedMonthForDetails(monthData.month)
+                                          setShowMonthDetailsModal(true)
+                                        }}
+                                        className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-md transition-colors"
+                                        title={`View assets & debts for ${getMonthName(monthData.month)}`}
+                                      >
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                                        </svg>
+                                      </button>
+                                    </div>
                                   </div>
                                 </div>
                               </div>
-                            </div>
-                          )
-                        })}
+                            )
+                          })}
+                        </div>
                       </div>
                     )}
                   </div>
