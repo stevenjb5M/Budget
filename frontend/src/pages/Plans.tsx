@@ -132,48 +132,54 @@ export function Plans() {
   const currentDebtsTotal = debts.reduce((sum: number, debt: any) => sum + debt.currentBalance, 0)
   const currentNetWorth = currentAssetsTotal - currentDebtsTotal
 
-  // Helper function to calculate asset value for a given month
+  // Helper function to calculate asset value for a given month (cumulative from start)
   const calculateAssetValueForMonth = (asset: any, monthString: string): number => {
     if (!selectedPlan) return asset.currentValue
 
     const monthIndex = selectedPlan.months.findIndex(m => m.month === monthString)
     if (monthIndex === -1) return asset.currentValue
 
-    // Get the budget for this month
-    const monthData = selectedPlan.months[monthIndex]
-    if (!monthData.budgetId) return asset.currentValue
+    // Calculate cumulative deposits from month 0 to current month
+    let totalDeposits = 0
+    for (let i = 0; i <= monthIndex; i++) {
+      const monthData = selectedPlan.months[i]
+      if (monthData.budgetId) {
+        const budget = budgets.find(b => b.id === monthData.budgetId)
+        if (budget) {
+          const assetDeposits = budget.expenses
+            .filter((exp: any) => exp.type === 'asset' && exp.linkedAssetId === asset.id)
+            .reduce((sum: number, exp: any) => sum + exp.amount, 0)
+          totalDeposits += assetDeposits
+        }
+      }
+    }
 
-    const budget = budgets.find(b => b.id === monthData.budgetId)
-    if (!budget) return asset.currentValue
-
-    // Sum all expenses linked to this asset
-    const assetDeposits = budget.expenses
-      .filter((exp: any) => exp.type === 'asset' && exp.linkedAssetId === asset.id)
-      .reduce((sum: number, exp: any) => sum + exp.amount, 0)
-
-    return asset.currentValue + assetDeposits
+    return asset.currentValue + totalDeposits
   }
 
-  // Helper function to calculate debt remaining for a given month
+  // Helper function to calculate debt remaining for a given month (cumulative from start)
   const calculateDebtRemainingForMonth = (debt: any, monthString: string): number => {
     if (!selectedPlan) return debt.currentBalance
 
     const monthIndex = selectedPlan.months.findIndex(m => m.month === monthString)
     if (monthIndex === -1) return debt.currentBalance
 
-    // Get the budget for this month
-    const monthData = selectedPlan.months[monthIndex]
-    if (!monthData.budgetId) return debt.currentBalance
+    // Calculate cumulative payments from month 0 to current month
+    let totalPayments = 0
+    for (let i = 0; i <= monthIndex; i++) {
+      const monthData = selectedPlan.months[i]
+      if (monthData.budgetId) {
+        const budget = budgets.find(b => b.id === monthData.budgetId)
+        if (budget) {
+          const debtPayments = budget.expenses
+            .filter((exp: any) => exp.type === 'debt' && exp.linkedDebtId === debt.id)
+            .reduce((sum: number, exp: any) => sum + exp.amount, 0)
+          totalPayments += debtPayments
+        }
+      }
+    }
 
-    const budget = budgets.find(b => b.id === monthData.budgetId)
-    if (!budget) return debt.currentBalance
-
-    // Sum all expenses linked to this debt
-    const debtPayments = budget.expenses
-      .filter((exp: any) => exp.type === 'debt' && exp.linkedDebtId === debt.id)
-      .reduce((sum: number, exp: any) => sum + exp.amount, 0)
-
-    return Math.max(0, debt.currentBalance - debtPayments)
+    return Math.max(0, debt.currentBalance - totalPayments)
   }
 
   // Recalculate net worth values when component mounts or current net worth changes
@@ -182,28 +188,49 @@ export function Plans() {
       currentPlans.map(plan => ({
         ...plan,
         months: plan.months.map((month, index) => {
-          if (!month.budgetId) {
-            // No budget - use previous month's net worth or current net worth for first month
-            const previousNetWorth = index === 0 ? currentNetWorth : plan.months[index - 1].netWorth
-            return { ...month, netWorth: previousNetWorth }
+          // Calculate net worth as cumulative assets - cumulative debts
+          let totalAssets = currentAssetsTotal
+          let totalDebts = currentDebtsTotal
+          
+          // Add up all income and regular expenses from month 0 to current month
+          let cumulativeIncome = 0
+          let cumulativeRegularExpenses = 0
+          
+          for (let i = 0; i <= index; i++) {
+            const monthData = plan.months[i]
+            if (monthData.budgetId) {
+              const budget = budgets.find(b => b.id === monthData.budgetId)
+              if (budget) {
+                const income = budget.income.reduce((sum, item) => sum + item.amount, 0)
+                const regularExpenses = budget.expenses
+                  .filter((exp: any) => exp.type === 'regular')
+                  .reduce((sum, item) => sum + item.amount, 0)
+                const assetDeposits = budget.expenses
+                  .filter((exp: any) => exp.type === 'asset')
+                  .reduce((sum, item) => sum + item.amount, 0)
+                const debtPayments = budget.expenses
+                  .filter((exp: any) => exp.type === 'debt')
+                  .reduce((sum, item) => sum + item.amount, 0)
+                
+                cumulativeIncome += income
+                cumulativeRegularExpenses += regularExpenses
+                totalAssets += assetDeposits
+                totalDebts -= debtPayments
+              }
+            }
           }
-
-          const budget = budgets.find(b => b.id === month.budgetId)
-          if (!budget) return month
-
-          const budgetIncome = budget.income.reduce((sum, item) => sum + item.amount, 0)
-          const budgetExpenses = budget.expenses.reduce((sum, item) => sum + item.amount, 0)
-          const budgetNet = budgetIncome - budgetExpenses
-
-          const previousNetWorth = index === 0 ? currentNetWorth : plan.months[index - 1].netWorth
+          
+          // Net worth = current assets + cumulative income - cumulative regular expenses - current debts
+          const netWorth = totalAssets - Math.max(0, totalDebts)
+          
           return {
             ...month,
-            netWorth: previousNetWorth + budgetNet
+            netWorth: netWorth
           }
         })
       }))
     )
-  }, [currentNetWorth, budgets])
+  }, [currentNetWorth, currentAssetsTotal, currentDebtsTotal, budgets])
 
   const handleCreatePlan = async (e: React.FormEvent) => {
     e.preventDefault()
