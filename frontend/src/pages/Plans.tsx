@@ -16,6 +16,14 @@ interface Plan {
     month: string
     budgetId: string | null
     netWorth: number
+    transactions?: Array<{
+      id: string
+      type: 'asset' | 'debt'
+      targetId: string
+      amount: number
+      description: string
+      isEditing?: boolean
+    }>
   }>
   createdAt: string
   updatedAt: string
@@ -309,6 +317,140 @@ export function Plans() {
     }
   }
 
+  const handleAddEmptyTransaction = async (monthIndex: number) => {
+    if (!selectedPlan) return
+
+    try {
+      const userId = await getCurrentUserId()
+      const newTransaction = {
+        id: `temp-${Date.now()}`,
+        type: 'asset' as 'asset' | 'debt',
+        targetId: '',
+        amount: 0,
+        description: '',
+        isEditing: true
+      }
+
+      const updatedMonths = [...selectedPlan.months]
+      if (!updatedMonths[monthIndex].transactions) {
+        updatedMonths[monthIndex].transactions = []
+      }
+      updatedMonths[monthIndex].transactions!.push(newTransaction)
+
+      const updatedPlan = {
+        ...selectedPlan,
+        months: updatedMonths,
+        updatedAt: new Date().toISOString()
+      }
+
+      // Update local state only, don't save to API yet
+      const updatedPlans = plans.map(p =>
+        p.id === selectedPlanId ? updatedPlan : p
+      )
+      setPlans(updatedPlans)
+    } catch (error) {
+      console.error('Error adding empty transaction:', error)
+      setError('Failed to add transaction. Please try again.')
+    }
+  }
+
+  const handleUpdateTransaction = (monthIndex: number, transactionId: string, field: string, value: any) => {
+    if (!selectedPlan) return
+
+    const updatedMonths = [...selectedPlan.months]
+    const transactionIndex = updatedMonths[monthIndex].transactions?.findIndex(t => t.id === transactionId)
+    
+    if (transactionIndex !== undefined && transactionIndex >= 0) {
+      updatedMonths[monthIndex].transactions![transactionIndex] = {
+        ...updatedMonths[monthIndex].transactions![transactionIndex],
+        [field]: value
+      }
+
+      const updatedPlan = {
+        ...selectedPlan,
+        months: updatedMonths
+      }
+
+      const updatedPlans = plans.map(p =>
+        p.id === selectedPlanId ? updatedPlan : p
+      )
+      setPlans(updatedPlans)
+    }
+  }
+
+  const handleSaveTransaction = async (monthIndex: number, transactionId: string) => {
+    if (!selectedPlan) return
+
+    try {
+      const userId = await getCurrentUserId()
+      const transaction = selectedPlan.months[monthIndex].transactions?.find(t => t.id === transactionId)
+      
+      if (!transaction || !transaction.targetId || transaction.amount === 0) {
+        // Remove invalid transaction
+        handleRemoveTransaction(monthIndex, transactionId)
+        return
+      }
+
+      // Update transaction to remove editing flag and save to API
+      const updatedMonths = [...selectedPlan.months]
+      const transactionIndex = updatedMonths[monthIndex].transactions?.findIndex(t => t.id === transactionId)
+      
+      if (transactionIndex !== undefined && transactionIndex >= 0) {
+        const cleanTransaction = {
+          ...updatedMonths[monthIndex].transactions![transactionIndex],
+          id: transaction.id.startsWith('temp-') ? Date.now().toString() : transaction.id,
+          isEditing: false
+        }
+        updatedMonths[monthIndex].transactions![transactionIndex] = cleanTransaction
+
+        const updatedPlan = {
+          ...selectedPlan,
+          months: updatedMonths,
+          updatedAt: new Date().toISOString()
+        }
+
+        await plansAPI.updatePlan(selectedPlanId, updatedPlan)
+
+        const updatedPlans = plans.map(p =>
+          p.id === selectedPlanId ? updatedPlan : p
+        )
+        setPlans(updatedPlans)
+        versioningService.storeData('plans', userId, updatedPlans)
+      }
+    } catch (error) {
+      console.error('Error saving transaction:', error)
+      setError('Failed to save transaction. Please try again.')
+    }
+  }
+
+  const handleRemoveTransaction = async (monthIndex: number, transactionId: string) => {
+    if (!selectedPlan) return
+
+    try {
+      const userId = await getCurrentUserId()
+      const updatedMonths = [...selectedPlan.months]
+      updatedMonths[monthIndex].transactions = updatedMonths[monthIndex].transactions?.filter(t => t.id !== transactionId) || []
+
+      const updatedPlan = {
+        ...selectedPlan,
+        months: updatedMonths,
+        updatedAt: new Date().toISOString()
+      }
+
+      await plansAPI.updatePlan(selectedPlanId, updatedPlan)
+
+      const updatedPlans = plans.map(p =>
+        p.id === selectedPlanId ? updatedPlan : p
+      )
+
+      setPlans(updatedPlans)
+      versioningService.storeData('plans', userId, updatedPlans)
+    } catch (error) {
+      console.error('Error removing transaction:', error)
+      setError('Failed to remove transaction. Please try again.')
+    }
+  }
+
   const handleRenamePlan = async () => {
     if (!selectedPlan || !editingPlanName.trim()) return
 
@@ -593,7 +735,7 @@ export function Plans() {
                                     <span className="text-sm font-medium text-blue-700">{year}</span>
                                   </div>
                                 )}
-                                <div className="border border-gray-200 rounded-lg p-4">
+                                <div className="border border-gray-200 rounded-lg p-4 relative">
                                   <div className="grid grid-cols-7 gap-4 items-center">
                                     <div>
                                       <h5 className="font-medium text-gray-900">{getMonthName(monthData.month)}</h5>
@@ -645,6 +787,116 @@ export function Plans() {
                                       </button>
                                     </div>
                                   </div>
+
+                                  {/* Transactions for this month */}
+                                  {monthData.transactions && monthData.transactions.length > 0 && (
+                                    <div className="mt-3 ml-8">
+                                      <div className="bg-blue-50 p-3 rounded-md border-2 border-blue-200 space-y-2">
+                                        {monthData.transactions.map((transaction) => {
+                                          const target = transaction.type === 'asset' 
+                                            ? assets.find(a => a.id === transaction.targetId)
+                                            : debts.find(d => d.id === transaction.targetId)
+                                          
+                                          if (transaction.isEditing) {
+                                            return (
+                                              <div key={transaction.id} className="flex items-center space-x-2">
+                                                <select
+                                                  value={transaction.targetId}
+                                                  onChange={(e) => handleUpdateTransaction(index, transaction.id, 'targetId', e.target.value)}
+                                                  className="flex-1 border-gray-300 rounded-md shadow-sm text-xs text-black"
+                                                  title="Select asset or debt"
+                                                >
+                                                  <option value="">Select asset/debt...</option>
+                                                  {assets.map(asset => (
+                                                    <option key={asset.id} value={asset.id}>{asset.name}</option>
+                                                  ))}
+                                                  {debts.map(debt => (
+                                                    <option key={debt.id} value={debt.id}>{debt.name}</option>
+                                                  ))}
+                                                </select>
+                                                <input
+                                                  type="number"
+                                                  value={transaction.amount}
+                                                  onChange={(e) => handleUpdateTransaction(index, transaction.id, 'amount', parseFloat(e.target.value) || 0)}
+                                                  className="w-20 border-gray-300 rounded-md shadow-sm text-xs text-center text-black"
+                                                  placeholder="0.00"
+                                                  step="0.01"
+                                                />
+                                                <input
+                                                  type="text"
+                                                  value={transaction.description}
+                                                  onChange={(e) => handleUpdateTransaction(index, transaction.id, 'description', e.target.value)}
+                                                  className="flex-1 border-gray-300 rounded-md shadow-sm text-xs text-black"
+                                                  placeholder="Note"
+                                                />
+                                                <button
+                                                  onClick={() => handleSaveTransaction(index, transaction.id)}
+                                                  disabled={!transaction.targetId || transaction.amount === 0}
+                                                  className="px-2 py-1 text-xs bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                                                  title="Save transaction"
+                                                >
+                                                  ✓
+                                                </button>
+                                                <button
+                                                  onClick={() => handleRemoveTransaction(index, transaction.id)}
+                                                  className="px-2 py-1 text-xs text-red-600 hover:text-red-800"
+                                                  title="Cancel"
+                                                >
+                                                  ×
+                                                </button>
+                                              </div>
+                                            )
+                                          }
+                                          
+                                          return (
+                                            <div key={transaction.id} className="flex items-center justify-between bg-white p-2 rounded-md">
+                                              <div className="flex items-center space-x-2">
+                                                <span className={`text-xs px-2 py-1 rounded ${
+                                                  transaction.type === 'asset' 
+                                                    ? 'bg-green-100 text-green-800' 
+                                                    : 'bg-red-100 text-red-800'
+                                                }`}>
+                                                  {transaction.type === 'asset' ? 'Asset' : 'Debt'}
+                                                </span>
+                                                <span className="text-sm font-medium">
+                                                  {target?.name || 'Unknown'}
+                                                </span>
+                                                <span className="text-sm text-gray-600">
+                                                  {transaction.description}
+                                                </span>
+                                              </div>
+                                              <div className="flex items-center space-x-2">
+                                                <span className={`text-sm font-medium ${
+                                                  transaction.amount >= 0 ? 'text-green-600' : 'text-red-600'
+                                                }`}>
+                                                  ${Math.abs(transaction.amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                </span>
+                                                <button
+                                                  onClick={() => handleRemoveTransaction(index, transaction.id)}
+                                                  className="text-red-500 hover:text-red-700 text-sm"
+                                                  title="Remove transaction"
+                                                >
+                                                  ×
+                                                </button>
+                                              </div>
+                                            </div>
+                                          )
+                                        })}
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {/* Add Transaction Button */}
+                                  <div className="absolute bottom-1 right-2">
+                                    <button
+                                      onClick={() => handleAddEmptyTransaction(index)}
+                                      className="text-xs text-gray-500 hover:text-blue-600 px-1 py-0.5 rounded"
+                                      title="Add transaction"
+                                    >
+                                      +
+                                    </button>
+                                  </div>
+
                                 </div>
                               </div>
                             )
@@ -901,6 +1153,9 @@ export function Plans() {
           </div>
         </div>
       )}
+
+
+
     </div>
   )
 }
