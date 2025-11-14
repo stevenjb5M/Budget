@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { Nav } from '../components/Nav'
 import { plansAPI, budgetsAPI, assetsAPI, debtsAPI } from '../api/client'
 import { versionSyncService } from '../services/versionSyncService'
-import { versioningService } from '../services/versioningService'
 import { getCurrentUserId } from '../utils/auth'
 import './Plans.css'
 
@@ -299,7 +298,7 @@ export function Plans() {
       const updatedPlans = [...plans, response.data]
 
       // Store updated data locally
-      versioningService.storeData('plans', userId, updatedPlans)
+      versionSyncService.storeData('plans', userId, updatedPlans)
 
       setPlans(updatedPlans)
       setSelectedPlanId(response.data.id)
@@ -337,7 +336,7 @@ export function Plans() {
       setSelectedPlanId(planId)
 
       // Store updated data locally
-      versioningService.storeData('plans', userId, updatedPlans)
+      versionSyncService.storeData('plans', userId, updatedPlans)
     } catch (error) {
       console.error('Error selecting plan:', error)
       setError('Failed to select plan. Please try again.')
@@ -412,7 +411,15 @@ export function Plans() {
       const userId = await getCurrentUserId()
       const transaction = selectedPlan.months[monthIndex].transactions?.find(t => t.id === transactionId)
       
-      if (!transaction || !transaction.targetId || transaction.amount === 0) {
+      if (!transaction) {
+        return
+      }
+      
+      const dashIndex = transaction.targetId.indexOf('-')
+      const transId = dashIndex > 0 ? transaction.targetId.substring(dashIndex + 1) : transaction.targetId
+      const transType = dashIndex > 0 ? transaction.targetId.substring(0, dashIndex) : 'asset'
+      
+      if (!transId || transaction.amount === 0) {
         // Remove invalid transaction
         handleRemoveTransaction(monthIndex, transactionId)
         return
@@ -426,6 +433,8 @@ export function Plans() {
         const cleanTransaction = {
           ...updatedMonths[monthIndex].transactions![transactionIndex],
           id: transaction.id.startsWith('temp-') ? Date.now().toString() : transaction.id,
+          type: transType as 'asset' | 'debt',
+          targetId: transId,
           isEditing: false
         }
         updatedMonths[monthIndex].transactions![transactionIndex] = cleanTransaction
@@ -442,7 +451,7 @@ export function Plans() {
           p.id === selectedPlanId ? updatedPlan : p
         )
         setPlans(updatedPlans)
-        versioningService.storeData('plans', userId, updatedPlans)
+        versionSyncService.storeData('plans', userId, updatedPlans)
       }
     } catch (error) {
       console.error('Error saving transaction:', error)
@@ -471,7 +480,7 @@ export function Plans() {
       )
 
       setPlans(updatedPlans)
-      versioningService.storeData('plans', userId, updatedPlans)
+      versionSyncService.storeData('plans', userId, updatedPlans)
     } catch (error) {
       console.error('Error removing transaction:', error)
       setError('Failed to remove transaction. Please try again.')
@@ -492,7 +501,7 @@ export function Plans() {
       const updatedPlans = plans.map(p => p.id === selectedPlanId ? updatedPlan : p)
 
       setPlans(updatedPlans)
-      versioningService.storeData('plans', userId, updatedPlans)
+      versionSyncService.storeData('plans', userId, updatedPlans)
       setShowPlanSettingsModal(false)
       setEditingPlanName('')
     } catch (error) {
@@ -510,7 +519,7 @@ export function Plans() {
 
       const updatedPlans = plans.filter(p => p.id !== selectedPlanId)
       setPlans(updatedPlans)
-      versioningService.storeData('plans', userId, updatedPlans)
+      versionSyncService.storeData('plans', userId, updatedPlans)
 
       if (updatedPlans.length > 0) {
         setSelectedPlanId(updatedPlans[0].id)
@@ -552,7 +561,7 @@ export function Plans() {
       setPlans(updatedPlans)
 
       // Store updated data locally
-      versioningService.storeData('plans', userId, updatedPlans)
+      versionSyncService.storeData('plans', userId, updatedPlans)
     } catch (error) {
       console.error('Error updating budget:', error)
       setError('Failed to update budget. Please try again.')
@@ -852,6 +861,7 @@ export function Plans() {
                                     <div className="mt-3 ml-8">
                                       <div className="bg-blue-50 p-3 rounded-md border-2 border-blue-200 space-y-2">
                                         {monthData.transactions.map((transaction) => {
+                                          debugger;
                                           const target = transaction.type === 'asset' 
                                             ? assets.find(a => a.id === transaction.targetId)
                                             : debts.find(d => d.id === transaction.targetId)
@@ -860,17 +870,17 @@ export function Plans() {
                                             return (
                                               <div key={transaction.id} className="flex items-center space-x-2">
                                                 <select
-                                                  value={transaction.targetId}
+                                                  value={transaction.targetId ? `${transaction.type}-${transaction.targetId}` : ''}
                                                   onChange={(e) => handleUpdateTransaction(index, transaction.id, 'targetId', e.target.value)}
                                                   className="flex-1 border-gray-300 rounded-md shadow-sm text-xs text-black"
                                                   title="Select asset or debt"
                                                 >
                                                   <option value="">Select asset/debt...</option>
                                                   {assets.map(asset => (
-                                                    <option key={asset.id} value={asset.id}>{asset.name}</option>
+                                                    <option key={asset.id} value={`asset-${asset.id}`}>{asset.name} (Asset)</option>
                                                   ))}
                                                   {debts.map(debt => (
-                                                    <option key={debt.id} value={debt.id}>{debt.name}</option>
+                                                    <option key={debt.id} value={`debt-${debt.id}`}>{debt.name} (Debt)</option>
                                                   ))}
                                                 </select>
                                                 <input
