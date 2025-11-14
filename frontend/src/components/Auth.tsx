@@ -22,7 +22,7 @@ export function useAuth() {
   return context
 }
 
-function AuthProvider({ children, signOut, user }: { children: React.ReactNode, signOut: (() => void) | undefined, user: any }) {
+export function AuthProvider({ children, signOut, user }: { children: React.ReactNode, signOut: (() => void) | undefined, user: any }) {
   const [currentUser, setCurrentUser] = useState(user)
 
   useEffect(() => {
