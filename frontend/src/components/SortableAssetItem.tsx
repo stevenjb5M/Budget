@@ -47,6 +47,7 @@ export function SortableAssetItem({ asset, onEdit }: SortableAssetItemProps) {
           {...listeners}
           className="drag-handle"
           title="Drag to reorder"
+          aria-label={`Drag to reorder ${asset.name}`}
         >
           <svg className="drag-icon" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8h16M4 16h16" />
@@ -55,10 +56,10 @@ export function SortableAssetItem({ asset, onEdit }: SortableAssetItemProps) {
       </div>
       <div className="asset-info">
         <div className="asset-name">{asset.name}</div>
-        {asset.notes && <div className="asset-notes">{asset.notes}</div>}
+        <div className="asset-notes">{asset.notes || 'No notes'}</div>
       </div>
-      <div className="asset-value">${asset.currentValue.toFixed(2)}</div>
-      <div className="asset-apy">{asset.annualAPY}%</div>
+      <div className="asset-value">${asset.currentValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+      <div className="asset-apy">{asset.annualAPY.toFixed(2)}%</div>
       <div className="edit-button-container">
         <button
           onClick={() => onEdit(asset)}

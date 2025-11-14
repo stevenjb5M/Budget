@@ -48,6 +48,7 @@ export function SortableDebtItem({ debt, onEdit }: SortableDebtItemProps) {
           {...listeners}
           className="debt-drag-handle"
           title="Drag to reorder"
+          aria-label={`Drag to reorder ${debt.name}`}
         >
           <svg className="debt-drag-icon" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8h16M4 16h16" />
@@ -56,10 +57,11 @@ export function SortableDebtItem({ debt, onEdit }: SortableDebtItemProps) {
       </div>
       <div className="debt-info">
         <div className="debt-name">{debt.name}</div>
-        {debt.notes && <div className="debt-notes">{debt.notes}</div>}
+        <div className="debt-notes">{debt.notes || 'No notes'}</div>
       </div>
-      <div className="debt-balance">${debt.currentBalance.toFixed(2)}</div>
-      <div className="debt-rate">{debt.interestRate}%</div>
+      <div className="debt-balance">${debt.currentBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+      <div className="debt-rate">{debt.interestRate.toFixed(2)}%</div>
+      <div className="debt-minimum-payment">${debt.minimumPayment.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
       <div className="debt-edit-button-container">
         <button
           onClick={() => onEdit(debt)}
