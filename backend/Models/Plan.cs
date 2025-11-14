@@ -48,7 +48,7 @@ public class PlanMonth
     public double NetWorth { get; set; }
 
     [DynamoDBProperty]
-    public List<PlanTransaction>? Transactions { get; set; } = new();
+    public List<PlanTransaction> Transactions { get; set; } = new();
 }
 
 public class PlanTransaction

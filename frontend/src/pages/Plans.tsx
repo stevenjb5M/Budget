@@ -72,46 +72,57 @@ export function Plans() {
               ...plan,
               months: plan.months?.map(month => ({
                 ...month,
-                transactions: month.transactions?.map(transaction => ({
+                transactions: (month.transactions || []).map(transaction => ({
                   ...transaction,
-                  amount: typeof transaction.amount === 'string' ? parseFloat(transaction.amount) : transaction.amount,
+                  amount: typeof transaction.amount === 'string' ? parseFloat(transaction.amount) : (transaction.amount || 0),
                   description: transaction.description || ''
-                })) || []
+                }))
               })) || []
             }))
             return normalizedData
           }),
           versionSyncService.getData('budgets', () => budgetsAPI.getBudgets().then(r => r.data)),
-          versionSyncService.getData('assets', () => assetsAPI.getAssets().then(r => r.data)),
-          versionSyncService.getData('debts', () => debtsAPI.getDebts().then(r => r.data))
+          versionSyncService.getData('assets', () => assetsAPI.getAssets().then(r => {
+            const data = r.data
+            // Normalize asset data
+            const normalizedAssets = data.map((asset: any) => ({
+              ...asset,
+              currentValue: typeof asset.currentValue === 'string' ? parseFloat(asset.currentValue) : asset.currentValue
+            }))
+            return normalizedAssets
+          })),
+          versionSyncService.getData('debts', () => debtsAPI.getDebts().then(r => {
+            const data = r.data
+            // Normalize debt data
+            const normalizedDebts = data.map((debt: any) => ({
+              ...debt,
+              currentBalance: typeof debt.currentBalance === 'string' ? parseFloat(debt.currentBalance) : debt.currentBalance
+            }))
+            return normalizedDebts
+          }))
         ])
         
         // Validate and clean up orphaned expense links in budgets
         const cleanedBudgets = validateAndCleanBudgets(budgetsData, assetsData, debtsData)
         
-        // If any expenses were removed, update them in the backend
-        const budgetsWithChanges = cleanedBudgets.filter((cleanedBudget: any, index: number) => {
-          const originalExpenseCount = budgetsData[index].expenses.length
-          const cleanedExpenseCount = cleanedBudget.expenses.length
-          return originalExpenseCount !== cleanedExpenseCount
-        })
-        
-        if (budgetsWithChanges.length > 0) {
-          // Update budgets that had orphaned expenses removed
-          for (const budget of budgetsWithChanges) {
-            await budgetsAPI.updateBudget(budget.id, budget)
-          }
-          console.log(`Cleaned up ${budgetsWithChanges.length} budget(s) with orphaned expenses`)
-        }
+        // Normalize asset and debt values to numbers
+        const normalizedAssets = assetsData.map((asset: any) => ({
+          ...asset,
+          currentValue: typeof asset.currentValue === 'string' ? parseFloat(asset.currentValue) : asset.currentValue
+        }))
+        const normalizedDebts = debtsData.map((debt: any) => ({
+          ...debt,
+          currentBalance: typeof debt.currentBalance === 'string' ? parseFloat(debt.currentBalance) : debt.currentBalance
+        }))
         
         setPlans(plansData)
         setBudgets(cleanedBudgets)
-        setAssets(assetsData)
-        setDebts(debtsData)
+        setAssets(normalizedAssets)
+        setDebts(normalizedDebts)
 
         // Initialize selected assets with first 3 assets
         if (assetsData.length > 0) {
-          setSelectedAssetIds(assetsData.slice(0, 3).map((asset: any) => asset.id))
+          setSelectedAssetIds(assetsData.slice(0, 3).map((asset: any) => `asset-${asset.id}`))
         }
 
         if (plansData.length > 0) {
@@ -278,7 +289,8 @@ export function Plans() {
           return {
             month: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`,
             budgetId: autofillBudgetId || null,
-            netWorth: currentNetWorth
+            netWorth: currentNetWorth,
+            transactions: []
           }
         })
       }
@@ -369,38 +381,27 @@ export function Plans() {
     }
   }
 
-  const handleUpdateTransaction = async (monthIndex: number, transactionId: string, field: string, value: any) => {
+  const handleUpdateTransaction = (monthIndex: number, transactionId: string, field: string, value: any) => {
     if (!selectedPlan) return
 
-    try {
-      const userId = await getCurrentUserId()
-      const updatedMonths = [...selectedPlan.months]
-      const transactionIndex = updatedMonths[monthIndex].transactions?.findIndex(t => t.id === transactionId)
+    const updatedMonths = [...selectedPlan.months]
+    const transactionIndex = updatedMonths[monthIndex].transactions?.findIndex(t => t.id === transactionId)
 
-      if (transactionIndex !== undefined && transactionIndex >= 0) {
-        updatedMonths[monthIndex].transactions![transactionIndex] = {
-          ...updatedMonths[monthIndex].transactions![transactionIndex],
-          [field]: value
-        }
-
-        const updatedPlan = {
-          ...selectedPlan,
-          months: updatedMonths,
-          updatedAt: new Date().toISOString()
-        }
-
-        // Save to API immediately when transaction is updated
-        await plansAPI.updatePlan(selectedPlanId, updatedPlan)
-
-        const updatedPlans = plans.map(p =>
-          p.id === selectedPlanId ? updatedPlan : p
-        )
-        setPlans(updatedPlans)
-        versioningService.storeData('plans', userId, updatedPlans)
+    if (transactionIndex !== undefined && transactionIndex >= 0) {
+      updatedMonths[monthIndex].transactions![transactionIndex] = {
+        ...updatedMonths[monthIndex].transactions![transactionIndex],
+        [field]: value
       }
-    } catch (error) {
-      console.error('Error updating transaction:', error)
-      setError('Failed to update transaction. Please try again.')
+
+      const updatedPlan = {
+        ...selectedPlan,
+        months: updatedMonths
+      }
+
+      const updatedPlans = plans.map(p =>
+        p.id === selectedPlanId ? updatedPlan : p
+      )
+      setPlans(updatedPlans)
     }
   }
 
@@ -734,12 +735,17 @@ export function Plans() {
                                     setSelectedAssetIds(newSelectedAssetIds)
                                   }}
                                   className="w-full border-gray-300 rounded-md shadow-sm text-xs font-medium text-gray-700 bg-transparent"
-                                  title={`Select asset ${index + 1} to display`}
+                                  title={`Select asset or debt ${index + 1} to display`}
                                 >
                                   <option value="">None</option>
                                   {assets.map((assetOption: any) => (
-                                    <option key={assetOption.id} value={assetOption.id}>
+                                    <option key={assetOption.id} value={`asset-${assetOption.id}`}>
                                       {assetOption.name}
+                                    </option>
+                                  ))}
+                                  {debts.map((debtOption: any) => (
+                                    <option key={debtOption.id} value={`debt-${debtOption.id}`}>
+                                      {debtOption.name}
                                     </option>
                                   ))}
                                 </select>
@@ -782,13 +788,26 @@ export function Plans() {
                                       </select>
                                     </div>
                                     {[0, 1, 2].map((assetIndex) => {
-                                      const assetId = selectedAssetIds[assetIndex]
-                                      const asset = assets.find((a: any) => a.id === assetId)
-                                      const assetValue = asset ? calculateAssetValueForMonth(asset, monthData.month) : 0
+                                      const itemId = selectedAssetIds[assetIndex]
+                                      let displayValue = '-'
+                                      if (itemId) {
+                                        const dashIndex = itemId.indexOf('-')
+                                        const type = itemId.substring(0, dashIndex)
+                                        const id = itemId.substring(dashIndex + 1)
+                                        if (type === 'asset') {
+                                          const asset = assets.find((a: any) => a.id === id)
+                                          const assetValue = asset ? calculateAssetValueForMonth(asset, monthData.month) : 0
+                                          displayValue = `$${assetValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                                        } else if (type === 'debt') {
+                                          const debt = debts.find((d: any) => d.id === id)
+                                          const debtValue = debt ? calculateDebtRemainingForMonth(debt, monthData.month) : 0
+                                          displayValue = `$${debtValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                                        }
+                                      }
                                       return (
                                         <div key={assetIndex} className="text-center">
                                           <div className="text-sm font-medium text-gray-900">
-                                            {assetId ? `$${assetValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '-'}
+                                            {displayValue}
                                           </div>
                                         </div>
                                       )
