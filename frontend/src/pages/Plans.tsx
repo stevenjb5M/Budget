@@ -65,7 +65,22 @@ export function Plans() {
         const userId = await getCurrentUserId()
         // Use version sync service for cache-first loading
         const [plansData, budgetsData, assetsData, debtsData] = await Promise.all([
-          versionSyncService.getData('plans', () => plansAPI.getPlans().then(r => r.data)),
+          versionSyncService.getData('plans', async () => {
+            const response = await plansAPI.getPlans()
+            // Normalize transaction data
+            const normalizedData = response.data.map((plan: Plan) => ({
+              ...plan,
+              months: plan.months?.map(month => ({
+                ...month,
+                transactions: month.transactions?.map(transaction => ({
+                  ...transaction,
+                  amount: typeof transaction.amount === 'string' ? parseFloat(transaction.amount) : transaction.amount,
+                  description: transaction.description || ''
+                })) || []
+              })) || []
+            }))
+            return normalizedData
+          }),
           versionSyncService.getData('budgets', () => budgetsAPI.getBudgets().then(r => r.data)),
           versionSyncService.getData('assets', () => assetsAPI.getAssets().then(r => r.data)),
           versionSyncService.getData('debts', () => debtsAPI.getDebts().then(r => r.data))
@@ -354,27 +369,38 @@ export function Plans() {
     }
   }
 
-  const handleUpdateTransaction = (monthIndex: number, transactionId: string, field: string, value: any) => {
+  const handleUpdateTransaction = async (monthIndex: number, transactionId: string, field: string, value: any) => {
     if (!selectedPlan) return
 
-    const updatedMonths = [...selectedPlan.months]
-    const transactionIndex = updatedMonths[monthIndex].transactions?.findIndex(t => t.id === transactionId)
-    
-    if (transactionIndex !== undefined && transactionIndex >= 0) {
-      updatedMonths[monthIndex].transactions![transactionIndex] = {
-        ...updatedMonths[monthIndex].transactions![transactionIndex],
-        [field]: value
-      }
+    try {
+      const userId = await getCurrentUserId()
+      const updatedMonths = [...selectedPlan.months]
+      const transactionIndex = updatedMonths[monthIndex].transactions?.findIndex(t => t.id === transactionId)
 
-      const updatedPlan = {
-        ...selectedPlan,
-        months: updatedMonths
-      }
+      if (transactionIndex !== undefined && transactionIndex >= 0) {
+        updatedMonths[monthIndex].transactions![transactionIndex] = {
+          ...updatedMonths[monthIndex].transactions![transactionIndex],
+          [field]: value
+        }
 
-      const updatedPlans = plans.map(p =>
-        p.id === selectedPlanId ? updatedPlan : p
-      )
-      setPlans(updatedPlans)
+        const updatedPlan = {
+          ...selectedPlan,
+          months: updatedMonths,
+          updatedAt: new Date().toISOString()
+        }
+
+        // Save to API immediately when transaction is updated
+        await plansAPI.updatePlan(selectedPlanId, updatedPlan)
+
+        const updatedPlans = plans.map(p =>
+          p.id === selectedPlanId ? updatedPlan : p
+        )
+        setPlans(updatedPlans)
+        versioningService.storeData('plans', userId, updatedPlans)
+      }
+    } catch (error) {
+      console.error('Error updating transaction:', error)
+      setError('Failed to update transaction. Please try again.')
     }
   }
 

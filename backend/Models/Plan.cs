@@ -45,5 +45,29 @@ public class PlanMonth
     public string? BudgetId { get; set; }
 
     [DynamoDBProperty]
-    public decimal NetWorth { get; set; }
+    public double NetWorth { get; set; }
+
+    [DynamoDBProperty]
+    public List<PlanTransaction>? Transactions { get; set; } = new();
+}
+
+public class PlanTransaction
+{
+    [DynamoDBProperty]
+    public string? Id { get; set; }
+
+    [DynamoDBProperty]
+    public string? Type { get; set; } // "asset" or "debt"
+
+    [DynamoDBProperty]
+    public string? TargetId { get; set; } // Asset or debt ID
+
+    [DynamoDBProperty]
+    public double Amount { get; set; }
+
+    [DynamoDBProperty]
+    public string? Description { get; set; }
+
+    [DynamoDBProperty]
+    public bool IsEditing { get; set; } = false;
 }
