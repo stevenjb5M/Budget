@@ -195,6 +195,13 @@ export function Plans() {
           totalDeposits += assetDeposits
         }
       }
+      // Add transaction deposits
+      if (monthData.transactions) {
+        const transactionDeposits = monthData.transactions
+          .filter((t: any) => t.type === 'asset' && t.targetId === asset.id)
+          .reduce((sum: number, t: any) => sum + t.amount, 0)
+        totalDeposits += transactionDeposits
+      }
     }
 
     return asset.currentValue + totalDeposits
@@ -220,6 +227,13 @@ export function Plans() {
           totalPayments += debtPayments
         }
       }
+      // Add transaction payments
+      if (monthData.transactions) {
+        const transactionPayments = monthData.transactions
+          .filter((t: any) => t.type === 'debt' && t.targetId === debt.id)
+          .reduce((sum: number, t: any) => sum + t.amount, 0)
+        totalPayments += transactionPayments
+      }
     }
 
     return Math.max(0, debt.currentBalance - totalPayments)
@@ -231,9 +245,9 @@ export function Plans() {
       currentPlans.map(plan => ({
         ...plan,
         months: plan.months.map((month, index) => {
-          // Calculate net worth as cumulative assets - cumulative debts
-          let totalAssets = currentAssetsTotal
-          let totalDebts = currentDebtsTotal
+          // Calculate net worth as projected assets - projected debts + cumulative income - cumulative regular expenses
+          let totalAssets = assets.reduce((sum, asset) => sum + calculateAssetValueForMonth(asset, month.month), 0)
+          let totalDebts = debts.reduce((sum, debt) => sum + calculateDebtRemainingForMonth(debt, month.month), 0)
           
           // Add up all income and regular expenses from month 0 to current month
           let cumulativeIncome = 0
@@ -273,7 +287,7 @@ export function Plans() {
         })
       }))
     )
-  }, [currentNetWorth, currentAssetsTotal, currentDebtsTotal, budgets, assets, debts])
+  }, [assets, debts, budgets, selectedPlan])
 
   const handleCreatePlan = async (e: React.FormEvent) => {
     e.preventDefault()
