@@ -151,23 +151,16 @@ export const usePlans = () => {
                 const regularExpenses = budget.expenses
                   .filter((exp: any) => exp.type === 'regular')
                   .reduce((sum, item) => sum + item.amount, 0)
-                const assetDeposits = budget.expenses
-                  .filter((exp: any) => exp.type === 'asset')
-                  .reduce((sum, item) => sum + item.amount, 0)
-                const debtPayments = budget.expenses
-                  .filter((exp: any) => exp.type === 'debt')
-                  .reduce((sum, item) => sum + item.amount, 0)
 
                 cumulativeIncome += income
                 cumulativeRegularExpenses += regularExpenses
-                totalAssets += assetDeposits
-                totalDebts -= debtPayments
+                // Note: assetDeposits and debtPayments are already included in calculateAssetValueForMonth and calculateDebtRemainingForMonth
               }
             }
           }
 
-          // Net worth = current assets + cumulative income - cumulative regular expenses - current debts
-          const netWorth = totalAssets - Math.max(0, totalDebts)
+          // Net worth = projected assets + cumulative income - cumulative regular expenses - projected debts
+          const netWorth = totalAssets + cumulativeIncome - cumulativeRegularExpenses - totalDebts
 
           return {
             ...month,
@@ -176,7 +169,7 @@ export const usePlans = () => {
         })
       }))
     )
-  }, [assets, debts, budgets, selectedPlan])
+  }, [assets, debts, budgets])
 
   const handleCreatePlan = async (newPlanName: string, newPlanDescription: string, autofillBudgetId: string) => {
     try {
@@ -425,7 +418,7 @@ export const usePlans = () => {
       const updatedPlans = plans.filter(p => p.id !== selectedPlanId)
 
       // If we deleted the active plan, activate the first remaining plan
-      let newSelectedPlanId = selectedPlanId
+      let newSelectedPlanId = ''
       if (selectedPlan.isActive && updatedPlans.length > 0) {
         newSelectedPlanId = updatedPlans[0].id
         const activatedPlan = {

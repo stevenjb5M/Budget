@@ -27,7 +27,15 @@ export interface Budget {
   id: string
   name: string
   income: Array<{ amount: number }>
-  expenses: Array<{ amount: number }>
+  expenses: Array<{
+    id?: string
+    name?: string
+    amount: number
+    category?: string
+    type?: 'regular' | 'asset' | 'debt'
+    linkedAssetId?: string
+    linkedDebtId?: string
+  }>
 }
 
 export interface Asset {
@@ -62,8 +70,8 @@ export const calculateAssetValueForMonth = (
       const budget = budgets.find(b => b.id === monthData.budgetId)
       if (budget) {
         const assetDeposits = budget.expenses
-          .filter((exp: any) => exp.type === 'asset' && exp.linkedAssetId === asset.id)
-          .reduce((sum: number, exp: any) => sum + exp.amount, 0)
+          .filter((exp) => exp.type === 'asset' && exp.linkedAssetId === asset.id)
+          .reduce((sum: number, exp) => sum + exp.amount, 0)
         totalDeposits += assetDeposits
       }
     }
@@ -99,8 +107,8 @@ export const calculateDebtRemainingForMonth = (
       const budget = budgets.find(b => b.id === monthData.budgetId)
       if (budget) {
         const debtPayments = budget.expenses
-          .filter((exp: any) => exp.type === 'debt' && exp.linkedDebtId === debt.id)
-          .reduce((sum: number, exp: any) => sum + exp.amount, 0)
+          .filter((exp) => exp.type === 'debt' && exp.linkedDebtId === debt.id)
+          .reduce((sum: number, exp) => sum + exp.amount, 0)
         totalPayments += debtPayments
       }
     }
