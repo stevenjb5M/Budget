@@ -773,18 +773,32 @@ export function Plans() {
                                       </div>
                                     </div>
                                     <div className="text-center">
-                                      <button
-                                        onClick={() => {
-                                          setSelectedMonthForDetails(monthData.month)
-                                          setShowMonthDetailsModal(true)
-                                        }}
-                                        className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-md transition-colors"
-                                        title={`View assets & debts for ${getMonthName(monthData.month)}`}
-                                      >
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                                        </svg>
-                                      </button>
+                                      <div className="flex justify-center space-x-2 ml-4">
+                                        <button
+                                          onClick={() => {
+                                            setSelectedMonthForDetails(monthData.month)
+                                            setShowMonthDetailsModal(true)
+                                          }}
+                                          className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-md transition-colors"
+                                          title={`View assets & debts for ${getMonthName(monthData.month)}`}
+                                        >
+                                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                                          </svg>
+                                        </button>
+                                        <button
+                                          onClick={() => handleAddEmptyTransaction(index)}
+                                          className="relative p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-md transition-colors group"
+                                          title=""
+                                        >
+                                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                          </svg>
+                                          <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                                            Add transaction
+                                          </div>
+                                        </button>
+                                      </div>
                                     </div>
                                   </div>
 
@@ -818,6 +832,11 @@ export function Plans() {
                                                   type="number"
                                                   value={transaction.amount}
                                                   onChange={(e) => handleUpdateTransaction(index, transaction.id, 'amount', parseFloat(e.target.value) || 0)}
+                                                  onFocus={(e) => {
+                                                    if (parseFloat(e.target.value) === 0) {
+                                                      e.target.value = '';
+                                                    }
+                                                  }}
                                                   className="w-20 border-gray-300 rounded-md shadow-sm text-xs text-center text-black"
                                                   placeholder="0.00"
                                                   step="0.01"
@@ -851,14 +870,14 @@ export function Plans() {
                                           return (
                                             <div key={transaction.id} className="flex items-center justify-between bg-white p-2 rounded-md">
                                               <div className="flex items-center space-x-2">
-                                                <span className={`text-xs px-2 py-1 rounded ${
+                                                <span className={`text-xs px-2 py-1 rounded font-medium ${
                                                   transaction.type === 'asset' 
-                                                    ? 'bg-green-100 text-green-800' 
-                                                    : 'bg-red-100 text-red-800'
+                                                    ? 'bg-green-100 text-green-800 border border-green-200' 
+                                                    : 'bg-red-100 text-red-800 border border-red-200'
                                                 }`}>
                                                   {transaction.type === 'asset' ? 'Asset' : 'Debt'}
                                                 </span>
-                                                <span className="text-sm font-medium">
+                                                <span className="text-sm font-medium text-gray-900">
                                                   {target?.name || 'Unknown'}
                                                 </span>
                                                 <span className="text-sm text-gray-600">
@@ -886,16 +905,7 @@ export function Plans() {
                                     </div>
                                   )}
 
-                                  {/* Add Transaction Button */}
-                                  <div className="absolute bottom-1 right-2">
-                                    <button
-                                      onClick={() => handleAddEmptyTransaction(index)}
-                                      className="text-xs text-gray-500 hover:text-blue-600 px-1 py-0.5 rounded"
-                                      title="Add transaction"
-                                    >
-                                      +
-                                    </button>
-                                  </div>
+
 
                                 </div>
                               </div>
