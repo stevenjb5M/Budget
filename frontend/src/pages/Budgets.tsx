@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Nav } from '../components/Nav'
+import { Footer } from '../components/Footer'
 import { budgetsAPI, assetsAPI, debtsAPI } from '../api/client'
 import { versionSyncService } from '../services/versionSyncService'
 import { versioningService } from '../services/versioningService'
@@ -754,6 +755,7 @@ export function Budgets() {
           </div>
         </div>
       </main>
+      <Footer />
 
       {/* New Budget Modal */}
       {showNewBudgetModal && (

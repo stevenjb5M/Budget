@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { Nav } from '../components/Nav'
+import { Footer } from '../components/Footer'
 import { usePlans } from '../hooks/usePlans'
 import { calculateAssetValueForMonth, calculateDebtRemainingForMonth } from '../services/planService'
 import './Plans.css'
@@ -516,6 +517,7 @@ const Plans: React.FC = () => {
           </div>
         </div>
       </main>
+      <Footer />
 
       {/* New Plan Modal */}
       {showNewPlanModal && (

@@ -1,4 +1,5 @@
 import { Nav } from '../components/Nav'
+import { Footer } from '../components/Footer'
 import { useDashboard } from '../hooks/useDashboard'
 import { formatDate, formatBirthdayDate } from '../services/dashboardService'
 import './Home.css'
@@ -107,6 +108,7 @@ export function Home() {
 
         </div>
       </main>
+      <Footer />
     </div>
   )
 }
