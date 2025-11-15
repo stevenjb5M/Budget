@@ -66,7 +66,7 @@ export function Nav() {
         <div className="nav-content">
           <div className="nav-links">
             <NavLink
-              to="/"
+              to="/home"
               className={({ isActive }) =>
                 isActive
                   ? "nav-link nav-link-active"
