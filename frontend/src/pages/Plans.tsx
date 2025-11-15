@@ -504,7 +504,12 @@ const Plans: React.FC = () => {
                 </div>
               ) : (
                 <div className="bg-white shadow rounded-lg p-6 text-center">
-                  <p className="text-gray-500">Select a plan to view details</p>
+                  <p className="text-gray-500">
+                    {plans.length === 0 
+                      ? "No financial plans yet. Let's create your first one!" 
+                      : "Select a plan to view details"
+                    }
+                  </p>
                 </div>
               )}
             </div>

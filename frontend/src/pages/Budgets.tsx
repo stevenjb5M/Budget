@@ -787,7 +787,12 @@ export function Budgets() {
                 </div>
               ) : (
                 <div className="bg-white shadow rounded-lg p-6 text-center">
-                  <p className="text-gray-500">Select a budget to view details</p>
+                  <p className="text-gray-500">
+                    {budgets.length === 0 
+                      ? "Looks like you haven't created any budgets yet. Ready to get started?" 
+                      : "Select a budget to view details"
+                    }
+                  </p>
                 </div>
               )}
             </div>
