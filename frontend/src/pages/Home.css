@@ -19,7 +19,7 @@
 .home-header-title {
   font-size: 1.875rem;
   font-weight: bold;
-  color: #0171bd;
+  color: var(--primary-blue);
 }
 
 .home-main {
@@ -80,13 +80,13 @@
   border-radius: 0.5rem;
   padding: 1.5rem;
   margin-bottom: 2rem;
-  border-left: 4px solid #0171bd;
+  border-left: 4px solid var(--primary-blue);
 }
 
 .home-welcome-title {
   font-size: 1.5rem;
   font-weight: bold;
-  color: #0171bd;
+  color: var(--primary-blue);
   margin-bottom: 0.5rem;
 }
 
@@ -118,7 +118,7 @@
 .home-info-card-title {
   font-size: 1.25rem;
   font-weight: bold;
-    color: #0171bd;
+    color: var(--primary-blue);
   text-decoration: underline;
   margin-bottom: 1.5rem;
 }
@@ -157,7 +157,7 @@
 .home-summary-title {
   font-size: 1.25rem;
   font-weight: bold;
-  color: #0171bd;
+  color: var(--primary-blue);
   text-decoration: underline;
   margin-bottom: 1.5rem;
 }
