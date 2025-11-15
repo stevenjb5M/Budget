@@ -1,16 +1,21 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
-import { Home } from './Home'
-import { useDashboard } from '../hooks/useDashboard'
+import { Home } from '../Home'
+import { useDashboard } from '../../hooks/useDashboard'
 
 // Mock the custom hook
-vi.mock('../hooks/useDashboard', () => ({
+vi.mock('../../hooks/useDashboard', () => ({
   useDashboard: vi.fn(),
 }))
 
 // Mock the Nav component
-vi.mock('../components/Nav', () => ({
+vi.mock('../../components/Nav', () => ({
   Nav: () => <nav data-testid="nav">Navigation</nav>,
+}))
+
+// Mock the Footer component
+vi.mock('../../components/Footer', () => ({
+  Footer: () => <footer data-testid="footer">Footer</footer>,
 }))
 
 // Mock CSS

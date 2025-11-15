@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor, fireEvent } from '@testing-library/react'
-import { Plans } from '../pages/Plans'
-import { plansAPI, budgetsAPI, assetsAPI, debtsAPI } from '../api/client'
-import { versionSyncService } from '../services/versionSyncService'
-import { getCurrentUserId } from '../utils/auth'
+import { Plans } from '../Plans'
+import { plansAPI, budgetsAPI, assetsAPI, debtsAPI } from '../../api/client'
+import { versionSyncService } from '../../services/versionSyncService'
+import { getCurrentUserId } from '../../utils/auth'
 
-vi.mock('../api/client', () => ({
+vi.mock('../../api/client', () => ({
   plansAPI: {
     getPlans: vi.fn(),
     createPlan: vi.fn(),
@@ -17,7 +17,7 @@ vi.mock('../api/client', () => ({
   debtsAPI: { getDebts: vi.fn() },
 }))
 
-vi.mock('../services/versionSyncService', () => ({
+vi.mock('../../services/versionSyncService', () => ({
   versionSyncService: {
     getData: vi.fn(),
     storeData: vi.fn(),
@@ -25,15 +25,15 @@ vi.mock('../services/versionSyncService', () => ({
   },
 }))
 
-vi.mock('../utils/auth', () => ({
+vi.mock('../../utils/auth', () => ({
   getCurrentUserId: vi.fn(),
 }))
 
-vi.mock('../components/Nav', () => ({
+vi.mock('../../components/Nav', () => ({
   Nav: () => <div data-testid="nav">Navigation</div>,
 }))
 
-vi.mock('../components/Footer', () => ({
+vi.mock('../../components/Footer', () => ({
   Footer: () => <div data-testid="footer">Footer</div>,
 }))
 

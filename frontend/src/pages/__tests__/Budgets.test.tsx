@@ -1,30 +1,31 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
-import { Budgets } from '../pages/Budgets'
-import { budgetsAPI, assetsAPI, debtsAPI } from '../api/client'
-import { versionSyncService } from '../services/versionSyncService'
-import { versioningService } from '../services/versioningService'
-import { getCurrentUserId } from '../utils/auth'
+import { Budgets } from '../Budgets'
+import { budgetsAPI, assetsAPI, debtsAPI } from '../../api/client'
+import { versionSyncService } from '../../services/versionSyncService'
+import { versioningService } from '../../services/versioningService'
+import { getCurrentUserId } from '../../utils/auth'
 
-vi.mock('../api/client', () => ({
+vi.mock('../../api/client', () => ({
+  budgetsAPI: { getBudgets: vi.fn(), createBudget: vi.fn(), updateBudget: vi.fn() },
   budgetsAPI: { getBudgets: vi.fn(), createBudget: vi.fn(), updateBudget: vi.fn() },
   assetsAPI: { getAssets: vi.fn() },
   debtsAPI: { getDebts: vi.fn() },
 }))
 
-vi.mock('../services/versionSyncService', () => ({
+vi.mock('../../services/versionSyncService', () => ({
   versionSyncService: { syncData: vi.fn(), getData: vi.fn(), storeData: vi.fn() },
 }))
 
-vi.mock('../services/versioningService', () => ({
+vi.mock('../../services/versioningService', () => ({
   versioningService: { storeData: vi.fn() },
 }))
 
-vi.mock('../utils/auth', () => ({
+vi.mock('../../utils/auth', () => ({
   getCurrentUserId: vi.fn(),
 }))
 
-vi.mock('../components/Nav', () => ({
+vi.mock('../../components/Nav', () => ({
   Nav: () => <div data-testid="nav">Navigation</div>,
 }))
 
