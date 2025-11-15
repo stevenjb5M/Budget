@@ -108,11 +108,6 @@ const Plans: React.FC = () => {
 
   return (
     <div className="plans-page">
-      <header className="plans-header">
-        <div className="plans-header-container">
-          <h1 className="plans-header-title">Budget Planner</h1>
-        </div>
-      </header>
       <Nav />
       <main className="plans-main">
         <div className="plans-content">

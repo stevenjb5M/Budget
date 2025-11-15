@@ -52,7 +52,6 @@ describe('Home Component', () => {
     render(<Home />)
 
     expect(screen.getByTestId('nav')).toBeInTheDocument()
-    expect(screen.getByText('Budget Planner')).toBeInTheDocument()
     // Loading state should be present
   })
 

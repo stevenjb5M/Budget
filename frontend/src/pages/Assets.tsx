@@ -220,11 +220,6 @@ export function Assets() {
 
   return (
     <div className="assets-page">
-      <header className="assets-header">
-        <div className="assets-header-container">
-          <h1 className="assets-header-title">Budget Planner</h1>
-        </div>
-      </header>
       <Nav />
       <main className="assets-main">
         <div className="assets-content">

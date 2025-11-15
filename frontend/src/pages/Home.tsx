@@ -14,11 +14,6 @@ export function Home() {
 
   return (
     <div className="home-page">
-      <header className="home-header">
-        <div className="home-header-container">
-          <h1 className="home-header-title">Budget Planner</h1>
-        </div>
-      </header>
       <Nav />
       <main className="home-main">
         <div className="home-content">

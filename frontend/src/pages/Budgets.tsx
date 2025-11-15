@@ -400,11 +400,6 @@ export function Budgets() {
 
   return (
     <div className="budgets-page">
-      <header className="budgets-header">
-        <div className="budgets-header-container">
-          <h1 className="budgets-header-title">Budget Planner</h1>
-        </div>
-      </header>
       <Nav />
       <main className="budgets-main">
         <div className="budgets-content">
