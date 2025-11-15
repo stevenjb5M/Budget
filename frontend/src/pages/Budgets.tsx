@@ -4,53 +4,8 @@ import { budgetsAPI, assetsAPI, debtsAPI } from '../api/client'
 import { versionSyncService } from '../services/versionSyncService'
 import { versioningService } from '../services/versioningService'
 import { getCurrentUserId } from '../utils/auth'
+import { Budget, BudgetItem, Asset, Debt } from '../types'
 import './Budgets.css'
-
-interface Budget {
-  id: string
-  userId: string
-  name: string
-  isActive: boolean
-  income: Array<{
-    id: string
-    name: string
-    amount: number
-    category: string
-  }>
-  expenses: Array<{
-    id: string
-    name: string
-    amount: number
-    category: string
-    linkedAssetId?: string
-    linkedDebtId?: string
-    type?: 'regular' | 'asset' | 'debt'
-  }>
-  createdAt: string
-  updatedAt: string
-}
-
-interface BudgetItem {
-  id: string
-  name: string
-  amount: number
-  category: string
-  linkedAssetId?: string
-  linkedDebtId?: string
-  type?: 'regular' | 'asset' | 'debt'
-}
-
-interface Asset {
-  id: string
-  name: string
-  currentValue: number
-}
-
-interface Debt {
-  id: string
-  name: string
-  amount: number
-}
 
 export function Budgets() {
   const [budgets, setBudgets] = useState<Budget[]>([])

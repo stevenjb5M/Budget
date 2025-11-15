@@ -1,17 +1,7 @@
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
+import { Asset } from '../types'
 import './SortableAssetItem.css'
-
-interface Asset {
-  id: string
-  userId: string
-  name: string
-  currentValue: number
-  annualAPY: number
-  notes?: string
-  createdAt: string
-  updatedAt: string
-}
 
 interface SortableAssetItemProps {
   asset: Asset

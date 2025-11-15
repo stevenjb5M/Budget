@@ -1,18 +1,7 @@
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
+import { Debt } from '../types'
 import './SortableDebtItem.css'
-
-interface Debt {
-  id: string
-  userId: string
-  name: string
-  currentBalance: number
-  interestRate: number
-  minimumPayment: number
-  notes?: string
-  createdAt: string
-  updatedAt: string
-}
 
 interface SortableDebtItemProps {
   debt: Debt

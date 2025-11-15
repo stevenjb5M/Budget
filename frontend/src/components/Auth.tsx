@@ -1,16 +1,8 @@
 import { Authenticator } from '@aws-amplify/ui-react'
 import '@aws-amplify/ui-react/styles.css'
 import { createContext, useContext, useEffect, useState } from 'react'
+import { AuthProps, AuthContextType } from '../types'
 import './Auth.css'
-
-interface AuthProps {
-  children: React.ReactNode
-}
-
-interface AuthContextType {
-  user: any
-  signOut: () => void
-}
 
 const AuthContext = createContext<AuthContextType | null>(null)
 

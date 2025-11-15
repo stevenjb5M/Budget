@@ -1,113 +1,15 @@
 import { Nav } from '../components/Nav'
-import { useAuth } from '../components/Auth'
-import { useEffect, useState } from 'react'
-import { usersAPI, assetsAPI, debtsAPI } from '../api/client'
+import { useDashboard } from '../hooks/useDashboard'
+import { formatDate, formatBirthdayDate } from '../services/dashboardService'
 import './Home.css'
 
-interface User {
-  id: string
-  displayName: string
-  email: string
-  birthdayString: string
-  retirementAge: number
-  createdAt: string
-  updatedAt: string
-}
-
-interface Asset {
-  id: string
-  name: string
-  currentValue: number
-  annualAPY: number
-  notes?: string
-  userId: string
-  createdAt: string
-  updatedAt: string
-}
-
-interface Debt {
-  id: string
-  name: string
-  currentBalance: number
-  interestRate: number
-  minimumPayment: number
-  notes?: string
-  userId: string
-  createdAt: string
-  updatedAt: string
-}
-
 export function Home() {
-  const { user } = useAuth()
-  const [currentUser, setCurrentUser] = useState<User | null>(null)
-  const [assets, setAssets] = useState<Asset[]>([])
-  const [debts, setDebts] = useState<Debt[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const { dashboardData, loading, error } = useDashboard()
+  const { user, assetsTotal, debtsTotal, netWorth, age } = dashboardData
 
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!user) {
-        setLoading(false)
-        return
-      }
-
-      try {
-        setError(null)
-
-        // Fetch user data
-        const userResponse = await usersAPI.getCurrentUser()
-        setCurrentUser(userResponse.data)
-
-        // Fetch assets and debts for net worth calculation
-        const [assetsResponse, debtsResponse] = await Promise.all([
-          assetsAPI.getAssets(),
-          debtsAPI.getDebts()
-        ])
-
-        setAssets(assetsResponse.data)
-        setDebts(debtsResponse.data)
-
-      } catch (error) {
-        console.error('Error fetching data:', error)
-        setError('Failed to load financial data. Please try again.')
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchData()
-
-    // Listen for user update events
-    const handleUserUpdate = () => {
-      fetchData()
-    }
-    window.addEventListener('userUpdated', handleUserUpdate)
-
-    return () => {
-      window.removeEventListener('userUpdated', handleUserUpdate)
-    }
-  }, [user])
-
-  // Calculate totals
-  const assetsTotal = assets.reduce((sum: number, asset: Asset) => sum + asset.currentValue, 0)
-  const debtsTotal = debts.reduce((sum: number, debt: Debt) => sum + debt.currentBalance, 0)
-  const netWorth = assetsTotal - debtsTotal
-
-  // Calculate age
+  // Calculate dates
   const today = new Date()
-  const birthDate = currentUser ? new Date(currentUser.birthdayString.split('T')[0]) : new Date()
-  const age = currentUser ? today.getFullYear() - birthDate.getFullYear() -
-    (today < new Date(today.getFullYear(), birthDate.getMonth(), birthDate.getDate()) ? 1 : 0) : 0
-
-  // Format dates
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })
-  }
-
-  const formatBirthdayDate = (date: Date) => {
-    return date.toLocaleDateString('en-US', { timeZone: 'UTC', month: '2-digit', day: '2-digit', year: 'numeric' })
-  }
+  const birthDate = user ? new Date(user.birthdayString.split('T')[0]) : new Date()
 
   return (
     <div className="home-page">
@@ -139,10 +41,10 @@ export function Home() {
           )}
 
           {/* Welcome Section */}
-          {!loading && !error && currentUser && (
+          {!loading && !error && user && (
             <div className="home-welcome-card">
               <h2 className="home-welcome-title">
-                Welcome back, {currentUser.displayName}!
+                Welcome back, {user.displayName}!
               </h2>
               <p className="home-welcome-subtitle">
                 Here's your financial overview for today.
@@ -151,7 +53,7 @@ export function Home() {
           )}
 
           {/* Main Overview Grid */}
-          {!loading && !error && currentUser && (
+          {!loading && !error && user && (
             <div className="home-dashboard-grid">
             {/* Date & Age Information */}
             <div className="home-info-card">
@@ -171,7 +73,7 @@ export function Home() {
                 </div>
                 <div className="home-info-item">
                   <span className="home-info-label">Retirement Age</span>
-                  <span className="home-info-value">{currentUser?.retirementAge || 65} years old</span>
+                  <span className="home-info-value">{user?.retirementAge || 65} years old</span>
                 </div>
               </div>
             </div>
