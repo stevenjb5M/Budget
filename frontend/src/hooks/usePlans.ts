@@ -169,7 +169,7 @@ export const usePlans = () => {
         })
       }))
     )
-  }, [assets, debts, budgets])
+  }, [assets, debts, budgets, plans])
 
   const handleCreatePlan = async (newPlanName: string, newPlanDescription: string, autofillBudgetId: string) => {
     try {
