@@ -13,6 +13,7 @@ export const usePlans = () => {
   const [selectedPlanId, setSelectedPlanId] = useState<string>('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [recalcTrigger, setRecalcTrigger] = useState(0)
 
   // Fetch data on hook mount
   useEffect(() => {
@@ -169,7 +170,7 @@ export const usePlans = () => {
         })
       }))
     )
-  }, [assets, debts, budgets, plans])
+  }, [assets, debts, budgets, recalcTrigger])
 
   const handleCreatePlan = async (newPlanName: string, newPlanDescription: string, autofillBudgetId: string) => {
     try {
@@ -465,6 +466,9 @@ export const usePlans = () => {
 
       setPlans(updatedPlans)
       versionSyncService.storeData('plans', userId, updatedPlans)
+      
+      // Trigger net worth recalculation
+      setRecalcTrigger(prev => prev + 1)
     } catch (error) {
       console.error('Error updating budget:', error)
       setError('Failed to update budget. Please try again.')
