@@ -95,7 +95,7 @@ Each entity is stored as a JSON document in DynamoDB with version tracking for o
 | **Database** | Amazon DynamoDB | NoSQL storage with optimistic locking |
 | **Authentication** | Amazon Cognito | Secure user sign-up, login, JWT-based auth |
 | **Local Storage** | Browser LocalStorage | Client-side caching with versioning |
-| **Hosting** | AWS S3, CloudFront, Elastic Beanstalk, DynamoDB, Cognito | Fully cloud-hosted |
+| **Hosting** | AWS Amplify, Elastic Beanstalk, DynamoDB, Cognito | Fully cloud-hosted |
 | **Monitoring** | AWS CloudWatch | Logs and performance metrics |
 
 **System Flow:**
@@ -120,7 +120,7 @@ Each entity is stored as a JSON document in DynamoDB with version tracking for o
 ┌─────────────┐     ┌─────────────────┐
 │   React     │◄────┤   Amazon        │
 │  Frontend   │     │   Cognito       │
-│ (S3 + CF)   │     │  (Auth/JWT)     │
+│ (Amplify)   │     │  (Auth/JWT)     │
 │             │     └─────────────────┘
 │ + Versioning│           ▲
 │   Service   │           │ Sync
