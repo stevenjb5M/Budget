@@ -18,11 +18,11 @@ This is designed as a **flexible, multi-scenario budgeting tool** for students a
 
 | Layer | Technology | Purpose |
 |-------|-------------|----------|
-| **Frontend** | React + Vite + TailwindCSS | Responsive, fast UI hosted on AWS S3 + CloudFront |
+| **Frontend** | React + Vite + TailwindCSS | Responsive, fast UI hosted on AWS Amplify |
 | **Backend** | ASP.NET Core Web API (C#) | REST API hosted on AWS Elastic Beanstalk |
 | **Database** | Amazon DynamoDB | NoSQL JSON-style storage |
 | **Authentication** | Amazon Cognito | Secure user sign-up, login, JWT-based auth |
-| **Hosting** | AWS S3, CloudFront, EB, DynamoDB, Cognito | Fully cloud-hosted on AWS |
+| **Hosting** | AWS Amplify, EB, DynamoDB, Cognito | Fully cloud-hosted on AWS |
 | **Monitoring** | AWS CloudWatch | Logs and performance metrics |
 
 ## Versioning & Offline Support

@@ -2,7 +2,7 @@
 
 .sortable-debt-item {
   display: grid;
-  grid-template-columns: 60px 1fr 120px 120px 100px;
+  grid-template-columns: 60px 1fr 120px 120px 120px 100px;
   gap: 1rem;
   padding: 1rem;
   border-bottom: 1px solid #e5e7eb;
@@ -62,7 +62,7 @@
   margin-top: 0.25rem;
 }
 
-.debt-balance, .debt-rate {
+.debt-balance, .debt-rate, .debt-minimum-payment {
   color: #4b5563;
   text-align: center;
 }

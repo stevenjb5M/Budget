@@ -2,7 +2,7 @@
 
 .home-page {
   min-height: 100vh;
-  background-color: #f9fafb;
+  background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
 }
 
 .home-header {
@@ -19,7 +19,7 @@
 .home-header-title {
   font-size: 1.875rem;
   font-weight: bold;
-  color: #111827;
+  color: var(--primary-blue);
 }
 
 .home-main {
@@ -75,17 +75,18 @@
 
 /* Welcome Section */
 .home-welcome-card {
-  background-color: white;
+  background: linear-gradient(135deg, white 0%, #f8fafc 100%);
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
   border-radius: 0.5rem;
   padding: 1.5rem;
   margin-bottom: 2rem;
+  border-left: 4px solid var(--primary-blue);
 }
 
 .home-welcome-title {
   font-size: 1.5rem;
   font-weight: bold;
-  color: #111827;
+  color: var(--primary-blue);
   margin-bottom: 0.5rem;
 }
 
@@ -117,7 +118,8 @@
 .home-info-card-title {
   font-size: 1.25rem;
   font-weight: bold;
-  color: #111827;
+    color: var(--primary-blue);
+  text-decoration: underline;
   margin-bottom: 1.5rem;
 }
 
@@ -155,7 +157,8 @@
 .home-summary-title {
   font-size: 1.25rem;
   font-weight: bold;
-  color: #111827;
+  color: var(--primary-blue);
+  text-decoration: underline;
   margin-bottom: 1.5rem;
 }
 

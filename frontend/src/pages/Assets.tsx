@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Nav } from '../components/Nav'
+import { Footer } from '../components/Footer'
 import { SortableAssetItem, Asset } from '../components/SortableAssetItem'
 import { SortableDebtItem, Debt } from '../components/SortableDebtItem'
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
@@ -219,11 +220,6 @@ export function Assets() {
 
   return (
     <div className="assets-page">
-      <header className="assets-header">
-        <div className="assets-header-container">
-          <h1 className="assets-header-title">Budget Planner</h1>
-        </div>
-      </header>
       <Nav />
       <main className="assets-main">
         <div className="assets-content">
@@ -721,6 +717,7 @@ export function Assets() {
         </div>
         )}
       </main>
+      <Footer />
 
       {/* Modals */}
       {showDebtDeleteModal && editingDebt && (

@@ -20,9 +20,9 @@
   --amplify-colors-font-primary: #1a202c !important;
   --amplify-colors-font-secondary: #4a5568 !important;
   --amplify-colors-border-primary: #e2e8f0 !important;
-  --amplify-colors-brand-primary-100: #0171bd !important;
-  --amplify-colors-brand-primary-90: #0171bd !important;
-  --amplify-colors-brand-primary-80: #0171bd !important;
+  --amplify-colors-brand-primary-100: var(--primary-blue) !important;
+  --amplify-colors-brand-primary-90: var(--primary-blue) !important;
+  --amplify-colors-brand-primary-80: var(--primary-blue) !important;
 }
 
 .amplify-authenticator * {
@@ -85,7 +85,7 @@
 }
 
 .amplify-button:hover {
-  background-color: #0156a3 !important;
+  background-color: var(--primary-blue-dark) !important;
 }
 
 .amplify-button:disabled {
@@ -98,12 +98,12 @@
 }
 
 .amplify-link {
-  color: #0171bd !important;
+  color: var(--primary-blue) !important;
   text-decoration: none !important;
 }
 
 .amplify-link:hover {
-  color: #0156a3 !important;
+  color: var(--primary-blue-dark) !important;
   text-decoration: underline !important;
 }
 
@@ -115,7 +115,7 @@
 .auth-title {
   font-size: 1.875rem;
   font-weight: 700;
-  color: #0171bd;
+  color: var(--primary-blue);
   margin-bottom: 0.5rem;
 }
 
@@ -137,14 +137,14 @@
 }
 
 .auth-footer-link {
-  color: #0171bd;
+  color: var(--primary-blue);
   text-decoration: none;
   font-weight: 500;
   transition: color 0.2s ease;
 }
 
 .auth-footer-link:hover {
-  color: #0156a3;
+  color: var(--primary-blue-dark);
   text-decoration: underline;
 }
 

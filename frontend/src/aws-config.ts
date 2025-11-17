@@ -12,7 +12,7 @@ export const awsConfig = {
   oauth: {
     domain: 'https://us-east-1sxf6shqoy.auth.us-east-1.amazoncognito.com',
     scope: ['phone', 'email', 'profile', 'openid', 'aws.cognito.signin.user.admin'],
-    redirectSignIn: 'http://localhost:5173/',
+    redirectSignIn: 'http://localhost:5173/home',
     redirectSignOut: 'http://localhost:5173/',
     responseType: 'code'
   }

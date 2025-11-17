@@ -85,7 +85,17 @@ class VersioningService {
     // Otherwise, fetch from API
     try {
       const freshData = await fetchFromAPI()
-      this.storeData(entityType, userId, freshData)
+      this.storeData(entityType, userId, freshData, true) // Mark as from sync
+      
+      // Clear pending changes since we successfully fetched fresh data
+      const syncMeta: SyncMetadata = {
+        lastSyncAttempt: new Date().toISOString(),
+        lastSuccessfulSync: new Date().toISOString(),
+        pendingChanges: false,
+        userId
+      }
+      this.setSyncMetadata(userId, syncMeta)
+      
       return freshData
     } catch (error) {
       // If API fails and we have local data, use local data
@@ -97,7 +107,7 @@ class VersioningService {
     }
   }
 
-  storeData<T>(entityType: string, userId: string, data: T): void {
+  storeData<T>(entityType: string, userId: string, data: T, fromSync: boolean = false): void {
     const storageKey = this.getStorageKey(entityType, userId)
     const existing = this.getVersionedData<T>(storageKey)
 
@@ -110,8 +120,10 @@ class VersioningService {
 
     this.setVersionedData(storageKey, versionedData)
 
-    // Mark as having pending changes
-    this.markPendingChanges(userId)
+    // Only mark as having pending changes if this is not from a successful sync
+    if (!fromSync) {
+      this.markPendingChanges(userId)
+    }
   }
 
   async syncData<T>(

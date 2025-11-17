@@ -1,45 +1,35 @@
-import { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { Nav } from '../components/Nav'
-import { plansAPI, budgetsAPI, assetsAPI, debtsAPI } from '../api/client'
-import { versionSyncService } from '../services/versionSyncService'
-import { versioningService } from '../services/versioningService'
-import { getCurrentUserId } from '../utils/auth'
+import { Footer } from '../components/Footer'
+import { usePlans } from '../hooks/usePlans'
+import { calculateAssetValueForMonth, calculateDebtRemainingForMonth } from '../services/planService'
 import './Plans.css'
 
-interface Plan {
-  id: string
-  userId: string
-  name: string
-  description: string
-  isActive: boolean
-  months: Array<{
-    month: string
-    budgetId: string | null
-    netWorth: number
-  }>
-  createdAt: string
-  updatedAt: string
-}
+const Plans: React.FC = () => {
+  const {
+    plans,
+    budgets,
+    assets,
+    debts,
+    selectedPlan,
+    selectedPlanId,
+    loading,
+    error,
+    currentAssetsTotal,
+    currentDebtsTotal,
+    currentNetWorth,
+    handleCreatePlan,
+    handleSelectPlan,
+    handleAddEmptyTransaction,
+    handleUpdateTransaction,
+    handleSaveTransaction,
+    handleRemoveTransaction,
+    handleRenamePlan,
+    handleDeletePlan,
+    handleBudgetChange
+  } = usePlans()
 
-interface Budget {
-  id: string
-  name: string
-  income: Array<{ amount: number }>
-  expenses: Array<{ amount: number }>
-}
-
-export function Plans() {
-  const [plans, setPlans] = useState<Plan[]>([])
-  const [budgets, setBudgets] = useState<Budget[]>([])
-  const [assets, setAssets] = useState<any[]>([])
-  const [debts, setDebts] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [selectedPlanId, setSelectedPlanId] = useState<string>('')
-  const [showNewPlanModal, setShowNewPlanModal] = useState(false)
-  const [newPlanName, setNewPlanName] = useState('')
-  const [newPlanDescription, setNewPlanDescription] = useState('')
-  const [autofillBudgetId, setAutofillBudgetId] = useState<string>('')
+  // UI-specific state
   const [plansMinimized, setPlansMinimized] = useState(true)
   const [budgetPlanningMinimized, setBudgetPlanningMinimized] = useState(false)
   const [showMonthDetailsModal, setShowMonthDetailsModal] = useState(false)
@@ -48,347 +38,17 @@ export function Plans() {
   const [editingPlanName, setEditingPlanName] = useState('')
   const [showDeleteConfirmationModal, setShowDeleteConfirmationModal] = useState(false)
   const [selectedAssetIds, setSelectedAssetIds] = useState<string[]>([])
+  const [showNewPlanModal, setShowNewPlanModal] = useState(false)
+  const [newPlanName, setNewPlanName] = useState('')
+  const [newPlanDescription, setNewPlanDescription] = useState('')
+  const [autofillBudgetId, setAutofillBudgetId] = useState('')
 
-  // Fetch data on component mount
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setError(null)
-        const userId = await getCurrentUserId()
-        // Use version sync service for cache-first loading
-        const [plansData, budgetsData, assetsData, debtsData] = await Promise.all([
-          versionSyncService.getData('plans', () => plansAPI.getPlans().then(r => r.data)),
-          versionSyncService.getData('budgets', () => budgetsAPI.getBudgets().then(r => r.data)),
-          versionSyncService.getData('assets', () => assetsAPI.getAssets().then(r => r.data)),
-          versionSyncService.getData('debts', () => debtsAPI.getDebts().then(r => r.data))
-        ])
-        
-        // Validate and clean up orphaned expense links in budgets
-        const cleanedBudgets = validateAndCleanBudgets(budgetsData, assetsData, debtsData)
-        
-        // If any expenses were removed, update them in the backend
-        const budgetsWithChanges = cleanedBudgets.filter((cleanedBudget: any, index: number) => {
-          const originalExpenseCount = budgetsData[index].expenses.length
-          const cleanedExpenseCount = cleanedBudget.expenses.length
-          return originalExpenseCount !== cleanedExpenseCount
-        })
-        
-        if (budgetsWithChanges.length > 0) {
-          // Update budgets that had orphaned expenses removed
-          for (const budget of budgetsWithChanges) {
-            await budgetsAPI.updateBudget(budget.id, budget)
-          }
-          console.log(`Cleaned up ${budgetsWithChanges.length} budget(s) with orphaned expenses`)
-        }
-        
-        setPlans(plansData)
-        setBudgets(cleanedBudgets)
-        setAssets(assetsData)
-        setDebts(debtsData)
-
-        // Initialize selected assets with first 3 assets
-        if (assetsData.length > 0) {
-          setSelectedAssetIds(assetsData.slice(0, 3).map((asset: any) => asset.id))
-        }
-
-        if (plansData.length > 0) {
-          const activePlan = plansData.find((p: Plan) => p.isActive)
-          setSelectedPlanId(activePlan?.id || plansData[0].id)
-        }
-      } catch (error) {
-        console.error('Error fetching data:', error)
-        setError('Failed to load plans data. Please try again.')
-      } finally {
-        setLoading(false)
-      }
+  // Initialize selected assets with first 3 assets
+  React.useEffect(() => {
+    if (assets.length > 0 && selectedAssetIds.length === 0) {
+      setSelectedAssetIds(assets.slice(0, 3).map((asset) => `asset-${asset.id}`))
     }
-
-    fetchData()
-  }, [])
-
-  const selectedPlan = plans.find(p => p.id === selectedPlanId)
-
-  // Helper function to validate and clean up orphaned expense links
-  const validateAndCleanBudgets = (budgetsToValidate: Budget[], assetsList: any[], debtsList: any[]): Budget[] => {
-    const assetIds = new Set(assetsList.map((a: any) => a.id))
-    const debtIds = new Set(debtsList.map((d: any) => d.id))
-
-    return budgetsToValidate.map((budget: any) => ({
-      ...budget,
-      expenses: budget.expenses
-        .filter((expense: any) => {
-          // Keep regular expenses
-          if (expense.type === 'regular') return true
-          
-          // Remove asset expenses if asset no longer exists
-          if (expense.type === 'asset' && expense.linkedAssetId && !assetIds.has(expense.linkedAssetId)) {
-            console.warn(`Removed orphaned asset expense "${expense.name}" - asset no longer exists`)
-            return false
-          }
-          
-          // Remove debt expenses if debt no longer exists
-          if (expense.type === 'debt' && expense.linkedDebtId && !debtIds.has(expense.linkedDebtId)) {
-            console.warn(`Removed orphaned debt expense "${expense.name}" - debt no longer exists`)
-            return false
-          }
-          
-          return true
-        })
-    }))
-  }
-
-  // Calculate current net worth (assets - debts)
-  const currentAssetsTotal = assets.reduce((sum: number, asset: any) => sum + asset.currentValue, 0)
-  const currentDebtsTotal = debts.reduce((sum: number, debt: any) => sum + debt.currentBalance, 0)
-  const currentNetWorth = currentAssetsTotal - currentDebtsTotal
-
-  // Helper function to calculate asset value for a given month (cumulative from start)
-  const calculateAssetValueForMonth = (asset: any, monthString: string): number => {
-    if (!selectedPlan) return asset.currentValue
-
-    const monthIndex = selectedPlan.months.findIndex(m => m.month === monthString)
-    if (monthIndex === -1) return asset.currentValue
-
-    // Calculate cumulative deposits from month 0 to current month
-    let totalDeposits = 0
-    for (let i = 0; i <= monthIndex; i++) {
-      const monthData = selectedPlan.months[i]
-      if (monthData.budgetId) {
-        const budget = budgets.find(b => b.id === monthData.budgetId)
-        if (budget) {
-          const assetDeposits = budget.expenses
-            .filter((exp: any) => exp.type === 'asset' && exp.linkedAssetId === asset.id)
-            .reduce((sum: number, exp: any) => sum + exp.amount, 0)
-          totalDeposits += assetDeposits
-        }
-      }
-    }
-
-    return asset.currentValue + totalDeposits
-  }
-
-  // Helper function to calculate debt remaining for a given month (cumulative from start)
-  const calculateDebtRemainingForMonth = (debt: any, monthString: string): number => {
-    if (!selectedPlan) return debt.currentBalance
-
-    const monthIndex = selectedPlan.months.findIndex(m => m.month === monthString)
-    if (monthIndex === -1) return debt.currentBalance
-
-    // Calculate cumulative payments from month 0 to current month
-    let totalPayments = 0
-    for (let i = 0; i <= monthIndex; i++) {
-      const monthData = selectedPlan.months[i]
-      if (monthData.budgetId) {
-        const budget = budgets.find(b => b.id === monthData.budgetId)
-        if (budget) {
-          const debtPayments = budget.expenses
-            .filter((exp: any) => exp.type === 'debt' && exp.linkedDebtId === debt.id)
-            .reduce((sum: number, exp: any) => sum + exp.amount, 0)
-          totalPayments += debtPayments
-        }
-      }
-    }
-
-    return Math.max(0, debt.currentBalance - totalPayments)
-  }
-
-  // Recalculate net worth values when component mounts or current net worth changes
-  useEffect(() => {
-    setPlans(currentPlans => 
-      currentPlans.map(plan => ({
-        ...plan,
-        months: plan.months.map((month, index) => {
-          // Calculate net worth as cumulative assets - cumulative debts
-          let totalAssets = currentAssetsTotal
-          let totalDebts = currentDebtsTotal
-          
-          // Add up all income and regular expenses from month 0 to current month
-          let cumulativeIncome = 0
-          let cumulativeRegularExpenses = 0
-          
-          for (let i = 0; i <= index; i++) {
-            const monthData = plan.months[i]
-            if (monthData.budgetId) {
-              const budget = budgets.find(b => b.id === monthData.budgetId)
-              if (budget) {
-                const income = budget.income.reduce((sum, item) => sum + item.amount, 0)
-                const regularExpenses = budget.expenses
-                  .filter((exp: any) => exp.type === 'regular')
-                  .reduce((sum, item) => sum + item.amount, 0)
-                const assetDeposits = budget.expenses
-                  .filter((exp: any) => exp.type === 'asset')
-                  .reduce((sum, item) => sum + item.amount, 0)
-                const debtPayments = budget.expenses
-                  .filter((exp: any) => exp.type === 'debt')
-                  .reduce((sum, item) => sum + item.amount, 0)
-                
-                cumulativeIncome += income
-                cumulativeRegularExpenses += regularExpenses
-                totalAssets += assetDeposits
-                totalDebts -= debtPayments
-              }
-            }
-          }
-          
-          // Net worth = current assets + cumulative income - cumulative regular expenses - current debts
-          const netWorth = totalAssets - Math.max(0, totalDebts)
-          
-          return {
-            ...month,
-            netWorth: netWorth
-          }
-        })
-      }))
-    )
-  }, [currentNetWorth, currentAssetsTotal, currentDebtsTotal, budgets, assets, debts])
-
-  const handleCreatePlan = async (e: React.FormEvent) => {
-    e.preventDefault()
-    try {
-      const userId = await getCurrentUserId()
-      const newPlan = {
-        name: newPlanName,
-        description: newPlanDescription,
-        isActive: plans.length === 0,
-        months: Array.from({ length: 24 }, (_, i) => {
-          const date = new Date(2025, i, 1)
-          return {
-            month: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`,
-            budgetId: autofillBudgetId || null,
-            netWorth: currentNetWorth
-          }
-        })
-      }
-      
-      const response = await plansAPI.createPlan(newPlan)
-      const updatedPlans = [...plans, response.data]
-
-      // Store updated data locally
-      versioningService.storeData('plans', userId, updatedPlans)
-
-      setPlans(updatedPlans)
-      setSelectedPlanId(response.data.id)
-      setNewPlanName('')
-      setNewPlanDescription('')
-      setAutofillBudgetId('')
-      setShowNewPlanModal(false)
-    } catch (error) {
-      console.error('Error creating plan:', error)
-      setError('Failed to create plan. Please try again.')
-    }
-  }
-
-  const handleSelectPlan = async (planId: string) => {
-    try {
-      const userId = await getCurrentUserId()
-      // Update all plans to set the selected one as active
-      const updatedPlans = await Promise.all(
-        plans.map(async (p) => {
-          const isActive = p.id === planId
-          if (p.isActive !== isActive) {
-            const updatedPlan = {
-              ...p,
-              isActive,
-              updatedAt: new Date().toISOString()
-            }
-            await plansAPI.updatePlan(p.id, updatedPlan)
-            return updatedPlan
-          }
-          return p
-        })
-      )
-
-      setPlans(updatedPlans)
-      setSelectedPlanId(planId)
-
-      // Store updated data locally
-      versioningService.storeData('plans', userId, updatedPlans)
-    } catch (error) {
-      console.error('Error selecting plan:', error)
-      setError('Failed to select plan. Please try again.')
-    }
-  }
-
-  const handleRenamePlan = async () => {
-    if (!selectedPlan || !editingPlanName.trim()) return
-
-    try {
-      const userId = await getCurrentUserId()
-      const updatedPlan = {
-        ...selectedPlan,
-        name: editingPlanName.trim()
-      }
-
-      await plansAPI.updatePlan(selectedPlanId, updatedPlan)
-      const updatedPlans = plans.map(p => p.id === selectedPlanId ? updatedPlan : p)
-
-      setPlans(updatedPlans)
-      versioningService.storeData('plans', userId, updatedPlans)
-      setShowPlanSettingsModal(false)
-      setEditingPlanName('')
-    } catch (error) {
-      console.error('Error renaming plan:', error)
-      setError('Failed to rename plan. Please try again.')
-    }
-  }
-
-  const handleDeletePlan = async () => {
-    if (!selectedPlan) return
-
-    try {
-      const userId = await getCurrentUserId()
-      await plansAPI.deletePlan(selectedPlanId)
-
-      const updatedPlans = plans.filter(p => p.id !== selectedPlanId)
-      setPlans(updatedPlans)
-      versioningService.storeData('plans', userId, updatedPlans)
-
-      if (updatedPlans.length > 0) {
-        setSelectedPlanId(updatedPlans[0].id)
-      } else {
-        setSelectedPlanId('')
-      }
-
-      setShowPlanSettingsModal(false)
-    } catch (error) {
-      console.error('Error deleting plan:', error)
-      setError('Failed to delete plan. Please try again.')
-    }
-  }
-
-  const handleBudgetChange = async (monthIndex: number, budgetId: string) => {
-    try {
-      const userId = await getCurrentUserId()
-      const plan = plans.find(p => p.id === selectedPlanId)
-      if (!plan) return
-
-      const updatedMonths = [...plan.months]
-      updatedMonths[monthIndex] = {
-        ...updatedMonths[monthIndex],
-        budgetId: budgetId || null
-      }
-
-      const updatedPlan = {
-        ...plan,
-        months: updatedMonths,
-        updatedAt: new Date().toISOString()
-      }
-
-      await plansAPI.updatePlan(selectedPlanId, updatedPlan)
-
-      const updatedPlans = plans.map(p =>
-        p.id === selectedPlanId ? updatedPlan : p
-      )
-
-      setPlans(updatedPlans)
-
-      // Store updated data locally
-      versioningService.storeData('plans', userId, updatedPlans)
-    } catch (error) {
-      console.error('Error updating budget:', error)
-      setError('Failed to update budget. Please try again.')
-    }
-  }
+  }, [assets, selectedAssetIds.length])
 
   const getMonthName = (monthString: string) => {
     const [year, month] = monthString.split('-')
@@ -396,13 +56,58 @@ export function Plans() {
     return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
   }
 
+  const handleCreatePlanSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    try {
+      await handleCreatePlan(newPlanName, newPlanDescription, autofillBudgetId)
+      setNewPlanName('')
+      setNewPlanDescription('')
+      setAutofillBudgetId('')
+      setShowNewPlanModal(false)
+    } catch (error) {
+      // Error is handled in the hook
+    }
+  }
+
+  const handleRenamePlanSubmit = async () => {
+    try {
+      await handleRenamePlan(editingPlanName)
+      setShowPlanSettingsModal(false)
+      setEditingPlanName('')
+    } catch (error) {
+      // Error is handled in the hook
+    }
+  }
+
+  const handleDeletePlanConfirm = async () => {
+    try {
+      await handleDeletePlan()
+      setShowDeleteConfirmationModal(false)
+    } catch (error) {
+      // Error is handled in the hook
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="plans-page">
+        <Nav />
+        <div className="loading">Loading plans...</div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="plans-page">
+        <Nav />
+        <div className="error">{error}</div>
+      </div>
+    )
+  }
+
   return (
     <div className="plans-page">
-      <header className="plans-header">
-        <div className="plans-header-container">
-          <h1 className="plans-header-title">Budget Planner</h1>
-        </div>
-      </header>
       <Nav />
       <main className="plans-main">
         <div className="plans-content">
@@ -435,7 +140,7 @@ export function Plans() {
 
           <div className="mb-8">
             <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold text-gray-900">Financial Plans</h2>
+              <h2 className="text-2xl font-bold text-gray-900">Financial Forecaster</h2>
               <button
                 onClick={() => setShowNewPlanModal(true)}
                 className="bg-[#0171bd] text-white px-4 py-2 rounded-md hover:bg-[#0156a3] transition-colors"
@@ -566,12 +271,17 @@ export function Plans() {
                                     setSelectedAssetIds(newSelectedAssetIds)
                                   }}
                                   className="w-full border-gray-300 rounded-md shadow-sm text-xs font-medium text-gray-700 bg-transparent"
-                                  title={`Select asset ${index + 1} to display`}
+                                  title={`Select asset or debt ${index + 1} to display`}
                                 >
                                   <option value="">None</option>
                                   {assets.map((assetOption: any) => (
-                                    <option key={assetOption.id} value={assetOption.id}>
+                                    <option key={assetOption.id} value={`asset-${assetOption.id}`}>
                                       {assetOption.name}
+                                    </option>
+                                  ))}
+                                  {debts.map((debtOption: any) => (
+                                    <option key={debtOption.id} value={`debt-${debtOption.id}`}>
+                                      {debtOption.name}
                                     </option>
                                   ))}
                                 </select>
@@ -593,7 +303,7 @@ export function Plans() {
                                     <span className="text-sm font-medium text-blue-700">{year}</span>
                                   </div>
                                 )}
-                                <div className="border border-gray-200 rounded-lg p-4">
+                                <div className="border border-gray-200 rounded-lg p-4 relative">
                                   <div className="grid grid-cols-7 gap-4 items-center">
                                     <div>
                                       <h5 className="font-medium text-gray-900">{getMonthName(monthData.month)}</h5>
@@ -614,13 +324,26 @@ export function Plans() {
                                       </select>
                                     </div>
                                     {[0, 1, 2].map((assetIndex) => {
-                                      const assetId = selectedAssetIds[assetIndex]
-                                      const asset = assets.find((a: any) => a.id === assetId)
-                                      const assetValue = asset ? calculateAssetValueForMonth(asset, monthData.month) : 0
+                                      const itemId = selectedAssetIds[assetIndex]
+                                      let displayValue = '-'
+                                      if (itemId) {
+                                        const dashIndex = itemId.indexOf('-')
+                                        const type = itemId.substring(0, dashIndex)
+                                        const id = itemId.substring(dashIndex + 1)
+                                        if (type === 'asset') {
+                                          const asset = assets.find((a: any) => a.id === id)
+                                          const assetValue = asset ? calculateAssetValueForMonth(asset, monthData.month, selectedPlan, budgets) : 0
+                                          displayValue = `$${assetValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                                        } else if (type === 'debt') {
+                                          const debt = debts.find((d: any) => d.id === id)
+                                          const debtValue = debt ? calculateDebtRemainingForMonth(debt, monthData.month, selectedPlan, budgets) : 0
+                                          displayValue = `$${debtValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                                        }
+                                      }
                                       return (
                                         <div key={assetIndex} className="text-center">
                                           <div className="text-sm font-medium text-gray-900">
-                                            {assetId ? `$${assetValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '-'}
+                                            {displayValue}
                                           </div>
                                         </div>
                                       )
@@ -631,20 +354,141 @@ export function Plans() {
                                       </div>
                                     </div>
                                     <div className="text-center">
-                                      <button
-                                        onClick={() => {
-                                          setSelectedMonthForDetails(monthData.month)
-                                          setShowMonthDetailsModal(true)
-                                        }}
-                                        className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-md transition-colors"
-                                        title={`View assets & debts for ${getMonthName(monthData.month)}`}
-                                      >
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                                        </svg>
-                                      </button>
+                                      <div className="flex justify-center space-x-2 ml-4">
+                                        <button
+                                          onClick={() => {
+                                            setSelectedMonthForDetails(monthData.month)
+                                            setShowMonthDetailsModal(true)
+                                          }}
+                                          className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-md transition-colors"
+                                          title={`View assets & debts for ${getMonthName(monthData.month)}`}
+                                        >
+                                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                                          </svg>
+                                        </button>
+                                        <button
+                                          onClick={() => handleAddEmptyTransaction(index)}
+                                          className="relative p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-md transition-colors group"
+                                          title=""
+                                        >
+                                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                          </svg>
+                                          <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                                            Add transaction
+                                          </div>
+                                        </button>
+                                      </div>
                                     </div>
                                   </div>
+
+                                  {/* Transactions for this month */}
+                                  {monthData.transactions && monthData.transactions.length > 0 && (
+                                    <div className="mt-3 ml-8">
+                                      <div className="bg-blue-50 p-3 rounded-md border-2 border-blue-200 space-y-2">
+                                        {monthData.transactions.map((transaction) => {
+                                          debugger;
+                                          const target = transaction.type === 'asset' 
+                                            ? assets.find(a => a.id === transaction.targetId)
+                                            : debts.find(d => d.id === transaction.targetId)
+                                          
+                                          if (transaction.isEditing) {
+                                            return (
+                                              <div key={transaction.id} className="flex items-center space-x-2">
+                                                <select
+                                                  value={transaction.targetId ? `${transaction.type}-${transaction.targetId}` : ''}
+                                                  onChange={(e) => handleUpdateTransaction(index, transaction.id, 'targetId', e.target.value)}
+                                                  className="flex-1 border-gray-300 rounded-md shadow-sm text-xs text-black"
+                                                  title="Select asset or debt"
+                                                >
+                                                  <option value="">Select asset/debt...</option>
+                                                  {assets.map(asset => (
+                                                    <option key={asset.id} value={`asset-${asset.id}`}>{asset.name} (Asset)</option>
+                                                  ))}
+                                                  {debts.map(debt => (
+                                                    <option key={debt.id} value={`debt-${debt.id}`}>{debt.name} (Debt)</option>
+                                                  ))}
+                                                </select>
+                                                <input
+                                                  type="number"
+                                                  value={transaction.amount}
+                                                  onChange={(e) => handleUpdateTransaction(index, transaction.id, 'amount', parseFloat(e.target.value) || 0)}
+                                                  onFocus={(e) => {
+                                                    if (parseFloat(e.target.value) === 0) {
+                                                      e.target.value = '';
+                                                    }
+                                                  }}
+                                                  className="w-20 border-gray-300 rounded-md shadow-sm text-xs text-center text-black"
+                                                  placeholder="0.00"
+                                                  step="0.01"
+                                                />
+                                                <input
+                                                  type="text"
+                                                  value={transaction.description}
+                                                  onChange={(e) => handleUpdateTransaction(index, transaction.id, 'description', e.target.value)}
+                                                  className="flex-1 border-gray-300 rounded-md shadow-sm text-xs text-black"
+                                                  placeholder="Note"
+                                                />
+                                                <button
+                                                  onClick={() => handleSaveTransaction(index, transaction.id)}
+                                                  disabled={!transaction.targetId || transaction.amount === 0}
+                                                  className="px-2 py-1 text-xs bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                                                  title="Save transaction"
+                                                >
+                                                  ✓
+                                                </button>
+                                                <button
+                                                  onClick={() => handleRemoveTransaction(index, transaction.id)}
+                                                  className="px-2 py-1 text-xs text-red-600 hover:text-red-800"
+                                                  title="Cancel"
+                                                >
+                                                  ×
+                                                </button>
+                                              </div>
+                                            )
+                                          }
+                                          
+                                          return (
+                                            <div key={transaction.id} className="flex items-center justify-between bg-white p-2 rounded-md">
+                                              <div className="flex items-center space-x-2">
+                                                <span className={`text-xs px-2 py-1 rounded font-medium ${
+                                                  transaction.type === 'asset' 
+                                                    ? 'bg-green-100 text-green-800 border border-green-200' 
+                                                    : 'bg-red-100 text-red-800 border border-red-200'
+                                                }`}>
+                                                  {transaction.type === 'asset' ? 'Asset' : 'Debt'}
+                                                </span>
+                                                <span className="text-sm font-medium text-gray-900">
+                                                  {target?.name || 'Unknown'}
+                                                </span>
+                                                <span className="text-sm text-gray-600">
+                                                  {transaction.description}
+                                                </span>
+                                              </div>
+                                              <div className="flex items-center space-x-2">
+                                                <span className={`text-sm font-medium ${
+                                                  transaction.amount >= 0 ? 'text-green-600' : 'text-red-600'
+                                                }`}>
+                                                  ${Math.abs(transaction.amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                </span>
+                                                <button
+                                                  onClick={() => handleRemoveTransaction(index, transaction.id)}
+                                                  className="text-red-500 hover:text-red-700 text-sm"
+                                                  title="Remove transaction"
+                                                >
+                                                  ×
+                                                </button>
+                                              </div>
+                                            </div>
+                                          )
+                                        })}
+                                      </div>
+                                    </div>
+                                  )}
+
+
+
                                 </div>
                               </div>
                             )
@@ -656,13 +500,19 @@ export function Plans() {
                 </div>
               ) : (
                 <div className="bg-white shadow rounded-lg p-6 text-center">
-                  <p className="text-gray-500">Select a plan to view details</p>
+                  <p className="text-gray-500">
+                    {plans.length === 0 
+                      ? "No financial plans yet. Let's create your first one!" 
+                      : "Select a plan to view details"
+                    }
+                  </p>
                 </div>
               )}
             </div>
           </div>
         </div>
       </main>
+      <Footer />
 
       {/* New Plan Modal */}
       {showNewPlanModal && (
@@ -670,7 +520,7 @@ export function Plans() {
           <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white" onClick={(e) => e.stopPropagation()}>
             <div className="mt-3">
               <h3 className="text-lg font-medium text-gray-900 mb-4">Create New Plan</h3>
-              <form onSubmit={handleCreatePlan}>
+              <form onSubmit={handleCreatePlanSubmit}>
                 <div className="mb-4">
                   <label htmlFor="planName" className="block text-sm font-medium text-gray-700 mb-2">Plan Name</label>
                   <input
@@ -743,7 +593,7 @@ export function Plans() {
                   {assets.length > 0 ? (
                     <div className="space-y-3">
                       {assets.map((asset) => {
-                        const projectedValue = calculateAssetValueForMonth(asset, selectedMonthForDetails)
+                        const projectedValue = calculateAssetValueForMonth(asset, selectedMonthForDetails, selectedPlan, budgets)
                         const depositAmount = projectedValue - asset.currentValue
                         return (
                           <div key={asset.id} className="p-4 bg-gray-50 rounded-lg border border-gray-200">
@@ -779,7 +629,7 @@ export function Plans() {
                   {debts.length > 0 ? (
                     <div className="space-y-3">
                       {debts.map((debt) => {
-                        const remainingBalance = calculateDebtRemainingForMonth(debt, selectedMonthForDetails)
+                        const remainingBalance = calculateDebtRemainingForMonth(debt, selectedMonthForDetails, selectedPlan, budgets)
                         const paymentAmount = debt.currentBalance - remainingBalance
                         return (
                           <div key={debt.id} className="p-4 bg-gray-50 rounded-lg border border-gray-200">
@@ -840,7 +690,7 @@ export function Plans() {
                 placeholder="Enter plan name"
               />
               <button
-                onClick={handleRenamePlan}
+                onClick={handleRenamePlanSubmit}
                 disabled={!editingPlanName.trim() || editingPlanName === selectedPlan?.name}
                 className="mt-2 w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
               >
@@ -891,7 +741,7 @@ export function Plans() {
               <button
                 onClick={() => {
                   setShowDeleteConfirmationModal(false)
-                  handleDeletePlan()
+                  handleDeletePlanConfirm()
                 }}
                 className="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
               >
@@ -901,6 +751,11 @@ export function Plans() {
           </div>
         </div>
       )}
+
+
+
     </div>
   )
 }
+
+export { Plans }

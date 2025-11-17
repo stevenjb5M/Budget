@@ -66,7 +66,7 @@ export function Nav() {
         <div className="nav-content">
           <div className="nav-links">
             <NavLink
-              to="/"
+              to="/home"
               className={({ isActive }) =>
                 isActive
                   ? "nav-link nav-link-active"
@@ -76,14 +76,14 @@ export function Nav() {
               Home
             </NavLink>
             <NavLink
-              to="/plans"
+              to="/assets"
               className={({ isActive }) =>
                 isActive
                   ? "nav-link nav-link-active"
                   : "nav-link nav-link-inactive"
               }
             >
-              Plans
+              Assets & Debts
             </NavLink>
             <NavLink
               to="/budgets"
@@ -96,14 +96,14 @@ export function Nav() {
               Budgets
             </NavLink>
             <NavLink
-              to="/assets"
+              to="/plans"
               className={({ isActive }) =>
                 isActive
                   ? "nav-link nav-link-active"
                   : "nav-link nav-link-inactive"
               }
             >
-              Assets & Debts
+              Financial Forecaster
             </NavLink>
           </div>
 

@@ -117,7 +117,7 @@
 }
 
 .plans-create-button {
-  background-color: #0171bd;
+  background-color: var(--primary-blue);
   color: white;
   padding: 0.5rem 1rem;
   border-radius: 0.375rem;
@@ -400,7 +400,7 @@
 .plans-form-input:focus {
   outline: none;
   box-shadow: 0 0 0 3px rgba(1, 113, 189, 0.1);
-  border-color: #0171bd;
+  border-color: var(--primary-blue);
 }
 
 .plans-form-textarea {
@@ -417,7 +417,7 @@
 .plans-form-textarea:focus {
   outline: none;
   box-shadow: 0 0 0 3px rgba(1, 113, 189, 0.1);
-  border-color: #0171bd;
+  border-color: var(--primary-blue);
 }
 
 .plans-modal-actions {
@@ -443,7 +443,7 @@
 
 .plans-modal-submit-button {
   padding: 0.5rem 1rem;
-  background-color: #0171bd;
+  background-color: var(--primary-blue);
   color: white;
   border: none;
   border-radius: 0.375rem;
