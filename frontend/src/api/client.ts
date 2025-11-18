@@ -5,7 +5,7 @@ import { fetchAuthSession } from 'aws-amplify/auth'
 const getApiBaseUrl = (): string => {
   // Production: Use the Elastic Beanstalk endpoint
   if (import.meta.env.PROD) {
-    return import.meta.env.VITE_API_URL || 'http://budget-api-prod.eba-xibqzxmn.us-east-1.elasticbeanstalk.com'
+    return import.meta.env.VITE_API_URL || 'https://budget-api-prod.eba-xibqzxmn.us-east-1.elasticbeanstalk.com'
   }
   
   // Development: Use localhost
