@@ -1,5 +1,7 @@
 // Shared type definitions for the Budget Planner application
 
+import React from 'react'
+
 export interface User {
   id: string
   displayName: string

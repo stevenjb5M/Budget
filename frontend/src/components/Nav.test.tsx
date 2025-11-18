@@ -3,7 +3,6 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { Nav } from './Nav'
 
 // Mock react-router-dom
-const mockNavLink = vi.fn()
 vi.mock('react-router-dom', () => ({
   NavLink: ({ to, children, className }: any) => (
     <a href={to} className={typeof className === 'function' ? '' : className} onClick={(e) => e.preventDefault()}>

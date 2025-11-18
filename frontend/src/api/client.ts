@@ -18,7 +18,7 @@ apiClient.interceptors.request.use(async (config) => {
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }
-  } catch (error) {
+  } catch {
     // User not authenticated, continue without token
     console.log('No auth session found')
   }

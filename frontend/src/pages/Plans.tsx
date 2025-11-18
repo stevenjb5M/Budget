@@ -15,8 +15,6 @@ const Plans: React.FC = () => {
     selectedPlanId,
     loading,
     error,
-    currentAssetsTotal,
-    currentDebtsTotal,
     currentNetWorth,
     handleCreatePlan,
     handleSelectPlan,
@@ -64,7 +62,7 @@ const Plans: React.FC = () => {
       setNewPlanDescription('')
       setAutofillBudgetId('')
       setShowNewPlanModal(false)
-    } catch (error) {
+    } catch {
       // Error is handled in the hook
     }
   }
@@ -74,7 +72,7 @@ const Plans: React.FC = () => {
       await handleRenamePlan(editingPlanName)
       setShowPlanSettingsModal(false)
       setEditingPlanName('')
-    } catch (error) {
+    } catch {
       // Error is handled in the hook
     }
   }
@@ -83,7 +81,7 @@ const Plans: React.FC = () => {
     try {
       await handleDeletePlan()
       setShowDeleteConfirmationModal(false)
-    } catch (error) {
+    } catch {
       // Error is handled in the hook
     }
   }
@@ -388,7 +386,6 @@ const Plans: React.FC = () => {
                                     <div className="mt-3 ml-8">
                                       <div className="bg-blue-50 p-3 rounded-md border-2 border-blue-200 space-y-2">
                                         {monthData.transactions.map((transaction) => {
-                                          debugger;
                                           const target = transaction.type === 'asset' 
                                             ? assets.find(a => a.id === transaction.targetId)
                                             : debts.find(d => d.id === transaction.targetId)

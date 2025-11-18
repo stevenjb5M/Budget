@@ -4,7 +4,7 @@ import { Auth, useAuth, AuthProvider } from './Auth'
 
 // Mock AWS Amplify
 vi.mock('@aws-amplify/ui-react', () => ({
-  Authenticator: ({ children, signUpAttributes, formFields, components }: any) => (
+  Authenticator: ({ children }: any) => (
     <div data-testid="authenticator">
       <div>Authenticator Mock</div>
       {children ? children({ signOut: vi.fn(), user: { username: 'testuser' } }) : null}

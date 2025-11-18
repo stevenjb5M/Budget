@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Nav } from '../components/Nav'
 import { Footer } from '../components/Footer'
 import { budgetsAPI, assetsAPI, debtsAPI } from '../api/client'
@@ -30,7 +30,6 @@ export function Budgets() {
     const fetchData = async () => {
       try {
         setError(null)
-        const userId = await getCurrentUserId()
         
         // Use version sync to check if cache is fresh
         await versionSyncService.syncData()
@@ -171,7 +170,6 @@ export function Budgets() {
   }
 
   const handleAddIncome = async (e: React.FormEvent) => {
-    debugger;
     e.preventDefault()
     if (!selectedBudget) return
 

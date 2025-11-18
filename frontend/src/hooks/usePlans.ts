@@ -20,7 +20,6 @@ export const usePlans = () => {
     const fetchData = async () => {
       try {
         setError(null)
-        const userId = await getCurrentUserId()
         // Use version sync service for cache-first loading
         const [plansData, budgetsData, assetsData, debtsData] = await Promise.all([
           versionSyncService.getData('plans', async () => {

@@ -1,6 +1,6 @@
 import { Authenticator } from '@aws-amplify/ui-react'
 import '@aws-amplify/ui-react/styles.css'
-import { createContext, useContext, useEffect, useState } from 'react'
+import React, { createContext, useContext, useEffect, useState } from 'react'
 import { AuthProps, AuthContextType } from '../types'
 import './Auth.css'
 
@@ -99,13 +99,11 @@ function autoFillTestCredentials() {
   })
 
   // Fill password fields
-  let passwordCount = 0
   passwordInputs.forEach((input: Element) => {
     const inputElement = input as HTMLInputElement
     inputElement.value = testPassword
     inputElement.dispatchEvent(new Event('input', { bubbles: true }))
     inputElement.dispatchEvent(new Event('change', { bubbles: true }))
-    passwordCount++
   })
 
   // Fill name and text fields (look for name or username placeholder)
