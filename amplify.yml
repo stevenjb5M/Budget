@@ -14,17 +14,3 @@ frontend:
   cache:
     paths:
       - frontend/node_modules/**/*
-
-backend:
-  phases:
-    build:
-      commands:
-        - docker build -t budget-api .
-  artifacts:
-    files:
-      - Dockerfile
-      - docker-compose.yml
-      - backend/**/*
-  cache:
-    paths:
-      - ~/.docker/**/*
