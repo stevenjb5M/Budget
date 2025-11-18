@@ -8,4 +8,5 @@
 11/13/2025 More bugs 2 hours
 11/14/2025 3 hours, added unit tests for plans and auth and nav, major cleanup 
 11/15/2025 Fixed bugs, more unit tests 1 hour
-11/17/2025 Met with TA for project Design interview
+11/17/2025 Met with TA for project Design interview. Worked on release 2 hours
+11/18/2025 Release
