@@ -20,7 +20,6 @@ export const usePlans = () => {
     const fetchData = async () => {
       try {
         setError(null)
-        const userId = await getCurrentUserId()
         // Use version sync service for cache-first loading
         const [plansData, budgetsData, assetsData, debtsData] = await Promise.all([
           versionSyncService.getData('plans', async () => {
@@ -346,6 +345,7 @@ export const usePlans = () => {
         )
         setPlans(updatedPlans)
         versionSyncService.storeData('plans', userId, updatedPlans)
+        setRecalcTrigger(prev => prev + 1)
       }
     } catch (error) {
       console.error('Error saving transaction:', error)
@@ -376,6 +376,7 @@ export const usePlans = () => {
 
       setPlans(updatedPlans)
       versionSyncService.storeData('plans', userId, updatedPlans)
+      setRecalcTrigger(prev => prev + 1)
     } catch (error) {
       console.error('Error removing transaction:', error)
       setError('Failed to remove transaction. Please try again.')

@@ -8,7 +8,6 @@ import { getCurrentUserId } from '../../utils/auth'
 
 vi.mock('../../api/client', () => ({
   budgetsAPI: { getBudgets: vi.fn(), createBudget: vi.fn(), updateBudget: vi.fn() },
-  budgetsAPI: { getBudgets: vi.fn(), createBudget: vi.fn(), updateBudget: vi.fn() },
   assetsAPI: { getAssets: vi.fn() },
   debtsAPI: { getDebts: vi.fn() },
 }))

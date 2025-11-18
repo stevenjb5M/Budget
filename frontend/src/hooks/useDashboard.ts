@@ -4,11 +4,7 @@ import { usersAPI, assetsAPI, debtsAPI } from '../api/client'
 import { User, Asset, Debt } from '../types'
 import {
   getDashboardData,
-  DashboardData,
-  calculateAssetsTotal,
-  calculateDebtsTotal,
-  calculateNetWorth,
-  calculateAge
+  DashboardData
 } from '../services/dashboardService'
 
 export interface UseDashboardReturn {

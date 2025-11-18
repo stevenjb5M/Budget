@@ -1,0 +1,5 @@
+{
+  "service": "Lambda",
+  "providerPlugin": "awscloudformation",
+  "build": true
+}

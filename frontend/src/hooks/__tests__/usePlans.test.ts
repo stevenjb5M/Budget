@@ -313,6 +313,76 @@ describe('usePlans hook', () => {
       expect(selectedPlan?.months[0].transactions?.[0].targetId).toBe('asset1')
     })
 
+    it('updates net worth when saving transaction with negative amount', async () => {
+      const { result } = renderHook(() => usePlans())
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
+
+      // Add and update a transaction with negative amount
+      await act(async () => {
+        await result.current.handleAddEmptyTransaction(0)
+      })
+      const transactionId = result.current.selectedPlan?.months[0].transactions?.[0].id
+      act(() => {
+        result.current.handleUpdateTransaction(0, transactionId!, 'targetId', 'asset-asset1')
+      })
+      act(() => {
+        result.current.handleUpdateTransaction(0, transactionId!, 'amount', -100)
+      })
+
+      vi.mocked(plansAPI.updatePlan).mockResolvedValue({ data: {} } as any)
+
+      await act(async () => {
+        await result.current.handleSaveTransaction(0, transactionId!)
+      })
+
+      expect(plansAPI.updatePlan).toHaveBeenCalled()
+      const selectedPlan = result.current.plans.find((p: any) => p.id === result.current.selectedPlanId)
+      // Net worth should be updated: original 2500 - 100 = 2400
+      expect(selectedPlan?.months[0].netWorth).toBe(2400)
+    })
+
+    it('updates net worth when removing transaction', async () => {
+      const { result } = renderHook(() => usePlans())
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
+
+      // Add and save a transaction with positive amount
+      await act(async () => {
+        await result.current.handleAddEmptyTransaction(0)
+      })
+      const transactionId = result.current.selectedPlan?.months[0].transactions?.[0].id
+      act(() => {
+        result.current.handleUpdateTransaction(0, transactionId!, 'targetId', 'asset-asset1')
+      })
+      act(() => {
+        result.current.handleUpdateTransaction(0, transactionId!, 'amount', 200)
+      })
+
+      vi.mocked(plansAPI.updatePlan).mockResolvedValue({ data: {} } as any)
+
+      await act(async () => {
+        await result.current.handleSaveTransaction(0, transactionId!)
+      })
+
+      let selectedPlan = result.current.plans.find((p: any) => p.id === result.current.selectedPlanId)
+      // Net worth should be updated: original 2500 + 200 = 2700
+      expect(selectedPlan?.months[0].netWorth).toBe(2700)
+
+      // Now remove the transaction
+      await act(async () => {
+        await result.current.handleRemoveTransaction(0, transactionId!)
+      })
+
+      selectedPlan = result.current.plans.find((p: any) => p.id === result.current.selectedPlanId)
+      // Net worth should be back to original: 2500
+      expect(selectedPlan?.months[0].netWorth).toBe(2500)
+    })
+
     it('removes transaction', async () => {
       const { result } = renderHook(() => usePlans())
 

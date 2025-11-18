@@ -1,7 +1,18 @@
 import axios from 'axios'
 import { fetchAuthSession } from 'aws-amplify/auth'
 
-const API_BASE_URL = 'http://localhost:5000'
+// Determine API base URL based on environment
+const getApiBaseUrl = (): string => {
+  // Production: Use the Elastic Beanstalk endpoint
+  if (import.meta.env.PROD) {
+    return import.meta.env.VITE_API_URL || 'https://budget-api-prod.eba-xibqzxmn.us-east-1.elasticbeanstalk.com'
+  }
+  
+  // Development: Use localhost
+  return import.meta.env.VITE_API_URL || 'http://localhost:5000'
+}
+
+const API_BASE_URL = getApiBaseUrl()
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -18,7 +29,7 @@ apiClient.interceptors.request.use(async (config) => {
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }
-  } catch (error) {
+  } catch {
     // User not authenticated, continue without token
     console.log('No auth session found')
   }

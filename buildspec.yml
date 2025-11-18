@@ -1,0 +1,27 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      dotnet: 9.0
+  pre_build:
+    commands:
+      - echo "Building .NET application..."
+      - cd backend
+      - dotnet restore BudgetPlanner.API.csproj
+  build:
+    commands:
+      - dotnet publish -c Release -o ../app
+  post_build:
+    commands:
+      - echo "Build completed on `date`"
+
+artifacts:
+  files:
+    - app/**/*
+    - .ebextensions/**/*
+  discard-paths: yes
+
+cache:
+  paths:
+    - '/root/.nuget/**/*'
