@@ -377,6 +377,7 @@ export const usePlans = () => {
 
       setPlans(updatedPlans)
       versionSyncService.storeData('plans', userId, updatedPlans)
+      setRecalcTrigger(prev => prev + 1)
     } catch (error) {
       console.error('Error removing transaction:', error)
       setError('Failed to remove transaction. Please try again.')
