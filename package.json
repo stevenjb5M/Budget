@@ -1,8 +1,5 @@
 {
   "devDependencies": {
     "@aws-amplify/cli": "^14.2.2"
-  },
-  "scripts": {
-    "prepare": "husky"
   }
 }
