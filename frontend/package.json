@@ -11,8 +11,7 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
-    "test:coverage": "vitest run --coverage",
-    "prepare": ""
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@aws-amplify/ui-react": "^6.13.1",
