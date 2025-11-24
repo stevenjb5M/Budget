@@ -519,7 +519,10 @@ export function Assets() {
                 <div className="flex justify-between space-x-2">
                   <button
                     type="button"
-                    onClick={() => setShowDeleteModal(true)}
+                    onClick={() => {
+                      setShowEditModal(false)
+                      setShowDeleteModal(true)
+                    }}
                     className="inline-flex justify-center py-1 px-3 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700"
                   >
                     Delete Asset
@@ -559,7 +562,10 @@ export function Assets() {
               <div className="flex justify-end space-x-3">
                 <button
                   type="button"
-                  onClick={() => setShowDeleteModal(false)}
+                  onClick={() => {
+                    setShowDeleteModal(false)
+                    setShowEditModal(true)
+                  }}
                   className="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
                 >
                   Cancel
@@ -728,7 +734,10 @@ export function Assets() {
                 <div className="flex justify-between space-x-2">
                   <button
                     type="button"
-                    onClick={() => setShowDebtDeleteModal(true)}
+                    onClick={() => {
+                      setShowDebtEditModal(false)
+                      setShowDebtDeleteModal(true)
+                    }}
                     className="inline-flex justify-center py-1 px-3 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700"
                   >
                     Delete Debt
@@ -770,7 +779,10 @@ export function Assets() {
               <div className="flex justify-end space-x-3">
                 <button
                   type="button"
-                  onClick={() => setShowDebtDeleteModal(false)}
+                  onClick={() => {
+                    setShowDebtDeleteModal(false)
+                    setShowDebtEditModal(true)
+                  }}
                   className="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
                 >
                   Cancel
