@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
-import { Auth, useAuth, AuthProvider } from './Auth'
+import { Auth, AuthProvider } from './Auth'
+import { useAuth } from '../utils/auth'
 
 // Mock AWS Amplify
 vi.mock('@aws-amplify/ui-react', () => ({

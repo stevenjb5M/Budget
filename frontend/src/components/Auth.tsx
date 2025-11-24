@@ -1,18 +1,9 @@
 import { Authenticator } from '@aws-amplify/ui-react'
 import '@aws-amplify/ui-react/styles.css'
-import React, { createContext, useContext, useEffect, useState } from 'react'
-import { AuthProps, AuthContextType } from '../types'
+import React, { useEffect, useState } from 'react'
+import { AuthProps } from '../types'
+import { AuthContext } from '../utils/auth'
 import './Auth.css'
-
-const AuthContext = createContext<AuthContextType | null>(null)
-
-export function useAuth() {
-  const context = useContext(AuthContext)
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider')
-  }
-  return context
-}
 
 export function AuthProvider({ children, signOut, user }: { children: React.ReactNode, signOut: (() => void) | undefined, user: any }) {
   const [currentUser, setCurrentUser] = useState(user)

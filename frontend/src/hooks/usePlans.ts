@@ -200,7 +200,6 @@ export const usePlans = () => {
     } catch (error) {
       console.error('Error creating plan:', error)
       setError('Failed to create plan. Please try again.')
-      throw error
     }
   }
 
@@ -232,7 +231,6 @@ export const usePlans = () => {
     } catch (error) {
       console.error('Error selecting plan:', error)
       setError('Failed to select plan. Please try again.')
-      throw error
     }
   }
 
@@ -269,7 +267,6 @@ export const usePlans = () => {
     } catch (error) {
       console.error('Error adding empty transaction:', error)
       setError('Failed to add transaction. Please try again.')
-      throw error
     }
   }
 
@@ -350,7 +347,6 @@ export const usePlans = () => {
     } catch (error) {
       console.error('Error saving transaction:', error)
       setError('Failed to save transaction. Please try again.')
-      throw error
     }
   }
 
@@ -380,7 +376,6 @@ export const usePlans = () => {
     } catch (error) {
       console.error('Error removing transaction:', error)
       setError('Failed to remove transaction. Please try again.')
-      throw error
     }
   }
 
@@ -406,7 +401,6 @@ export const usePlans = () => {
     } catch (error) {
       console.error('Error renaming plan:', error)
       setError('Failed to rename plan. Please try again.')
-      throw error
     }
   }
 
@@ -438,7 +432,6 @@ export const usePlans = () => {
     } catch (error) {
       console.error('Error deleting plan:', error)
       setError('Failed to delete plan. Please try again.')
-      throw error
     }
   }
 
@@ -473,7 +466,6 @@ export const usePlans = () => {
     } catch (error) {
       console.error('Error updating budget:', error)
       setError('Failed to update budget. Please try again.')
-      throw error
     }
   }
 
