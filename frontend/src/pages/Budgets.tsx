@@ -3,7 +3,6 @@ import { Nav } from '../components/Nav'
 import { Footer } from '../components/Footer'
 import { budgetsAPI, assetsAPI, debtsAPI } from '../api/client'
 import { versionSyncService } from '../services/versionSyncService'
-import { versioningService } from '../services/versioningService'
 import { getCurrentUserId } from '../utils/auth'
 import { Budget, BudgetItem, Asset, Debt } from '../types'
 import './Budgets.css'
@@ -162,7 +161,7 @@ export function Budgets() {
       setSelectedBudgetId(budgetId)
 
       // Store updated data locally
-      versioningService.storeData('budgets', userId, updatedBudgets)
+      versionSyncService.storeData('budgets', userId, updatedBudgets)
     } catch (error) {
       console.error('Error selecting budget:', error)
       setError('Failed to select budget. Please try again.')
@@ -195,7 +194,7 @@ export function Budgets() {
       )
 
       // Store updated data locally
-      versioningService.storeData('budgets', userId, updatedBudgets)
+      versionSyncService.storeData('budgets', userId, updatedBudgets)
 
       setBudgets(updatedBudgets)
       setNewItem({ name: '', amount: 0, category: '', type: 'regular', linkedAssetId: '', linkedDebtId: '' })
@@ -235,7 +234,7 @@ export function Budgets() {
       )
 
       // Store updated data locally
-      versioningService.storeData('budgets', userId, updatedBudgets)
+      versionSyncService.storeData('budgets', userId, updatedBudgets)
 
       setBudgets(updatedBudgets)
       setNewItem({ name: '', amount: 0, category: '', type: 'regular', linkedAssetId: '', linkedDebtId: '' })
@@ -264,7 +263,7 @@ export function Budgets() {
       )
 
       // Store updated data locally
-      versioningService.storeData('budgets', userId, updatedBudgets)
+      versionSyncService.storeData('budgets', userId, updatedBudgets)
 
       setBudgets(updatedBudgets)
     } catch (error) {
@@ -291,7 +290,7 @@ export function Budgets() {
       )
 
       // Store updated data locally
-      versioningService.storeData('budgets', userId, updatedBudgets)
+      versionSyncService.storeData('budgets', userId, updatedBudgets)
 
       setBudgets(updatedBudgets)
     } catch (error) {
@@ -324,7 +323,7 @@ export function Budgets() {
       )
 
       // Store updated data locally
-      versioningService.storeData('budgets', userId, updatedBudgets)
+      versionSyncService.storeData('budgets', userId, updatedBudgets)
 
       setBudgets(updatedBudgets)
       setEditingBudgetName(false)
@@ -367,7 +366,7 @@ export function Budgets() {
       )
 
       // Store updated data locally
-      versioningService.storeData('budgets', userId, updatedBudgets)
+      versionSyncService.storeData('budgets', userId, updatedBudgets)
 
       setBudgets(updatedBudgets)
       setEditingItem(null)

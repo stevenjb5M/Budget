@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '../components/Auth'
 import { usersAPI, assetsAPI, debtsAPI } from '../api/client'
 import { User, Asset, Debt } from '../types'
@@ -26,7 +26,7 @@ export function useDashboard(): UseDashboardReturn {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     if (!user) {
       setLoading(false)
       return
@@ -55,7 +55,7 @@ export function useDashboard(): UseDashboardReturn {
     } finally {
       setLoading(false)
     }
-  }
+  }, [user])
 
   useEffect(() => {
     fetchData()
@@ -69,7 +69,7 @@ export function useDashboard(): UseDashboardReturn {
     return () => {
       window.removeEventListener('userUpdated', handleUserUpdate)
     }
-  }, [user])
+  }, [user, fetchData])
 
   // Calculate dashboard data
   const dashboardData = getDashboardData(currentUser, assets, debts)
