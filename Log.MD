@@ -12,4 +12,5 @@
 | 11/15/2025 | 13.5 hours | Fixed bugs, more unit tests |
 | 11/17/2025 | 15.5 hours | Met with TA for project Design interview. Worked on release |
 | 11/18/2025 | 18.5 hours | Release |
-| 11/19/2025 | 20 hours.  | Bugs |
+| 11/19/2025 | 20 hours   | Bugs |
+| 11/24/2025 | 23 hours   | Bugs |
