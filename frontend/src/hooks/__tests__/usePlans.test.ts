@@ -71,6 +71,7 @@ describe('usePlans hook', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    vi.setSystemTime(new Date('2024-12-01T00:00:00Z'))
 
     // Setup default mocks
     vi.mocked(getCurrentUserId).mockResolvedValue(mockUserId)
@@ -208,6 +209,9 @@ describe('usePlans hook', () => {
       })
       expect(result.current.plans).toContain(createdPlan)
       expect(result.current.selectedPlanId).toBe('plan2')
+      // Verify the plan starts from the next month
+      const createdPlanData = result.current.plans.find(p => p.id === 'plan2')
+      expect(createdPlanData?.months[0].month).toBe('2025-01')
     })
 
     it('selects a plan', async () => {

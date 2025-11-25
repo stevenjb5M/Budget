@@ -72,10 +72,74 @@ export const usePlans = () => {
           currentBalance: typeof debt.currentBalance === 'string' ? parseFloat(debt.currentBalance) : debt.currentBalance
         }))
 
-        setPlans(plansData)
+        const currentAssetsTotal = normalizedAssets.reduce((sum: number, asset: any) => sum + asset.currentValue, 0)
+        const currentDebtsTotal = normalizedDebts.reduce((sum: number, debt: any) => sum + debt.currentBalance, 0)
+        const currentNetWorth = currentAssetsTotal - currentDebtsTotal
+
+        // Update plans if first month has changed
+        const currentDate = new Date()
+        const nextDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1)
+        const nextMonth = `${nextDate.getFullYear()}-${String(nextDate.getMonth() + 1).padStart(2, '0')}`
+        const updatedPlansData = await Promise.all(plansData.map(async (plan: Plan) => {
+          if (plan.months && plan.months.length > 0) {
+            const firstMonth = plan.months[0].month
+            if (firstMonth !== nextMonth) {
+              const firstDate = new Date(firstMonth + '-01')
+              const diffMonths = (nextDate.getFullYear() - firstDate.getFullYear()) * 12 + nextDate.getMonth() - firstDate.getMonth()
+              
+              let updatedMonths = [...plan.months]
+              let changed = false
+              
+              if (diffMonths > 0 && diffMonths < plan.months.length) {
+                // Plan starts in past, shift forward by removing past months
+                updatedMonths = plan.months.slice(diffMonths)
+                // Add new months at the end
+                const lastMonth = updatedMonths[updatedMonths.length - 1]
+                const lastDate = new Date(lastMonth.month + '-01')
+                for (let i = 1; i <= diffMonths; i++) {
+                  const newDate = new Date(lastDate.getFullYear(), lastDate.getMonth() + i, 1)
+                  const newMonthStr = `${newDate.getFullYear()}-${String(newDate.getMonth() + 1).padStart(2, '0')}`
+                  updatedMonths.push({
+                    month: newMonthStr,
+                    budgetId: null,
+                    netWorth: currentNetWorth,
+                    transactions: []
+                  })
+                }
+              } else if (diffMonths != 0) {
+                // Regenerate from next month if starts in future or too far in past
+                const startYear = nextDate.getFullYear()
+                const startMonth = nextDate.getMonth()
+                updatedMonths = Array.from({ length: 24 }, (_, i) => {
+                  const date = new Date(startYear, startMonth + i, 1)
+                  return {
+                    month: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`,
+                    budgetId: null,
+                    netWorth: currentNetWorth,
+                    transactions: []
+                  }
+                })
+              }
+              
+              if (changed) {
+                const updatedPlan = { ...plan, months: updatedMonths }
+                // Update via API
+                await plansAPI.updatePlan(plan.id, updatedPlan)
+                return updatedPlan
+              }
+            }
+          }
+          return plan
+        }))
+
+        setPlans(updatedPlansData)
         setBudgets(cleanedBudgets)
         setAssets(normalizedAssets)
         setDebts(normalizedDebts)
+
+        // Store updated plans data locally
+        const userId = await getCurrentUserId()
+        versionSyncService.storeData('plans', userId, updatedPlansData)
 
         if (plansData.length > 0) {
           const activePlan = plansData.find((p: Plan) => p.isActive)
@@ -174,12 +238,16 @@ export const usePlans = () => {
   const handleCreatePlan = async (newPlanName: string, newPlanDescription: string, autofillBudgetId: string) => {
     try {
       const userId = await getCurrentUserId()
+      const currentDate = new Date()
+      const nextDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1)
+      const startYear = nextDate.getFullYear()
+      const startMonth = nextDate.getMonth()
       const newPlan = {
         name: newPlanName,
         description: newPlanDescription,
         isActive: plans.length === 0,
         months: Array.from({ length: 24 }, (_, i) => {
-          const date = new Date(2025, i, 1)
+          const date = new Date(startYear, startMonth + i, 1)
           return {
             month: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`,
             budgetId: autofillBudgetId || null,
