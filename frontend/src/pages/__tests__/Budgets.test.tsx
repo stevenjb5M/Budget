@@ -456,8 +456,8 @@ describe('Budgets Component - Comprehensive Tests', () => {
       })
 
       // Find and click the delete button for Salary
-      const salaryItem = screen.getByText('Salary').closest('.flex')
-      const deleteButton = within(salaryItem!).getByRole('button', { name: /delete/i })
+      const salaryItem = screen.getByText('Salary').closest('.bg-gray-50')
+      const deleteButton = within(salaryItem!).getByTitle('Delete income item')
       await user.click(deleteButton)
 
       // Verify API was called
@@ -669,8 +669,8 @@ describe('Budgets Component - Comprehensive Tests', () => {
       })
 
       // Find and click the delete button for Rent
-      const rentItem = screen.getByText('Rent').closest('.flex')
-      const deleteButton = within(rentItem!).getByRole('button', { name: /delete/i })
+      const rentItem = screen.getByText('Rent').closest('.bg-gray-50')
+      const deleteButton = within(rentItem!).getByTitle('Delete expense item')
       await user.click(deleteButton)
 
       // Verify API was called
