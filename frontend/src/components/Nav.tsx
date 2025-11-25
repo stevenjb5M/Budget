@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { useAuth } from './Auth'
+import { useAuth } from '../utils/auth'
 import { useState, useEffect } from 'react'
 import { usersAPI } from '../api/client'
 import { updateUserAttributes } from 'aws-amplify/auth'

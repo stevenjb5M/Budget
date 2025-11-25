@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useAuth } from '../components/Auth'
+import { useAuth } from '../utils/auth'
 import { usersAPI, assetsAPI, debtsAPI } from '../api/client'
 import { User, Asset, Debt } from '../types'
 import {

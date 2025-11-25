@@ -3,7 +3,7 @@ import { renderHook, waitFor, act } from '@testing-library/react'
 import { useDashboard } from '../hooks/useDashboard'
 import { usersAPI, assetsAPI, debtsAPI } from '../api/client'
 import { User, Asset, Debt } from '../types'
-import { useAuth } from '../components/Auth'
+import { useAuth } from '../utils/auth'
 
 // Mock the API client
 vi.mock('../api/client', () => ({
@@ -19,7 +19,7 @@ vi.mock('../api/client', () => ({
 }))
 
 // Mock the Auth hook
-vi.mock('../components/Auth', () => ({
+vi.mock('../utils/auth', () => ({
   useAuth: vi.fn(),
 }))
 

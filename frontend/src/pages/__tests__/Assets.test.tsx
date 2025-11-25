@@ -3,16 +3,15 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { Assets } from '../Assets'
 import { assetsAPI, debtsAPI } from '../../api/client'
 import { versionSyncService } from '../../services/versionSyncService'
-import { getCurrentUserId } from '../../utils/auth'
+import { getCurrentUserId, useAuth } from '../../utils/auth'
 
 // Mock useAuth BEFORE any other mocks
-vi.mock('../../components/Auth', () => ({
-  useAuth: () => ({
-    user: { username: 'testuser' },
-    signOut: vi.fn(),
-  }),
-  AuthProvider: ({ children }: any) => <div>{children}</div>,
+vi.mock('../../utils/auth', () => ({
+  useAuth: vi.fn(),
+  getCurrentUserId: vi.fn(),
 }))
+
+const mockUseAuth = vi.mocked(useAuth)
 
 // Mock React Router
 vi.mock('react-router-dom', () => ({
@@ -39,10 +38,6 @@ vi.mock('../../api/client', () => ({
 
 vi.mock('../../services/versionSyncService', () => ({
   versionSyncService: { storeData: vi.fn() },
-}))
-
-vi.mock('../../utils/auth', () => ({
-  getCurrentUserId: vi.fn(),
 }))
 
 vi.mock('../components/Nav', () => ({
@@ -150,6 +145,7 @@ describe('Assets Component', () => {
     ;(assetsAPI.getAssets as any).mockResolvedValue({ data: mockAssets })
     ;(debtsAPI.getDebts as any).mockResolvedValue({ data: mockDebts })
     ;(getCurrentUserId as any).mockResolvedValue(mockUserId)
+    mockUseAuth.mockReturnValue({ user: { username: 'testuser' }, signOut: vi.fn() })
   })
 
   describe('Initial Rendering and Data Loading', () => {

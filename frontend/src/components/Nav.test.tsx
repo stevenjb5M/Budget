@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { Nav } from './Nav'
+import { useAuth } from '../utils/auth'
 
 // Mock react-router-dom
 vi.mock('react-router-dom', () => ({
@@ -12,10 +13,11 @@ vi.mock('react-router-dom', () => ({
 }))
 
 // Mock useAuth
-const mockUseAuth = vi.fn()
-vi.mock('./Auth', () => ({
-  useAuth: () => mockUseAuth(),
+vi.mock('../utils/auth', () => ({
+  useAuth: vi.fn(),
 }))
+
+const mockUseAuth = vi.mocked(useAuth)
 
 // Mock aws-amplify/auth
 vi.mock('aws-amplify/auth', () => ({
