@@ -1167,25 +1167,27 @@ describe('Plans Component - Comprehensive Tests', () => {
       const addButtons = screen.getAllByRole('button', { name: 'Add transaction' })
       fireEvent.click(addButtons[0])
 
+      // perform changes then click save, awaiting UI updates between steps
+      await waitFor(() => expect(screen.getAllByRole('combobox', { name: 'Select asset or debt' }).length).toBeGreaterThan(0))
+
+      const selectElements = screen.getAllByRole('combobox', { name: 'Select asset or debt' })
+      const newSelect = selectElements[selectElements.length - 1]
+      fireEvent.change(newSelect, { target: { value: 'asset-asset1' } })
+
+      await waitFor(() => expect(screen.getAllByDisplayValue('0').length).toBeGreaterThan(0))
+
+      const amountInputs = screen.getAllByDisplayValue('0')
+      const newAmountInput = amountInputs[amountInputs.length - 1]
+      fireEvent.change(newAmountInput, { target: { value: '100' } })
+
       await waitFor(() => {
-        const selectElements = screen.getAllByRole('combobox', { name: 'Select asset or debt' })
-        const newSelect = selectElements[selectElements.length - 1]
-        fireEvent.change(newSelect, { target: { value: 'asset-asset1' } })
-
-        const amountInputs = screen.getAllByDisplayValue('0')
-        const newAmountInput = amountInputs[amountInputs.length - 1]
-        fireEvent.change(newAmountInput, { target: { value: '100' } })
-
         const saveButtons = screen.getAllByRole('button', { name: '✓' })
         const lastSaveButton = saveButtons[saveButtons.length - 1]
         fireEvent.click(lastSaveButton)
       })
 
-      // Wait a bit for any error handling to complete
-      await new Promise(resolve => setTimeout(resolve, 100))
-
-      // Should handle error without crashing - error message should be shown
-      expect(screen.getByText('Failed to save transaction. Please try again.')).toBeInTheDocument()
+      // Wait for the error message to appear via UI updates
+      await waitFor(() => expect(screen.getByText('Failed to save transaction. Please try again.')).toBeInTheDocument())
     })
 
     it('handles plan deletion errors gracefully', async () => {
@@ -1207,18 +1209,13 @@ describe('Plans Component - Comprehensive Tests', () => {
       const deleteButton = screen.getByRole('button', { name: 'Delete Plan' })
       fireEvent.click(deleteButton)
 
-      await waitFor(() => {
-        expect(screen.getByText('Are you sure you want to delete "Test Plan"? This action cannot be undone.')).toBeInTheDocument()
-      })
+      await waitFor(() => expect(screen.getByText('Are you sure you want to delete "Test Plan"? This action cannot be undone.')).toBeInTheDocument())
 
       const confirmDeleteButton = screen.getByRole('button', { name: 'Delete' })
       fireEvent.click(confirmDeleteButton)
 
-      // Wait a bit for any error handling to complete
-      await new Promise(resolve => setTimeout(resolve, 100))
-
-      // Should handle error gracefully - show error message
-      expect(screen.getByText('Failed to delete plan. Please try again.')).toBeInTheDocument()
+      // Wait for the error message to appear
+      await waitFor(() => expect(screen.getByText('Failed to delete plan. Please try again.')).toBeInTheDocument())
     })
   })
 
