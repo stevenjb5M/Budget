@@ -113,15 +113,19 @@ describe('Budgets Component - Comprehensive Tests', () => {
   })
 
   describe('Initial Loading and Data Fetching', () => {
-    it('renders navigation and footer components', () => {
+    it('renders navigation and footer components', async () => {
       render(<Budgets />)
-      expect(screen.getByTestId('nav')).toBeInTheDocument()
-      expect(screen.getByTestId('footer')).toBeInTheDocument()
+      await waitFor(() => {
+        expect(screen.getByTestId('nav')).toBeInTheDocument()
+        expect(screen.getByTestId('footer')).toBeInTheDocument()
+      })
     })
 
-    it('displays loading state initially', () => {
+    it('displays loading state initially', async () => {
       render(<Budgets />)
-      expect(screen.getByText('Budgets')).toBeInTheDocument()
+      await waitFor(() => {
+        expect(screen.getByText('Budgets')).toBeInTheDocument()
+      })
     })
 
     it('loads and displays budgets data correctly', async () => {
@@ -162,9 +166,11 @@ describe('Budgets Component - Comprehensive Tests', () => {
       })
 
       // Check totals: Income = 5000 + 1000 = 6000, Expenses = 1500 + 300 = 1800, Net = 4200
-      expect(screen.getByText('$6,000.00')).toBeInTheDocument() // Total Income
-      expect(screen.getByText('$1,800.00')).toBeInTheDocument() // Total Expenses
-      expect(screen.getByText('$4,200.00')).toBeInTheDocument() // Net Amount
+      await waitFor(() => {
+        expect(screen.getByText('$6,000.00')).toBeInTheDocument() // Total Income
+        expect(screen.getByText('$1,800.00')).toBeInTheDocument() // Total Expenses
+        expect(screen.getByText('$4,200.00')).toBeInTheDocument() // Net Amount
+      })
     })
 
     it('displays income and expense sections', async () => {
@@ -220,6 +226,67 @@ describe('Budgets Component - Comprehensive Tests', () => {
       })
     })
 
+    it('handles getBudgets API error gracefully', async () => {
+      vi.mocked(budgetsAPI.getBudgets).mockRejectedValue(new Error('API Failure'))
+
+      render(<Budgets />)
+
+      // Should not crash — ensure page still renders header
+      await waitFor(() => {
+        expect(screen.getByText('Budgets')).toBeInTheDocument()
+      })
+    })
+
+    it('handles createBudget API error without closing modal', async () => {
+      vi.mocked(budgetsAPI.createBudget).mockRejectedValue(new Error('Creation failed'))
+
+      render(<Budgets />)
+
+      // Open create modal
+      const createButton = await screen.findByRole('button', { name: 'Create New Budget' })
+      fireEvent.click(createButton)
+
+      await waitFor(() => {
+        expect(screen.getByRole('heading', { name: 'Create New Budget' })).toBeInTheDocument()
+      })
+
+      const submitButton = screen.getByRole('button', { name: 'Create Budget' })
+      fireEvent.click(submitButton)
+
+      // Should handle error and keep modal open
+      await waitFor(() => {
+        expect(screen.getByRole('heading', { name: 'Create New Budget' })).toBeInTheDocument()
+      })
+    })
+
+    it('handles updateBudget API error and shows error', async () => {
+      vi.mocked(budgetsAPI.updateBudget).mockRejectedValue(new Error('Update failed'))
+
+      render(<Budgets />)
+
+      await waitFor(() => {
+        expect(screen.getByText('Monthly Budget')).toBeInTheDocument()
+      })
+
+      // Trigger inline edit by clicking the budget name
+      const budgetName = screen.getByText('Monthly Budget')
+      fireEvent.click(budgetName)
+
+      // The inline input should appear
+      const renameInput = await screen.findByDisplayValue('Monthly Budget')
+      expect(renameInput).toBeInTheDocument()
+
+      // Change the name and blur to trigger save (onBlur calls save)
+      fireEvent.change(renameInput, { target: { value: 'New Name' } })
+      fireEvent.blur(renameInput)
+
+      // Since updateBudget rejects, an error banner should be shown and the input should remain
+      await waitFor(() => {
+        expect(screen.getByText(/Failed to update budget name/)).toBeInTheDocument()
+        expect(screen.getByDisplayValue('New Name')).toBeInTheDocument()
+      })
+    })
+
     it('allows switching between budgets', async () => {
       const user = userEvent.setup()
       render(<Budgets />)
@@ -269,9 +336,15 @@ describe('Budgets Component - Comprehensive Tests', () => {
         expect(screen.getByText('Create New Budget')).toBeInTheDocument()
       })
 
+
       // Click create new budget button
       const createButton = screen.getByText('Create New Budget')
       await user.click(createButton)
+
+      // Wait for the modal inputs to render
+      await waitFor(() => {
+        expect(screen.getByLabelText('Budget Name')).toBeInTheDocument()
+      })
 
       // Fill out the form
       const nameInput = screen.getByLabelText('Budget Name')
@@ -337,10 +410,13 @@ describe('Budgets Component - Comprehensive Tests', () => {
       const addIncomeButton = screen.getByText('Add Income')
       await user.click(addIncomeButton)
 
-      expect(screen.getAllByText('Add Income').length).toBeGreaterThan(1)
-      expect(screen.getByLabelText('Name')).toBeInTheDocument()
-      expect(screen.getByLabelText('Amount')).toBeInTheDocument()
-      expect(screen.getByLabelText('Category')).toBeInTheDocument()
+      // Wait for modal inputs
+      await waitFor(() => {
+        expect(screen.getAllByText('Add Income').length).toBeGreaterThan(1)
+        expect(screen.getByLabelText('Name')).toBeInTheDocument()
+        expect(screen.getByLabelText('Amount')).toBeInTheDocument()
+        expect(screen.getByLabelText('Category')).toBeInTheDocument()
+      })
     })
 
     it('adds new income item successfully', async () => {
@@ -366,6 +442,13 @@ describe('Budgets Component - Comprehensive Tests', () => {
       const addIncomeButtons = screen.getAllByText('Add Income')
       const addButton = addIncomeButtons[0] // The button, not the modal header
       await user.click(addButton)
+
+      // Wait for modal inputs
+      await waitFor(() => {
+        const incomeHeading = screen.getByRole('heading', { name: 'Add Income' })
+        const incomeModal = incomeHeading.closest('div')
+        expect(within(incomeModal!).getByLabelText('Name')).toBeInTheDocument()
+      })
 
       // Fill form
       const nameInput = screen.getByLabelText('Name')
@@ -809,9 +892,13 @@ describe('Budgets Component - Comprehensive Tests', () => {
       const createButton = screen.getByText('Create New Budget')
       await user.click(createButton)
 
+      // Wait for the modal inputs to render
+      await waitFor(() => {
+        expect(screen.getByLabelText('Budget Name')).toBeInTheDocument()
+      })
+
       const nameInput = screen.getByLabelText('Budget Name')
       await user.type(nameInput, 'Test Budget')
-
       const submitButton = screen.getByRole('button', { name: 'Create Budget' })
       await user.click(submitButton)
 
@@ -834,11 +921,21 @@ describe('Budgets Component - Comprehensive Tests', () => {
       // Open modal and try to add income
       const addIncomeButtons = screen.getAllByText('Add Income')
       const addButton = addIncomeButtons[0] // The button, not the modal header
+
       await user.click(addButton)
 
-      const nameInput = screen.getByLabelText('Name')
-      const amountInput = screen.getByLabelText('Amount')
-      const categorySelect = screen.getByLabelText('Category')
+      // Wait for income modal inputs and scope to the modal
+      await waitFor(() => {
+        const incomeHeading = screen.getByRole('heading', { name: 'Add Income' })
+        const incomeModal = incomeHeading.closest('div')
+        expect(within(incomeModal!).getByLabelText('Name')).toBeInTheDocument()
+      })
+
+      const incomeHeading = screen.getByRole('heading', { name: 'Add Income' })
+      const incomeModal = incomeHeading.closest('div')!
+      const nameInput = within(incomeModal).getByLabelText('Name')
+      const amountInput = within(incomeModal).getByLabelText('Amount')
+      const categorySelect = within(incomeModal).getByLabelText('Category')
 
       await user.type(nameInput, 'Test Income')
       await user.type(amountInput, '1000')
@@ -873,11 +970,21 @@ describe('Budgets Component - Comprehensive Tests', () => {
       // Open modal and try to add expense
       const addExpenseButtons = screen.getAllByText('Add Expense')
       const addButton = addExpenseButtons[0] // The button, not the modal header
+
       await user.click(addButton)
 
-      const nameInput = screen.getByLabelText('Name')
-      const amountInput = screen.getByLabelText('Amount')
-      const categorySelect = screen.getByLabelText('Category')
+      // Wait for expense modal inputs and scope to the modal
+      await waitFor(() => {
+        const expenseHeading = screen.getByRole('heading', { name: 'Add Expense' })
+        const expenseModal = expenseHeading.closest('div')
+        expect(within(expenseModal!).getByLabelText('Name')).toBeInTheDocument()
+      })
+
+      const expenseHeading = screen.getByRole('heading', { name: 'Add Expense' })
+      const expenseModal = expenseHeading.closest('div')!
+      const nameInput = within(expenseModal).getByLabelText('Name')
+      const amountInput = within(expenseModal).getByLabelText('Amount')
+      const categorySelect = within(expenseModal).getByLabelText('Category')
 
       await user.type(nameInput, 'Test Expense')
       await user.type(amountInput, '500')
@@ -1048,6 +1155,81 @@ describe('Budgets Component - Comprehensive Tests', () => {
 
       // Should show $0.00 for all totals
       expect(screen.getAllByText('$0.00')).toHaveLength(3) // Income, Expenses, Net
+    })
+
+    it('requires budget name when creating a new budget', async () => {
+      render(<Budgets />)
+
+      await waitFor(() => {
+        expect(screen.getByText('Create New Budget')).toBeInTheDocument()
+      })
+
+      // Open create modal
+      const createButton = screen.getByText('Create New Budget')
+      fireEvent.click(createButton)
+
+      // Wait for modal inputs
+      await waitFor(() => {
+        expect(screen.getByLabelText('Budget Name')).toBeInTheDocument()
+      })
+
+      // Leave name empty and submit
+      const submitButton = screen.getByRole('button', { name: 'Create Budget' })
+      await act(async () => {
+        fireEvent.click(submitButton)
+      })
+
+      // Since name is required, modal should still be open and error state should be set
+      await waitFor(() => {
+        expect(screen.getByRole('heading', { name: 'Create New Budget' })).toBeInTheDocument()
+      })
+    })
+
+    it('validates required fields for add income and add expense modals', async () => {
+      const user = userEvent.setup()
+      render(<Budgets />)
+
+      await waitFor(() => {
+        expect(screen.getAllByText('Add Income')[0]).toBeInTheDocument()
+      })
+
+      // Open Add Income modal and attempt submit with missing fields
+      const addIncomeButtons = screen.getAllByText('Add Income')
+      await user.click(addIncomeButtons[0])
+
+      // Wait for modal header and scope subsequent queries to the modal
+      const incomeHeading = await screen.findByRole('heading', { name: 'Add Income' })
+      const incomeModal = incomeHeading.closest('div')!
+      await waitFor(() => {
+        expect(within(incomeModal).getByLabelText('Name')).toBeInTheDocument()
+      })
+
+      // Scope the submit button to the modal to avoid matching the sidebar button
+      const addIncomeSubmit = within(incomeModal).getByRole('button', { name: 'Add Income' })
+      await user.click(addIncomeSubmit)
+
+      // Modal should remain open due to required validations
+      await waitFor(() => {
+        expect(screen.getByRole('heading', { name: 'Add Income' })).toBeInTheDocument()
+      })
+
+      // Open Add Expense modal and attempt submit with missing fields
+      const addExpenseButtons = screen.getAllByText('Add Expense')
+      await user.click(addExpenseButtons[0])
+
+      // Wait for expense modal header and scope to the modal
+      const expenseHeading = await screen.findByRole('heading', { name: 'Add Expense' })
+      const expenseModal = expenseHeading.closest('div')!
+      await waitFor(() => {
+        expect(within(expenseModal).getByLabelText('Name')).toBeInTheDocument()
+      })
+
+      const addExpenseSubmit = within(expenseModal).getByRole('button', { name: 'Add Expense' })
+      await user.click(addExpenseSubmit)
+
+      await waitFor(() => {
+        expect(screen.getByRole('heading', { name: 'Add Expense' })).toBeInTheDocument()
+      })
     })
   })
 })

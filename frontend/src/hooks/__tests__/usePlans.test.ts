@@ -614,5 +614,57 @@ describe('usePlans hook', () => {
       expect(updatedPlan.months[0].month).toBe('2025-12')
       expect(updatedPlan.months.every((m: any) => m.transactions.length === 0)).toBe(true)
     })
+
+    it('works correctly at month/year boundary (Dec 31)', async () => {
+      // Simulate system time at the very end of the year by mocking Date.now
+      const fakeNow = new Date('2025-12-31T12:00:00Z').getTime()
+      const nowSpy = vi.spyOn(Date, 'now').mockReturnValue(fakeNow)
+
+      // Ensure plans data remains available and hook does not error
+      vi.mocked(versionSyncService.getData).mockImplementation((key) => {
+        if (key === 'plans') return Promise.resolve(mockPlans)
+        if (key === 'budgets') return Promise.resolve(mockBudgets)
+        if (key === 'assets') return Promise.resolve(mockAssets)
+        if (key === 'debts') return Promise.resolve(mockDebts)
+        return Promise.resolve([])
+      })
+
+      const { result } = renderHook(() => usePlans())
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
+
+      // No error and plans loaded
+      expect(result.current.error).toBeNull()
+      expect(result.current.plans.length).toBeGreaterThan(0)
+
+      nowSpy.mockRestore()
+    })
+
+    it('works correctly on leap day (Feb 29)', async () => {
+      // Simulate system time on a leap day by mocking Date.now
+      const fakeNow = new Date('2024-02-29T08:00:00Z').getTime()
+      const nowSpy = vi.spyOn(Date, 'now').mockReturnValue(fakeNow)
+
+      vi.mocked(versionSyncService.getData).mockImplementation((key) => {
+        if (key === 'plans') return Promise.resolve(mockPlans)
+        if (key === 'budgets') return Promise.resolve(mockBudgets)
+        if (key === 'assets') return Promise.resolve(mockAssets)
+        if (key === 'debts') return Promise.resolve(mockDebts)
+        return Promise.resolve([])
+      })
+
+      const { result } = renderHook(() => usePlans())
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
+
+      expect(result.current.error).toBeNull()
+      expect(result.current.plans.length).toBeGreaterThan(0)
+
+      nowSpy.mockRestore()
+    })
   })
 })
