@@ -119,6 +119,7 @@ export const usePlans = () => {
                     transactions: []
                   }
                 })
+                changed = true
               }
               
               if (changed) {

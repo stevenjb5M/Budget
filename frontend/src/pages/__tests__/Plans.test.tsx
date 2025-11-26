@@ -53,7 +53,7 @@ describe('Plans Component - Comprehensive Tests', () => {
       isActive: true,
       months: [
         {
-          month: '2025-01',
+          month: '2025-12',
           budgetId: 'budget1',
           netWorth: 2500,
           transactions: [
@@ -68,7 +68,7 @@ describe('Plans Component - Comprehensive Tests', () => {
           ]
         },
         {
-          month: '2025-02',
+          month: '2026-01',
           budgetId: 'budget1',
           netWorth: 3000,
           transactions: []
@@ -176,8 +176,8 @@ describe('Plans Component - Comprehensive Tests', () => {
 
       await waitFor(() => {
         expect(screen.getByText('Test Plan')).toBeInTheDocument()
-        expect(screen.getByText('Jan 2025')).toBeInTheDocument()
-        expect(screen.getByText('Feb 2025')).toBeInTheDocument()
+        expect(screen.getByText('Dec 2025')).toBeInTheDocument()
+        expect(screen.getByText('Jan 2026')).toBeInTheDocument()
       })
     })
 
@@ -220,7 +220,7 @@ describe('Plans Component - Comprehensive Tests', () => {
       await waitFor(() => {
         expect(screen.getByText('Test Plan')).toBeInTheDocument()
         // Should show the monthly grid for the selected plan
-        expect(screen.getByText('Jan 2025')).toBeInTheDocument()
+        expect(screen.getByText('Dec 2025')).toBeInTheDocument()
       })
     })
 
@@ -261,7 +261,7 @@ describe('Plans Component - Comprehensive Tests', () => {
           description: 'Another test plan',
           months: [
             {
-              month: '2025-01',
+              month: '2025-12',
               budgetId: 'budget1',
               netWorth: 5000,
               transactions: []
@@ -942,14 +942,14 @@ describe('Plans Component - Comprehensive Tests', () => {
 
       // Wait for the month grid to be rendered
       await waitFor(() => {
-        expect(screen.getByText('Jan 2025')).toBeInTheDocument()
+        expect(screen.getByText('Dec 2025')).toBeInTheDocument()
       })
 
-      const januaryCell = screen.getByRole('button', { name: 'View assets & debts for Jan 2025' })
+      const januaryCell = screen.getByRole('button', { name: 'View assets & debts for Dec 2025' })
       fireEvent.click(januaryCell)
 
       await waitFor(() => {
-        expect(screen.getByText('Jan 2025 - Assets & Debts Breakdown')).toBeInTheDocument()
+        expect(screen.getByText('Dec 2025 - Assets & Debts Breakdown')).toBeInTheDocument()
       })
     })
 
@@ -962,14 +962,14 @@ describe('Plans Component - Comprehensive Tests', () => {
 
       // Wait for the month grid to be rendered
       await waitFor(() => {
-        expect(screen.getByText('Jan 2025')).toBeInTheDocument()
+        expect(screen.getByText('Dec 2025')).toBeInTheDocument()
       })
 
-      const januaryCell = screen.getByRole('button', { name: 'View assets & debts for Jan 2025' })
+      const januaryCell = screen.getByRole('button', { name: 'View assets & debts for Dec 2025' })
       fireEvent.click(januaryCell)
 
       await waitFor(() => {
-        expect(screen.getByText('Jan 2025 - Assets & Debts Breakdown')).toBeInTheDocument()
+        expect(screen.getByText('Dec 2025 - Assets & Debts Breakdown')).toBeInTheDocument()
         const savingsAccounts = screen.getAllByText('Savings Account')
         expect(savingsAccounts.length).toBeGreaterThan(1) // One in select options, one in modal
         const investmentAccounts = screen.getAllByText('Investment Account')
@@ -986,14 +986,14 @@ describe('Plans Component - Comprehensive Tests', () => {
 
       // Wait for the month grid to be rendered
       await waitFor(() => {
-        expect(screen.getByText('Jan 2025')).toBeInTheDocument()
+        expect(screen.getByText('Dec 2025')).toBeInTheDocument()
       })
 
-      const januaryCell = screen.getByRole('button', { name: 'View assets & debts for Jan 2025' })
+      const januaryCell = screen.getByRole('button', { name: 'View assets & debts for Dec 2025' })
       fireEvent.click(januaryCell)
 
       await waitFor(() => {
-        expect(screen.getByText('Jan 2025 - Assets & Debts Breakdown')).toBeInTheDocument()
+        expect(screen.getByText('Dec 2025 - Assets & Debts Breakdown')).toBeInTheDocument()
         const creditCards = screen.getAllByText('Credit Card')
         expect(creditCards.length).toBeGreaterThan(1) // One in select options, one in modal
       })
@@ -1008,21 +1008,21 @@ describe('Plans Component - Comprehensive Tests', () => {
 
       // Wait for the month grid to be rendered
       await waitFor(() => {
-        expect(screen.getByText('Jan 2025')).toBeInTheDocument()
+        expect(screen.getByText('Dec 2025')).toBeInTheDocument()
       })
 
-      const januaryCell = screen.getByRole('button', { name: 'View assets & debts for Jan 2025' })
+      const januaryCell = screen.getByRole('button', { name: 'View assets & debts for Dec 2025' })
       fireEvent.click(januaryCell)
 
       await waitFor(() => {
-        expect(screen.getByText('Jan 2025 - Assets & Debts Breakdown')).toBeInTheDocument()
+        expect(screen.getByText('Dec 2025 - Assets & Debts Breakdown')).toBeInTheDocument()
       })
 
       const closeButton = screen.getByRole('button', { name: 'Close' })
       fireEvent.click(closeButton)
 
       await waitFor(() => {
-        expect(screen.queryByText('2025-01 - Assets & Debts Breakdown')).not.toBeInTheDocument()
+        expect(screen.queryByText('Dec 2025 - Assets & Debts Breakdown')).not.toBeInTheDocument()
       })
     })
 
@@ -1035,21 +1035,21 @@ describe('Plans Component - Comprehensive Tests', () => {
 
       // Wait for the month grid to be rendered
       await waitFor(() => {
-        expect(screen.getByText('Jan 2025')).toBeInTheDocument()
+        expect(screen.getByText('Dec 2025')).toBeInTheDocument()
       })
 
-      const januaryCell = screen.getByRole('button', { name: 'View assets & debts for Jan 2025' })
+      const januaryCell = screen.getByRole('button', { name: 'View assets & debts for Dec 2025' })
       fireEvent.click(januaryCell)
 
       await waitFor(() => {
-        expect(screen.getByText('Jan 2025 - Assets & Debts Breakdown')).toBeInTheDocument()
+        expect(screen.getByText('Dec 2025 - Assets & Debts Breakdown')).toBeInTheDocument()
       })
 
-      const modal = screen.getByText('Jan 2025 - Assets & Debts Breakdown').closest('.fixed')
+      const modal = screen.getByText('Dec 2025 - Assets & Debts Breakdown').closest('.fixed')
       fireEvent.click(modal!)
 
       await waitFor(() => {
-        expect(screen.queryByText('Jan 2025 - Assets & Debts Breakdown')).not.toBeInTheDocument()
+        expect(screen.queryByText('Dec 2025 - Assets & Debts Breakdown')).not.toBeInTheDocument()
       })
     })
   })
@@ -1063,7 +1063,7 @@ describe('Plans Component - Comprehensive Tests', () => {
       })
 
       // Initially sections should be expanded
-      expect(screen.getByText('Jan 2025')).toBeVisible()
+      expect(screen.getByText('Dec 2025')).toBeVisible()
 
       // Click minimize button (assuming it exists)
       const minimizeButtons = screen.queryAllByRole('button', { name: '−' })
@@ -1112,14 +1112,14 @@ describe('Plans Component - Comprehensive Tests', () => {
 
       // Wait for the month grid to be rendered
       await waitFor(() => {
-        expect(screen.getByText('Jan 2025')).toBeInTheDocument()
+        expect(screen.getByText('Dec 2025')).toBeInTheDocument()
       })
 
-      const januaryCell = screen.getByRole('button', { name: 'View assets & debts for Jan 2025' })
+      const januaryCell = screen.getByRole('button', { name: 'View assets & debts for Dec 2025' })
       fireEvent.click(januaryCell)
 
       await waitFor(() => {
-        expect(screen.getByText('Jan 2025 - Assets & Debts Breakdown')).toBeInTheDocument()
+        expect(screen.getByText('Dec 2025 - Assets & Debts Breakdown')).toBeInTheDocument()
         expect(screen.getByText('No assets created yet')).toBeInTheDocument()
         expect(screen.getByText('No debts created yet')).toBeInTheDocument()
       })
