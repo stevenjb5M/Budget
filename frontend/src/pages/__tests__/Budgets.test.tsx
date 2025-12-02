@@ -244,14 +244,18 @@ describe('Budgets Component - Comprehensive Tests', () => {
 
       // Open create modal
       const createButton = await screen.findByRole('button', { name: 'Create New Budget' })
-      fireEvent.click(createButton)
+      await act(async () => {
+        fireEvent.click(createButton)
+      })
 
       await waitFor(() => {
         expect(screen.getByRole('heading', { name: 'Create New Budget' })).toBeInTheDocument()
       })
 
       const submitButton = screen.getByRole('button', { name: 'Create Budget' })
-      fireEvent.click(submitButton)
+      await act(async () => {
+        fireEvent.click(submitButton)
+      })
 
       // Should handle error and keep modal open
       await waitFor(() => {
@@ -270,15 +274,19 @@ describe('Budgets Component - Comprehensive Tests', () => {
 
       // Trigger inline edit by clicking the budget name
       const budgetName = screen.getByText('Monthly Budget')
-      fireEvent.click(budgetName)
+      await act(async () => {
+        fireEvent.click(budgetName)
+      })
 
       // The inline input should appear
       const renameInput = await screen.findByDisplayValue('Monthly Budget')
       expect(renameInput).toBeInTheDocument()
 
       // Change the name and blur to trigger save (onBlur calls save)
-      fireEvent.change(renameInput, { target: { value: 'New Name' } })
-      fireEvent.blur(renameInput)
+      await act(async () => {
+        fireEvent.change(renameInput, { target: { value: 'New Name' } })
+        fireEvent.blur(renameInput)
+      })
 
       // Since updateBudget rejects, an error banner should be shown and the input should remain
       await waitFor(() => {

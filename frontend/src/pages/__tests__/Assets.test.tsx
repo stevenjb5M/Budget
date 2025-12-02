@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import { Assets } from '../Assets'
 import { assetsAPI, debtsAPI } from '../../api/client'
 import { versionSyncService } from '../../services/versionSyncService'
@@ -203,7 +203,9 @@ describe('Assets Component', () => {
         expect(screen.getByTitle('Add new asset')).toBeInTheDocument()
       })
 
-      fireEvent.click(screen.getByTitle('Add new asset'))
+      await act(async () => {
+        fireEvent.click(screen.getByTitle('Add new asset'))
+      })
       expect(screen.getByText('Create New Asset')).toBeInTheDocument()
     })
 
@@ -221,7 +223,9 @@ describe('Assets Component', () => {
       render(<Assets />)
 
       // Open create modal
-      fireEvent.click(screen.getByTitle('Add new asset'))
+      await act(async () => {
+        fireEvent.click(screen.getByTitle('Add new asset'))
+      })
 
       await waitFor(() => {
         expect(screen.getByText('Create New Asset')).toBeInTheDocument()
@@ -233,15 +237,19 @@ describe('Assets Component', () => {
       const apyInput = screen.getByLabelText(/annual apy/i)
       const notesInput = screen.getByLabelText(/notes/i)
 
-      fireEvent.change(nameInput, { target: { value: 'New Asset' } })
-      fireEvent.change(valueInput, { target: { value: '15000' } })
-      fireEvent.change(apyInput, { target: { value: '3.0' } })
-      fireEvent.change(notesInput, { target: { value: 'Test asset' } })
+      await act(async () => {
+        fireEvent.change(nameInput, { target: { value: 'New Asset' } })
+        fireEvent.change(valueInput, { target: { value: '15000' } })
+        fireEvent.change(apyInput, { target: { value: '3.0' } })
+        fireEvent.change(notesInput, { target: { value: 'Test asset' } })
+      })
 
       // Submit the form by finding the form element
       const form = nameInput.closest('form')
       if (form) {
-        fireEvent.submit(form)
+        await act(async () => {
+          fireEvent.submit(form)
+        })
       }
 
       await waitFor(() => {
@@ -262,7 +270,9 @@ describe('Assets Component', () => {
         expect(screen.getByTestId('edit-asset-asset1')).toBeInTheDocument()
       })
 
-      fireEvent.click(screen.getByTestId('edit-asset-asset1'))
+      await act(async () => {
+        fireEvent.click(screen.getByTestId('edit-asset-asset1'))
+      })
 
       await waitFor(() => {
         expect(screen.getByText('Edit Asset')).toBeInTheDocument()
@@ -280,22 +290,28 @@ describe('Assets Component', () => {
         expect(screen.getByTestId('edit-asset-asset1')).toBeInTheDocument()
       })
 
-      fireEvent.click(screen.getByTestId('edit-asset-asset1'))
+      await act(async () => {
+        fireEvent.click(screen.getByTestId('edit-asset-asset1'))
+      })
 
       await waitFor(() => {
         expect(screen.getByText('Edit Asset')).toBeInTheDocument()
       })
 
       // Change name
-      fireEvent.change(screen.getByDisplayValue('Savings Account'), {
-        target: { value: 'Updated Savings' }
+      await act(async () => {
+        fireEvent.change(screen.getByDisplayValue('Savings Account'), {
+          target: { value: 'Updated Savings' }
+        })
       })
 
       // Submit the form by finding the form element
       const nameInput = screen.getByDisplayValue('Updated Savings')
       const form = nameInput.closest('form')
       if (form) {
-        fireEvent.submit(form)
+        await act(async () => {
+          fireEvent.submit(form)
+        })
       }
 
       await waitFor(() => {
@@ -313,7 +329,9 @@ describe('Assets Component', () => {
         expect(screen.getByTestId('edit-asset-asset1')).toBeInTheDocument()
       })
 
-      fireEvent.click(screen.getByTestId('edit-asset-asset1'))
+      await act(async () => {
+        fireEvent.click(screen.getByTestId('edit-asset-asset1'))
+      })
 
       await waitFor(() => {
         expect(screen.getByText('Edit Asset')).toBeInTheDocument()
@@ -321,14 +339,18 @@ describe('Assets Component', () => {
 
       // Click delete button in edit modal
       const deleteButtons = screen.getAllByText('Delete Asset')
-      fireEvent.click(deleteButtons[0]) // Click the first one (in edit modal)
+      await act(async () => {
+        fireEvent.click(deleteButtons[0])
+      })
 
       await waitFor(() => {
         expect(screen.getByText(/Are you sure you want to delete/)).toBeInTheDocument()
       })
 
       // Confirm deletion
-      fireEvent.click(screen.getByRole('button', { name: /delete asset/i }))
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: /delete asset/i }))
+      })
 
       await waitFor(() => {
         expect(assetsAPI.deleteAsset).toHaveBeenCalledWith('asset1')
@@ -343,7 +365,9 @@ describe('Assets Component', () => {
         expect(screen.getByTestId('edit-asset-asset1')).toBeInTheDocument()
       })
 
-      fireEvent.click(screen.getByTestId('edit-asset-asset1'))
+      await act(async () => {
+        fireEvent.click(screen.getByTestId('edit-asset-asset1'))
+      })
 
       await waitFor(() => {
         expect(screen.getByText('Edit Asset')).toBeInTheDocument()
@@ -351,14 +375,18 @@ describe('Assets Component', () => {
 
       // Click delete button in edit modal
       const deleteButtons = screen.getAllByText('Delete Asset')
-      fireEvent.click(deleteButtons[0]) // Click the first one (in edit modal)
+      await act(async () => {
+        fireEvent.click(deleteButtons[0])
+      })
 
       await waitFor(() => {
         expect(screen.getByText(/Are you sure you want to delete/)).toBeInTheDocument()
       })
 
       // Click cancel on delete confirmation
-      fireEvent.click(screen.getByText('Cancel'))
+      await act(async () => {
+        fireEvent.click(screen.getByText('Cancel'))
+      })
 
       // Should be back to edit modal
       expect(screen.getByText('Edit Asset')).toBeInTheDocument()
@@ -373,7 +401,9 @@ describe('Assets Component', () => {
         expect(screen.getByTitle('Add new debt')).toBeInTheDocument()
       })
 
-      fireEvent.click(screen.getByTitle('Add new debt'))
+      await act(async () => {
+        fireEvent.click(screen.getByTitle('Add new debt'))
+      })
       expect(screen.getByText('Create New Debt')).toBeInTheDocument()
     })
 
@@ -392,7 +422,9 @@ describe('Assets Component', () => {
       render(<Assets />)
 
       // Open create modal
-      fireEvent.click(screen.getByTitle('Add new debt'))
+      await act(async () => {
+        fireEvent.click(screen.getByTitle('Add new debt'))
+      })
 
       await waitFor(() => {
         expect(screen.getByText('Create New Debt')).toBeInTheDocument()
@@ -405,16 +437,20 @@ describe('Assets Component', () => {
       const paymentInput = screen.getByLabelText(/minimum payment/i)
       const notesInput = screen.getByLabelText(/notes/i)
 
-      fireEvent.change(nameInput, { target: { value: 'Car Loan' } })
-      fireEvent.change(balanceInput, { target: { value: '20000' } })
-      fireEvent.change(rateInput, { target: { value: '5.5' } })
-      fireEvent.change(paymentInput, { target: { value: '400' } })
-      fireEvent.change(notesInput, { target: { value: 'Auto loan' } })
+      await act(async () => {
+        fireEvent.change(nameInput, { target: { value: 'Car Loan' } })
+        fireEvent.change(balanceInput, { target: { value: '20000' } })
+        fireEvent.change(rateInput, { target: { value: '5.5' } })
+        fireEvent.change(paymentInput, { target: { value: '400' } })
+        fireEvent.change(notesInput, { target: { value: 'Auto loan' } })
+      })
 
       // Submit the form by finding the form element
       const form = nameInput.closest('form')
       if (form) {
-        fireEvent.submit(form)
+        await act(async () => {
+          fireEvent.submit(form)
+        })
       }
 
       await waitFor(() => {
@@ -436,7 +472,9 @@ describe('Assets Component', () => {
         expect(screen.getByTestId('edit-debt-debt1')).toBeInTheDocument()
       })
 
-      fireEvent.click(screen.getByTestId('edit-debt-debt1'))
+      await act(async () => {
+        fireEvent.click(screen.getByTestId('edit-debt-debt1'))
+      })
 
       await waitFor(() => {
         expect(screen.getByText('Edit Debt')).toBeInTheDocument()
@@ -454,7 +492,9 @@ describe('Assets Component', () => {
         expect(screen.getByTestId('edit-debt-debt1')).toBeInTheDocument()
       })
 
-      fireEvent.click(screen.getByTestId('edit-debt-debt1'))
+      await act(async () => {
+        fireEvent.click(screen.getByTestId('edit-debt-debt1'))
+      })
 
       await waitFor(() => {
         expect(screen.getByText('Edit Debt')).toBeInTheDocument()
@@ -462,15 +502,19 @@ describe('Assets Component', () => {
       })
 
       // Change name
-      fireEvent.change(screen.getByDisplayValue('Student Loan'), {
-        target: { value: 'Updated Student Loan' }
+      await act(async () => {
+        fireEvent.change(screen.getByDisplayValue('Student Loan'), {
+          target: { value: 'Updated Student Loan' }
+        })
       })
 
       // Submit the form by finding the form element
       const nameInput = screen.getByDisplayValue('Updated Student Loan')
       const form = nameInput.closest('form')
       if (form) {
-        fireEvent.submit(form)
+        await act(async () => {
+          fireEvent.submit(form)
+        })
       }
 
       await waitFor(() => {
@@ -488,7 +532,9 @@ describe('Assets Component', () => {
         expect(screen.getByTestId('edit-debt-debt1')).toBeInTheDocument()
       })
 
-      fireEvent.click(screen.getByTestId('edit-debt-debt1'))
+      await act(async () => {
+        fireEvent.click(screen.getByTestId('edit-debt-debt1'))
+      })
 
       await waitFor(() => {
         expect(screen.getByText('Edit Debt')).toBeInTheDocument()
@@ -496,14 +542,18 @@ describe('Assets Component', () => {
 
       // Click delete button in edit modal
       const deleteButtons = screen.getAllByText('Delete Debt')
-      fireEvent.click(deleteButtons[0]) // Click the first one (in edit modal)
+      await act(async () => {
+        fireEvent.click(deleteButtons[0])
+      })
 
       await waitFor(() => {
         expect(screen.getByText(/Are you sure you want to delete/)).toBeInTheDocument()
       })
 
       // Confirm deletion - click the delete button in the confirmation modal
-      fireEvent.click(screen.getByRole('button', { name: /delete debt/i }))
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: /delete debt/i }))
+      })
 
       await waitFor(() => {
         expect(debtsAPI.deleteDebt).toHaveBeenCalledWith('debt1')
@@ -517,7 +567,9 @@ describe('Assets Component', () => {
       render(<Assets />)
 
       // Open create modal
-      fireEvent.click(screen.getByTitle('Add new asset'))
+      await act(async () => {
+        fireEvent.click(screen.getByTitle('Add new asset'))
+      })
 
       await waitFor(() => {
         expect(screen.getByText('Create New Asset')).toBeInTheDocument()
@@ -526,7 +578,9 @@ describe('Assets Component', () => {
       // Click outside modal (on backdrop)
       const backdrop = document.querySelector('.modal-overlay')
       if (backdrop) {
-        fireEvent.click(backdrop)
+        await act(async () => {
+          fireEvent.click(backdrop)
+        })
       }
 
       expect(screen.queryByText('Create New Asset')).not.toBeInTheDocument()
@@ -536,13 +590,17 @@ describe('Assets Component', () => {
       render(<Assets />)
 
       // Open create modal
-      fireEvent.click(screen.getByTitle('Add new asset'))
+      await act(async () => {
+        fireEvent.click(screen.getByTitle('Add new asset'))
+      })
 
       await waitFor(() => {
         expect(screen.getByText('Create New Asset')).toBeInTheDocument()
       })
 
-      fireEvent.click(screen.getByText('Cancel'))
+      await act(async () => {
+        fireEvent.click(screen.getByText('Cancel'))
+      })
       expect(screen.queryByText('Create New Asset')).not.toBeInTheDocument()
     })
   })
@@ -554,16 +612,22 @@ describe('Assets Component', () => {
       render(<Assets />)
 
       // Open create modal
-      fireEvent.click(screen.getByTitle('Add new asset'))
+      await act(async () => {
+        fireEvent.click(screen.getByTitle('Add new asset'))
+      })
 
       await waitFor(() => {
         expect(screen.getByText('Create New Asset')).toBeInTheDocument()
       })
 
-      fireEvent.change(screen.getByLabelText(/name/i), { target: { value: 'Test Asset' } })
+      await act(async () => {
+        fireEvent.change(screen.getByLabelText(/name/i), { target: { value: 'Test Asset' } })
+      })
       
       // Submit the form
-      fireEvent.click(screen.getByText('Create Asset'))
+      await act(async () => {
+        fireEvent.click(screen.getByText('Create Asset'))
+      })
 
       await waitFor(() => {
         expect(screen.getByText('Failed to create asset. Please try again.')).toBeInTheDocument()
@@ -579,7 +643,9 @@ describe('Assets Component', () => {
         expect(screen.getByTestId('edit-asset-asset1')).toBeInTheDocument()
       })
 
-      fireEvent.click(screen.getByTestId('edit-asset-asset1'))
+      await act(async () => {
+        fireEvent.click(screen.getByTestId('edit-asset-asset1'))
+      })
 
       await waitFor(() => {
         expect(screen.getByText('Edit Asset')).toBeInTheDocument()
