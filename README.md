@@ -66,28 +66,36 @@ npm run dev
 ```
 Frontend runs on http://localhost:5173
 
-See [SETUP.md](SETUP.md) for detailed setup instructions.
+For detailed deployment options, see [DEPLOYMENT_SUMMARY.md](DEPLOYMENT_SUMMARY.md), [AMPLIFY_SETUP.md](AMPLIFY_SETUP.md), or [ELASTIC_BEANSTALK_DEPLOYMENT.md](ELASTIC_BEANSTALK_DEPLOYMENT.md).
 
 ## Project Structure
 
 ```
 Budget/
-├── backend/              # ASP.NET Core API
-│   ├── Models/          # Data models
-│   ├── Controllers/     # API endpoints
-│   ├── Services/        # Business logic
-│   └── Config/          # Configuration
-├── frontend/            # React + Vite app
+├── backend/                    # ASP.NET Core API
+│   ├── Models/                # Data models
+│   ├── Controllers/           # API endpoints
+│   ├── Services/              # Business logic
+│   ├── Program.cs             # Configuration
+│   └── BudgetPlanner.API.csproj
+├── frontend/                   # React + Vite app
 │   ├── src/
-│   │   ├── api/        # API client
-│   │   ├── components/ # React components
-│   │   └── pages/      # Page components
-│   └── package.json
-├── SETUP.md            # Development setup guide
-├── DEVELOPMENT.md      # Development workflow
-├── DEPLOYMENT.md       # AWS deployment guide
-├── ProjectDesign.md    # Project design & architecture
-└── README.md           # This file
+│   │   ├── api/              # API client
+│   │   ├── components/       # React components
+│   │   ├── pages/            # Page components
+│   │   ├── hooks/            # Custom React hooks
+│   │   ├── services/         # Business logic
+│   │   └── utils/            # Utility functions
+│   ├── package.json
+│   ├── vite.config.ts
+│   └── tailwind.config.cjs
+├── amplify/                    # AWS Amplify configuration
+├── scripts/                    # Database & utility scripts
+├── ProjectDesign.md            # Project design & architecture
+├── DEPLOYMENT_SUMMARY.md       # Deployment overview
+├── AMPLIFY_SETUP.md            # AWS Amplify setup
+├── ELASTIC_BEANSTALK_DEPLOYMENT.md  # EB deployment guide
+└── README.md                   # This file
 ```
 
 ## Data Model
@@ -140,25 +148,19 @@ All endpoints require JWT authentication via Cognito.
 
 ## Documentation
 
-- [SETUP.md](SETUP.md) – Local development setup
-- [DEVELOPMENT.md](DEVELOPMENT.md) – Development workflow and guidelines
-- [DEPLOYMENT.md](DEPLOYMENT.md) – AWS deployment instructions
-- [ProjectDesign.md](ProjectDesign.md) – Project design and architecture
-- [CONTRIBUTING.md](CONTRIBUTING.md) – Contribution guidelines
+- [ProjectDesign.md](ProjectDesign.md) – Project design, architecture, and data model
+- [DEPLOYMENT_SUMMARY.md](DEPLOYMENT_SUMMARY.md) – Deployment overview and architecture
+- [AMPLIFY_SETUP.md](AMPLIFY_SETUP.md) – AWS Amplify backend setup and configuration
+- [ELASTIC_BEANSTALK_DEPLOYMENT.md](ELASTIC_BEANSTALK_DEPLOYMENT.md) – Elastic Beanstalk API deployment guide
 
-## Development Timeline
+## Project Status
 
-| Milestone | Date | Status |
-|-----------|------|--------|
-| Authentication Setup | Nov 8 | Not Started |
-| Frontend Development | Nov 17 | Not Started |
-| Integration & Testing | Nov 26 | Not Started |
-| Deployment & Polish | Dec 3 | Not Started |
-| Project Complete | Dec 10 | Not Started |
-
-## Contributing
-
-We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+Budget Planner is a **fully functional** budgeting application with:
+- ✅ Complete backend API with user authentication and data management
+- ✅ Responsive React frontend with budget visualization
+- ✅ AWS cloud deployment (Amplify, Elastic Beanstalk, DynamoDB, Cognito)
+- ✅ Version-based synchronization for offline support
+- ✅ Multi-scenario financial planning
 
 ## License
 

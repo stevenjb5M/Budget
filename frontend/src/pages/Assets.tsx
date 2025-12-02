@@ -6,6 +6,8 @@ import { SortableDebtItem, Debt } from '../components/SortableDebtItem'
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { assetsAPI, debtsAPI } from '../api/client'
+import { versionSyncService } from '../services/versionSyncService'
+import { getCurrentUserId } from '../utils/auth'
 import './Assets.css'
 
 export function Assets() {
@@ -82,7 +84,13 @@ export function Assets() {
       }
 
       const response = await assetsAPI.createAsset(assetData)
-      setAssets([...assets, response.data])
+      const updatedAssets = [...assets, response.data]
+      setAssets(updatedAssets)
+      
+      // Update version sync cache
+      const userId = await getCurrentUserId()
+      versionSyncService.storeData('assets', userId, updatedAssets)
+      
       setNewAsset({ name: '', currentValue: 0, annualAPY: 0, notes: '' })
       setShowModal(false)
     } catch (error) {
@@ -110,9 +118,15 @@ export function Assets() {
       }
 
       const response = await assetsAPI.updateAsset(editingAsset.id, assetData)
-      setAssets(assets.map(asset =>
+      const updatedAssets = assets.map(asset =>
         asset.id === editingAsset.id ? response.data : asset
-      ))
+      )
+      setAssets(updatedAssets)
+      
+      // Update version sync cache
+      const userId = await getCurrentUserId()
+      versionSyncService.storeData('assets', userId, updatedAssets)
+      
       setShowEditModal(false)
       setEditingAsset(null)
       setNewAsset({ name: '', currentValue: 0, annualAPY: 0, notes: '' })
@@ -127,7 +141,13 @@ export function Assets() {
 
     try {
       await assetsAPI.deleteAsset(editingAsset.id)
-      setAssets(assets.filter(asset => asset.id !== editingAsset.id))
+      const updatedAssets = assets.filter(asset => asset.id !== editingAsset.id)
+      setAssets(updatedAssets)
+      
+      // Update version sync cache
+      const userId = await getCurrentUserId()
+      versionSyncService.storeData('assets', userId, updatedAssets)
+      
       setShowDeleteModal(false)
       setEditingAsset(null)
       setNewAsset({ name: '', currentValue: 0, annualAPY: 0, notes: '' })
@@ -162,7 +182,13 @@ export function Assets() {
       }
 
       const response = await debtsAPI.createDebt(debtData)
-      setDebts([...debts, response.data])
+      const updatedDebts = [...debts, response.data]
+      setDebts(updatedDebts)
+      
+      // Update version sync cache
+      const userId = await getCurrentUserId()
+      versionSyncService.storeData('debts', userId, updatedDebts)
+      
       setNewDebt({ name: '', currentBalance: 0, interestRate: 0, minimumPayment: 0, notes: '' })
       setShowDebtModal(false)
     } catch (error) {
@@ -191,9 +217,15 @@ export function Assets() {
       }
 
       const response = await debtsAPI.updateDebt(editingDebt.id, debtData)
-      setDebts(debts.map(debt =>
+      const updatedDebts = debts.map(debt =>
         debt.id === editingDebt.id ? response.data : debt
-      ))
+      )
+      setDebts(updatedDebts)
+      
+      // Update version sync cache
+      const userId = await getCurrentUserId()
+      versionSyncService.storeData('debts', userId, updatedDebts)
+      
       setShowDebtEditModal(false)
       setEditingDebt(null)
       setNewDebt({ name: '', currentBalance: 0, interestRate: 0, minimumPayment: 0, notes: '' })
@@ -208,7 +240,13 @@ export function Assets() {
 
     try {
       await debtsAPI.deleteDebt(editingDebt.id)
-      setDebts(debts.filter(debt => debt.id !== editingDebt.id))
+      const updatedDebts = debts.filter(debt => debt.id !== editingDebt.id)
+      setDebts(updatedDebts)
+      
+      // Update version sync cache
+      const userId = await getCurrentUserId()
+      versionSyncService.storeData('debts', userId, updatedDebts)
+      
       setShowDebtDeleteModal(false)
       setEditingDebt(null)
       setNewDebt({ name: '', currentBalance: 0, interestRate: 0, minimumPayment: 0, notes: '' })
@@ -481,7 +519,10 @@ export function Assets() {
                 <div className="flex justify-between space-x-2">
                   <button
                     type="button"
-                    onClick={() => setShowDeleteModal(true)}
+                    onClick={() => {
+                      setShowEditModal(false)
+                      setShowDeleteModal(true)
+                    }}
                     className="inline-flex justify-center py-1 px-3 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700"
                   >
                     Delete Asset
@@ -521,7 +562,10 @@ export function Assets() {
               <div className="flex justify-end space-x-3">
                 <button
                   type="button"
-                  onClick={() => setShowDeleteModal(false)}
+                  onClick={() => {
+                    setShowDeleteModal(false)
+                    setShowEditModal(true)
+                  }}
                   className="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
                 >
                   Cancel
@@ -690,7 +734,10 @@ export function Assets() {
                 <div className="flex justify-between space-x-2">
                   <button
                     type="button"
-                    onClick={() => setShowDebtDeleteModal(true)}
+                    onClick={() => {
+                      setShowDebtEditModal(false)
+                      setShowDebtDeleteModal(true)
+                    }}
                     className="inline-flex justify-center py-1 px-3 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700"
                   >
                     Delete Debt
@@ -732,7 +779,10 @@ export function Assets() {
               <div className="flex justify-end space-x-3">
                 <button
                   type="button"
-                  onClick={() => setShowDebtDeleteModal(false)}
+                  onClick={() => {
+                    setShowDebtDeleteModal(false)
+                    setShowDebtEditModal(true)
+                  }}
                   className="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
                 >
                   Cancel

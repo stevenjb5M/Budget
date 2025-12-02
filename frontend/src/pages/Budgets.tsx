@@ -3,7 +3,6 @@ import { Nav } from '../components/Nav'
 import { Footer } from '../components/Footer'
 import { budgetsAPI, assetsAPI, debtsAPI } from '../api/client'
 import { versionSyncService } from '../services/versionSyncService'
-import { versioningService } from '../services/versioningService'
 import { getCurrentUserId } from '../utils/auth'
 import { Budget, BudgetItem, Asset, Debt } from '../types'
 import './Budgets.css'
@@ -162,7 +161,7 @@ export function Budgets() {
       setSelectedBudgetId(budgetId)
 
       // Store updated data locally
-      versioningService.storeData('budgets', userId, updatedBudgets)
+      versionSyncService.storeData('budgets', userId, updatedBudgets)
     } catch (error) {
       console.error('Error selecting budget:', error)
       setError('Failed to select budget. Please try again.')
@@ -195,7 +194,7 @@ export function Budgets() {
       )
 
       // Store updated data locally
-      versioningService.storeData('budgets', userId, updatedBudgets)
+      versionSyncService.storeData('budgets', userId, updatedBudgets)
 
       setBudgets(updatedBudgets)
       setNewItem({ name: '', amount: 0, category: '', type: 'regular', linkedAssetId: '', linkedDebtId: '' })
@@ -235,7 +234,7 @@ export function Budgets() {
       )
 
       // Store updated data locally
-      versioningService.storeData('budgets', userId, updatedBudgets)
+      versionSyncService.storeData('budgets', userId, updatedBudgets)
 
       setBudgets(updatedBudgets)
       setNewItem({ name: '', amount: 0, category: '', type: 'regular', linkedAssetId: '', linkedDebtId: '' })
@@ -264,7 +263,7 @@ export function Budgets() {
       )
 
       // Store updated data locally
-      versioningService.storeData('budgets', userId, updatedBudgets)
+      versionSyncService.storeData('budgets', userId, updatedBudgets)
 
       setBudgets(updatedBudgets)
     } catch (error) {
@@ -291,7 +290,7 @@ export function Budgets() {
       )
 
       // Store updated data locally
-      versioningService.storeData('budgets', userId, updatedBudgets)
+      versionSyncService.storeData('budgets', userId, updatedBudgets)
 
       setBudgets(updatedBudgets)
     } catch (error) {
@@ -324,7 +323,7 @@ export function Budgets() {
       )
 
       // Store updated data locally
-      versioningService.storeData('budgets', userId, updatedBudgets)
+      versionSyncService.storeData('budgets', userId, updatedBudgets)
 
       setBudgets(updatedBudgets)
       setEditingBudgetName(false)
@@ -367,7 +366,7 @@ export function Budgets() {
       )
 
       // Store updated data locally
-      versioningService.storeData('budgets', userId, updatedBudgets)
+      versionSyncService.storeData('budgets', userId, updatedBudgets)
 
       setBudgets(updatedBudgets)
       setEditingItem(null)
@@ -551,28 +550,30 @@ export function Budgets() {
                     </div>
                     <div className="space-y-2">
                       {selectedBudget.income.map((item) => (
-                        <div key={item.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-md">
-                          <div className="flex-1">
-                            {editingItem?.type === 'income' && editingItem.id === item.id && editingItem.field === 'name' ? (
-                              <input
-                                type="text"
-                                value={editValue}
-                                onChange={(e) => setEditValue(e.target.value)}
-                                onBlur={handleSaveItem}
-                                onKeyDown={handleKeyPress}
-                                className="font-medium text-gray-900 bg-transparent border-b border-gray-300 outline-none w-full"
-                                placeholder="Income name"
-                                autoFocus
-                              />
-                            ) : (
-                              <div
-                                className="font-medium text-gray-900 cursor-pointer hover:text-[#0171bd] transition-colors"
-                                onClick={() => handleEditItem('income', item.id, 'name', item.name)}
-                              >
-                                {item.name}
-                              </div>
-                            )}
-                            <div className="text-sm text-gray-500">
+                        <div key={item.id} className="flex justify-between items-center p-2 bg-gray-50 rounded-md">
+                          <div className="flex-1 flex items-center">
+                            <div className="w-48 text-left">
+                              {editingItem?.type === 'income' && editingItem.id === item.id && editingItem.field === 'name' ? (
+                                <input
+                                  type="text"
+                                  value={editValue}
+                                  onChange={(e) => setEditValue(e.target.value)}
+                                  onBlur={handleSaveItem}
+                                  onKeyDown={handleKeyPress}
+                                  className="font-medium text-gray-900 bg-transparent border-b border-gray-300 outline-none w-full"
+                                  placeholder="Income name"
+                                  autoFocus
+                                />
+                              ) : (
+                                <div
+                                  className="font-medium text-gray-900 cursor-pointer hover:text-[#0171bd] transition-colors"
+                                  onClick={() => handleEditItem('income', item.id, 'name', item.name)}
+                                >
+                                  {item.name}
+                                </div>
+                              )}
+                            </div>
+                            <div className="text-sm text-gray-500 ml-12">
                               {editingItem?.type === 'income' && editingItem.id === item.id && editingItem.field === 'category' ? (
                                 <select
                                   value={editValue}
@@ -647,28 +648,30 @@ export function Budgets() {
                     </div>
                     <div className="space-y-2">
                       {selectedBudget.expenses.map((item) => (
-                        <div key={item.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-md">
-                          <div className="flex-1">
-                            {editingItem?.type === 'expenses' && editingItem.id === item.id && editingItem.field === 'name' ? (
-                              <input
-                                type="text"
-                                value={editValue}
-                                onChange={(e) => setEditValue(e.target.value)}
-                                onBlur={handleSaveItem}
-                                onKeyDown={handleKeyPress}
-                                className="font-medium text-gray-900 bg-transparent border-b border-gray-300 outline-none w-full"
-                                placeholder="Expense name"
-                                autoFocus
-                              />
-                            ) : (
-                              <div
-                                className="font-medium text-gray-900 cursor-pointer hover:text-[#0171bd] transition-colors"
-                                onClick={() => handleEditItem('expenses', item.id, 'name', item.name)}
-                              >
-                                {item.name}
-                              </div>
-                            )}
-                            <div className="text-sm text-gray-500">
+                        <div key={item.id} className="flex justify-between items-center p-2 bg-gray-50 rounded-md">
+                          <div className="flex-1 flex items-center">
+                            <div className="w-48 text-left">
+                              {editingItem?.type === 'expenses' && editingItem.id === item.id && editingItem.field === 'name' ? (
+                                <input
+                                  type="text"
+                                  value={editValue}
+                                  onChange={(e) => setEditValue(e.target.value)}
+                                  onBlur={handleSaveItem}
+                                  onKeyDown={handleKeyPress}
+                                  className="font-medium text-gray-900 bg-transparent border-b border-gray-300 outline-none w-full"
+                                  placeholder="Expense name"
+                                  autoFocus
+                                />
+                              ) : (
+                                <div
+                                  className="font-medium text-gray-900 cursor-pointer hover:text-[#0171bd] transition-colors"
+                                  onClick={() => handleEditItem('expenses', item.id, 'name', item.name)}
+                                >
+                                  {item.name}
+                                </div>
+                              )}
+                            </div>
+                            <div className="text-sm text-gray-500 ml-12">
                               {editingItem?.type === 'expenses' && editingItem.id === item.id && editingItem.field === 'category' ? (
                                 <select
                                   value={editValue}

@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { Nav } from './Nav'
+import { useAuth } from '../utils/auth'
 
 // Mock react-router-dom
 vi.mock('react-router-dom', () => ({
@@ -12,10 +13,11 @@ vi.mock('react-router-dom', () => ({
 }))
 
 // Mock useAuth
-const mockUseAuth = vi.fn()
-vi.mock('./Auth', () => ({
-  useAuth: () => mockUseAuth(),
+vi.mock('../utils/auth', () => ({
+  useAuth: vi.fn(),
 }))
+
+const mockUseAuth = vi.mocked(useAuth)
 
 // Mock aws-amplify/auth
 vi.mock('aws-amplify/auth', () => ({
@@ -126,6 +128,31 @@ describe('Nav Component', () => {
     expect(screen.getByDisplayValue('70')).toBeInTheDocument()
   })
 
+  it('handles fetch user error gracefully', async () => {
+    const { usersAPI } = await import('../api/client')
+    const mockGetCurrentUser = vi.fn().mockRejectedValue(new Error('Fetch failed'))
+    vi.mocked(usersAPI.getCurrentUser).mockImplementation(mockGetCurrentUser)
+
+    render(<Nav />)
+
+    const settingsButton = screen.getByTitle('Settings')
+    fireEvent.click(settingsButton)
+
+    await waitFor(() => {
+      expect(mockGetCurrentUser).toHaveBeenCalled()
+    })
+
+    // Form should still render, but inputs should be empty or defaults
+    const displayNameInput = screen.getByPlaceholderText('Enter your display name')
+    const birthdayInput = screen.getByPlaceholderText('YYYY-MM-DD')
+    const retirementAgeInput = screen.getByPlaceholderText('65')
+
+    expect(displayNameInput).toBeInTheDocument()
+    expect(displayNameInput).toHaveValue('')
+    expect(birthdayInput).toHaveValue('')
+    expect(retirementAgeInput).toHaveValue(65)
+  })
+
   it('saves user data successfully', async () => {
     const { usersAPI } = await import('../api/client')
     const mockUpdateCurrentUser = vi.fn().mockResolvedValue({})
@@ -175,6 +202,42 @@ describe('Nav Component', () => {
 
     // Modal should close
     expect(screen.queryByText('Edit Profile')).not.toBeInTheDocument()
+  })
+
+  it('handles save/update errors gracefully', async () => {
+    const { usersAPI } = await import('../api/client')
+    const mockUpdateCurrentUser = vi.fn().mockRejectedValue(new Error('Update failed'))
+    const mockUpdateUserAttributes = vi.fn().mockRejectedValue(new Error('Auth update failed'))
+    vi.mocked(usersAPI.updateCurrentUser).mockImplementation(mockUpdateCurrentUser)
+    const { updateUserAttributes } = await import('aws-amplify/auth')
+    vi.mocked(updateUserAttributes).mockImplementation(mockUpdateUserAttributes)
+
+    render(<Nav />)
+
+    // Open modal
+    const settingsButton = screen.getByTitle('Settings')
+    fireEvent.click(settingsButton)
+
+    // Fill form
+    const displayNameInput = screen.getByPlaceholderText('Enter your display name')
+    const birthdayInput = screen.getByPlaceholderText('YYYY-MM-DD')
+    const retirementAgeInput = screen.getByPlaceholderText('65')
+
+    fireEvent.change(displayNameInput, { target: { value: 'New Name' } })
+    fireEvent.change(birthdayInput, { target: { value: '1995-05-05' } })
+    fireEvent.change(retirementAgeInput, { target: { value: '75' } })
+
+    // Save and expect errors to be handled without closing modal
+    const saveButton = screen.getByText('Save')
+    fireEvent.click(saveButton)
+
+    await waitFor(() => {
+      expect(mockUpdateCurrentUser).toHaveBeenCalled()
+    })
+
+    // After error, modal should still be open and save button text reverted
+    await waitFor(() => expect(screen.getByText('Save')).toBeInTheDocument())
+    expect(screen.getByText('Edit Profile')).toBeInTheDocument()
   })
 
   it('calls signOut when sign out button is clicked', () => {
