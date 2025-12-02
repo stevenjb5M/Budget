@@ -3,9 +3,8 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  color: #000000;
+  background-color: #ffffff;
 
   /* Theme Colors */
   --primary-blue: #0171bd;
@@ -29,7 +28,7 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
+  background-color: #f3f4f6;
   cursor: pointer;
   transition: border-color 0.25s;
 }
@@ -41,16 +40,4 @@ button:hover {
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
-  a {
-    color: #0969da;
-  }
-  a:hover {
-    color: #1084d8;
-  }
-  button {
-    background-color: #f2f2f2;
-  }
 }
