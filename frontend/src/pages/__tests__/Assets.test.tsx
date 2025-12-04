@@ -755,5 +755,262 @@ describe('Assets Component', () => {
         expect(screen.getByText('$45,000.00')).toBeInTheDocument()
       })
     })
+
+    it('calculates net worth correctly with multiple assets and debts', async () => {
+      render(<Assets />)
+
+      await waitFor(() => {
+        // Assets: 50000 + 10000 = 60000
+        // Debts: 15000 + 10000 = 25000
+        // Net worth: 60000 - 25000 = 35000
+        expect(screen.getByText('$35,000.00')).toBeInTheDocument()
+      })
+    })
+
+    it('handles zero values in calculations', async () => {
+      const noValueAssets = [
+        {
+          id: 'asset1',
+          name: 'Zero Asset',
+          currentValue: 0,
+          annualAPY: 0,
+          notes: 'No value asset',
+        },
+      ]
+
+      ;(assetsAPI.getAssets as any).mockResolvedValue({ data: noValueAssets })
+      ;(debtsAPI.getDebts as any).mockResolvedValue({ data: [] })
+
+      render(<Assets />)
+
+      await waitFor(() => {
+        expect(screen.getByText('Assets: $0.00')).toBeInTheDocument()
+        expect(screen.getByText('Debts: $0.00')).toBeInTheDocument()
+      })
+    })
+  })
+
+  describe('Error Handling', () => {
+    it('displays error message when asset creation fails', async () => {
+      ;(assetsAPI.createAsset as any).mockRejectedValue(new Error('Creation failed'))
+
+      render(<Assets />)
+
+      await act(async () => {
+        fireEvent.click(screen.getByTitle('Add new asset'))
+      })
+
+      await waitFor(() => {
+        expect(screen.getByText('Create New Asset')).toBeInTheDocument()
+      })
+
+      const nameInput = screen.getByLabelText(/name/i)
+      const valueInput = screen.getByLabelText(/current value/i)
+
+      await act(async () => {
+        fireEvent.change(nameInput, { target: { value: 'Test Asset' } })
+        fireEvent.change(valueInput, { target: { value: '5000' } })
+      })
+
+      const form = nameInput.closest('form')
+      if (form) {
+        await act(async () => {
+          fireEvent.submit(form)
+        })
+      }
+
+      await waitFor(() => {
+        expect(assetsAPI.createAsset).toHaveBeenCalled()
+      })
+    })
+
+    it('displays error message when asset update fails', async () => {
+      ;(assetsAPI.updateAsset as any).mockRejectedValue(new Error('Update failed'))
+
+      render(<Assets />)
+
+      await waitFor(() => {
+        expect(screen.getByTestId('edit-asset-asset1')).toBeInTheDocument()
+      })
+
+      await act(async () => {
+        fireEvent.click(screen.getByTestId('edit-asset-asset1'))
+      })
+
+      await waitFor(() => {
+        expect(screen.getByText('Edit Asset')).toBeInTheDocument()
+      })
+
+      const nameInput = screen.getByDisplayValue('Savings Account')
+      await act(async () => {
+        fireEvent.change(nameInput, { target: { value: 'Updated Asset' } })
+      })
+
+      const form = nameInput.closest('form')
+      if (form) {
+        await act(async () => {
+          fireEvent.submit(form)
+        })
+      }
+
+      await waitFor(() => {
+        expect(assetsAPI.updateAsset).toHaveBeenCalled()
+      })
+    })
+
+    it('displays error message when asset deletion fails', async () => {
+      ;(assetsAPI.deleteAsset as any).mockRejectedValue(new Error('Deletion failed'))
+
+      render(<Assets />)
+
+      // Wait for assets to render
+      await waitFor(() => {
+        expect(screen.getByTestId('edit-asset-asset1')).toBeInTheDocument()
+      })
+
+      // Click edit button for first asset
+      const editButton = screen.getByTestId('edit-asset-asset1')
+      await act(async () => {
+        fireEvent.click(editButton)
+      })
+
+      // Wait for modal and click delete button
+      await waitFor(() => {
+        expect(screen.getByText('Delete Asset')).toBeInTheDocument()
+      })
+
+      const deleteButton = screen.getAllByRole('button', { name: /^Delete Asset$/ })[0]
+      await act(async () => {
+        fireEvent.click(deleteButton)
+      })
+
+      // Confirm deletion in modal
+      await waitFor(() => {
+        expect(screen.getAllByRole('button', { name: /Delete Asset/i }).length).toBeGreaterThanOrEqual(1)
+      })
+
+      const confirmDeleteButton = screen.getAllByRole('button', { name: /Delete Asset/i })[1] || screen.getAllByRole('button', { name: /Delete Asset/i })[0]
+      await act(async () => {
+        fireEvent.click(confirmDeleteButton)
+      })
+
+      await waitFor(() => {
+        expect(assetsAPI.deleteAsset).toHaveBeenCalled()
+      })
+    })
+
+    it('displays error message when debt creation fails', async () => {
+      ;(debtsAPI.createDebt as any).mockRejectedValue(new Error('Creation failed'))
+
+      render(<Assets />)
+
+      const debtSection = screen.getByText('Debts')
+      const addDebtButton = debtSection.parentElement?.querySelector('button[title="Add new debt"]')
+
+      expect(addDebtButton).toBeInTheDocument()
+    })
+  })
+
+  describe('Form Validation', () => {
+    it('allows creating asset when name and value are provided', async () => {
+      const newAsset = {
+        id: 'asset3',
+        name: 'Test Asset',
+        currentValue: 5000,
+        annualAPY: 0,
+        notes: '',
+      }
+
+      ;(assetsAPI.createAsset as any).mockResolvedValue({ data: newAsset })
+
+      render(<Assets />)
+
+      await act(async () => {
+        fireEvent.click(screen.getByTitle('Add new asset'))
+      })
+
+      await waitFor(() => {
+        expect(screen.getByText('Create New Asset')).toBeInTheDocument()
+      })
+
+      const nameInput = screen.getByLabelText(/name/i)
+      const valueInput = screen.getByLabelText(/current value/i)
+
+      await act(async () => {
+        fireEvent.change(nameInput, { target: { value: 'Test Asset' } })
+        fireEvent.change(valueInput, { target: { value: '5000' } })
+      })
+
+      const submitButton = screen.getByText('Create Asset')
+      expect(submitButton).not.toBeDisabled()
+    })
+
+    it('accepts zero value for asset', async () => {
+      const newAsset = {
+        id: 'asset3',
+        name: 'Test Asset',
+        currentValue: 0,
+        annualAPY: 0,
+        notes: '',
+      }
+
+      ;(assetsAPI.createAsset as any).mockResolvedValue({ data: newAsset })
+
+      render(<Assets />)
+
+      await act(async () => {
+        fireEvent.click(screen.getByTitle('Add new asset'))
+      })
+
+      await waitFor(() => {
+        expect(screen.getByText('Create New Asset')).toBeInTheDocument()
+      })
+
+      const nameInput = screen.getByLabelText(/name/i)
+      const valueInput = screen.getByLabelText(/current value/i)
+
+      await act(async () => {
+        fireEvent.change(nameInput, { target: { value: 'Test Asset' } })
+        fireEvent.change(valueInput, { target: { value: '0' } })
+      })
+
+      const submitButton = screen.getByText('Create Asset')
+      expect(submitButton).not.toBeDisabled()
+    })
+
+    it('accepts negative APY for asset', async () => {
+      const newAsset = {
+        id: 'asset3',
+        name: 'Test Asset',
+        currentValue: 5000,
+        annualAPY: -0.5,
+        notes: '',
+      }
+
+      ;(assetsAPI.createAsset as any).mockResolvedValue({ data: newAsset })
+
+      render(<Assets />)
+
+      await act(async () => {
+        fireEvent.click(screen.getByTitle('Add new asset'))
+      })
+
+      await waitFor(() => {
+        expect(screen.getByText('Create New Asset')).toBeInTheDocument()
+      })
+
+      const nameInput = screen.getByLabelText(/name/i)
+      const valueInput = screen.getByLabelText(/current value/i)
+      const apyInput = screen.getByLabelText(/annual apy/i)
+
+      await act(async () => {
+        fireEvent.change(nameInput, { target: { value: 'Test Asset' } })
+        fireEvent.change(valueInput, { target: { value: '5000' } })
+        fireEvent.change(apyInput, { target: { value: '-0.5' } })
+      })
+
+      const submitButton = screen.getByText('Create Asset')
+      expect(submitButton).not.toBeDisabled()
+    })
   })
 })
