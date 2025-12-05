@@ -17,3 +17,4 @@
 | 11/25/2025 | 26 hours   | Bugs and unit tests |
 | 12/01/2025 | 27 hours   | Updated Documentation |
 | 12/02/2025 | 29 hours   | Fix broken unit tests |
+| 12/03/2025 | 30 hours   | unit tests |
