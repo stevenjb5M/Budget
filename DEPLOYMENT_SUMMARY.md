@@ -13,7 +13,7 @@
 - **Development**: `http://localhost:5000`
 - **Smart Selection**: Frontend automatically uses the right endpoint based on environment
 - **Environment Files**: 
-  - `.env.production` for builds
+  - `.env.production` for builds s
   - `.env.development` for local dev
 
 ### ✅ Database (Existing)
