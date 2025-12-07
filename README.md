@@ -155,7 +155,7 @@ All endpoints require JWT authentication via Cognito.
 
 ## Project Status
 
-Budget Planner is a **fully functional** budgeting application with:
+Budget Planner is a budgeting application with:
 - ✅ Complete backend API with user authentication and data management
 - ✅ Responsive React frontend with budget visualization
 - ✅ AWS cloud deployment (Amplify, Elastic Beanstalk, DynamoDB, Cognito)
