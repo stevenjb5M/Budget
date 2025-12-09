@@ -1,15 +1,16 @@
 import axios from 'axios'
 import { fetchAuthSession } from 'aws-amplify/auth'
+import { API_ENDPOINTS, DEFAULT_API_URL_PROD, DEFAULT_API_URL_DEV } from '../utils/constants'
 
 // Determine API base URL based on environment
 const getApiBaseUrl = (): string => {
   // Production: Use the Elastic Beanstalk endpoint
   if (import.meta.env.PROD) {
-    return import.meta.env.VITE_API_URL || 'https://budget-api-prod.eba-xibqzxmn.us-east-1.elasticbeanstalk.com'
+    return import.meta.env.VITE_API_URL || DEFAULT_API_URL_PROD
   }
   
   // Development: Use localhost
-  return import.meta.env.VITE_API_URL || 'http://localhost:5000'
+  return import.meta.env.VITE_API_URL || DEFAULT_API_URL_DEV
 }
 
 const API_BASE_URL = getApiBaseUrl()
@@ -37,41 +38,41 @@ apiClient.interceptors.request.use(async (config) => {
 })
 
 export const usersAPI = {
-  getCurrentUser: () => apiClient.get('/api/users/me'),
-  updateCurrentUser: (user: any) => apiClient.put('/api/users/me', user),
-  getUserVersions: () => apiClient.get('/api/users/versions'),
+  getCurrentUser: () => apiClient.get(API_ENDPOINTS.USERS.ME),
+  updateCurrentUser: (user: any) => apiClient.put(API_ENDPOINTS.USERS.ME, user),
+  getUserVersions: () => apiClient.get(API_ENDPOINTS.USERS.VERSIONS),
 }
 
 export const plansAPI = {
-  getPlans: () => apiClient.get('/api/plans'),
-  getPlan: (planId: string) => apiClient.get(`/api/plans/${planId}`),
-  createPlan: (plan: any) => apiClient.post('/api/plans', plan),
-  updatePlan: (planId: string, plan: any) => apiClient.put(`/api/plans/${planId}`, plan),
-  deletePlan: (planId: string) => apiClient.delete(`/api/plans/${planId}`),
+  getPlans: () => apiClient.get(API_ENDPOINTS.PLANS.BASE),
+  getPlan: (planId: string) => apiClient.get(API_ENDPOINTS.PLANS.BY_ID(planId)),
+  createPlan: (plan: any) => apiClient.post(API_ENDPOINTS.PLANS.BASE, plan),
+  updatePlan: (planId: string, plan: any) => apiClient.put(API_ENDPOINTS.PLANS.BY_ID(planId), plan),
+  deletePlan: (planId: string) => apiClient.delete(API_ENDPOINTS.PLANS.BY_ID(planId)),
 }
 
 export const budgetsAPI = {
-  getBudgets: () => apiClient.get('/api/budgets'),
-  getBudget: (budgetId: string) => apiClient.get(`/api/budgets/${budgetId}`),
-  createBudget: (budget: any) => apiClient.post('/api/budgets', budget),
-  updateBudget: (budgetId: string, budget: any) => apiClient.put(`/api/budgets/${budgetId}`, budget),
-  deleteBudget: (budgetId: string) => apiClient.delete(`/api/budgets/${budgetId}`),
+  getBudgets: () => apiClient.get(API_ENDPOINTS.BUDGETS.BASE),
+  getBudget: (budgetId: string) => apiClient.get(API_ENDPOINTS.BUDGETS.BY_ID(budgetId)),
+  createBudget: (budget: any) => apiClient.post(API_ENDPOINTS.BUDGETS.BASE, budget),
+  updateBudget: (budgetId: string, budget: any) => apiClient.put(API_ENDPOINTS.BUDGETS.BY_ID(budgetId), budget),
+  deleteBudget: (budgetId: string) => apiClient.delete(API_ENDPOINTS.BUDGETS.BY_ID(budgetId)),
 }
 
 export const assetsAPI = {
-  getAssets: () => apiClient.get('/api/assets'),
-  getAsset: (assetId: string) => apiClient.get(`/api/assets/${assetId}`),
-  createAsset: (asset: any) => apiClient.post('/api/assets', asset),
-  updateAsset: (assetId: string, asset: any) => apiClient.put(`/api/assets/${assetId}`, asset),
-  deleteAsset: (assetId: string) => apiClient.delete(`/api/assets/${assetId}`),
+  getAssets: () => apiClient.get(API_ENDPOINTS.ASSETS.BASE),
+  getAsset: (assetId: string) => apiClient.get(API_ENDPOINTS.ASSETS.BY_ID(assetId)),
+  createAsset: (asset: any) => apiClient.post(API_ENDPOINTS.ASSETS.BASE, asset),
+  updateAsset: (assetId: string, asset: any) => apiClient.put(API_ENDPOINTS.ASSETS.BY_ID(assetId), asset),
+  deleteAsset: (assetId: string) => apiClient.delete(API_ENDPOINTS.ASSETS.BY_ID(assetId)),
 }
 
 export const debtsAPI = {
-  getDebts: () => apiClient.get('/api/debts'),
-  getDebt: (debtId: string) => apiClient.get(`/api/debts/${debtId}`),
-  createDebt: (debt: any) => apiClient.post('/api/debts', debt),
-  updateDebt: (debtId: string, debt: any) => apiClient.put(`/api/debts/${debtId}`, debt),
-  deleteDebt: (debtId: string) => apiClient.delete(`/api/debts/${debtId}`),
+  getDebts: () => apiClient.get(API_ENDPOINTS.DEBTS.BASE),
+  getDebt: (debtId: string) => apiClient.get(API_ENDPOINTS.DEBTS.BY_ID(debtId)),
+  createDebt: (debt: any) => apiClient.post(API_ENDPOINTS.DEBTS.BASE, debt),
+  updateDebt: (debtId: string, debt: any) => apiClient.put(API_ENDPOINTS.DEBTS.BY_ID(debtId), debt),
+  deleteDebt: (debtId: string) => apiClient.delete(API_ENDPOINTS.DEBTS.BY_ID(debtId)),
 }
 
 export default apiClient

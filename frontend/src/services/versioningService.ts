@@ -1,5 +1,6 @@
 // Versioning and offline storage service
 import { budgetsAPI, plansAPI } from '../api/client'
+import { STORAGE_PREFIX, SYNC_METADATA_KEY } from '../utils/constants'
 interface VersionedData<T> {
   data: T
   version: number
@@ -16,8 +17,8 @@ interface SyncMetadata {
 }
 
 class VersioningService {
-  private readonly STORAGE_PREFIX = 'budget_app_'
-  private readonly SYNC_KEY = 'sync_metadata'
+  private readonly STORAGE_PREFIX = STORAGE_PREFIX
+  private readonly SYNC_KEY = SYNC_METADATA_KEY
 
   // Generic storage methods
   private getStorageKey(entityType: string, userId: string): string {
