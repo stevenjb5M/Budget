@@ -355,11 +355,11 @@ public class UsersControllerTests
         var createdVersion = new UserVersion
         {
             UserId = "test-user-id",
-            GlobalVersion = 1,
-            BudgetsVersion = 1,
-            PlansVersion = 1,
-            AssetsVersion = 1,
-            DebtsVersion = 1
+            GlobalVersion = Constants.InitialVersion,
+            BudgetsVersion = Constants.InitialVersion,
+            PlansVersion = Constants.InitialVersion,
+            AssetsVersion = Constants.InitialVersion,
+            DebtsVersion = Constants.InitialVersion
         };
 
         _dynamoDBServiceMock.Setup(x => x.CreateUserVersionAsync(It.IsAny<UserVersion>()))

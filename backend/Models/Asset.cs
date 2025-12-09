@@ -5,7 +5,7 @@ namespace BudgetPlanner.Models;
 /// <summary>
 /// Represents a savings or investment account
 /// </summary>
-[DynamoDBTable("BudgetPlanner-Assets")]
+[DynamoDBTable(Constants.AssetsTable)]
 public class Asset
 {
     [DynamoDBHashKey]
@@ -33,5 +33,5 @@ public class Asset
     public DateTime UpdatedAt { get; set; }
 
     [DynamoDBProperty]
-    public long Version { get; set; } = 1; // Version number for this asset
+    public long Version { get; set; } = Constants.InitialVersion; // Version number for this asset
 }

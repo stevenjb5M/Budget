@@ -7,7 +7,7 @@ namespace BudgetPlanner.Models;
 /// <summary>
 /// Represents a user authenticated via Amazon Cognito
 /// </summary>
-[DynamoDBTable("BudgetPlanner-Users")]
+[DynamoDBTable(Constants.UsersTable)]
 public class User
 {
     [DynamoDBHashKey]
@@ -30,14 +30,14 @@ public class User
         { 
             if (string.IsNullOrEmpty(BirthdayString))
             {
-                return DateTime.Parse("1990-01-01");
+                return DateTime.Parse(Constants.DefaultBirthday);
             }
             // Parse the stored YYYY-MM-DD format
             if (DateTime.TryParse(BirthdayString, null, System.Globalization.DateTimeStyles.None, out var date))
             {
                 return date;
             }
-            return DateTime.Parse("1990-01-01");
+            return DateTime.Parse(Constants.DefaultBirthday);
         }
         set 
         { 
@@ -61,5 +61,5 @@ public class User
     public DateTime UpdatedAt { get; set; }
 
     [DynamoDBProperty]
-    public long Version { get; set; } = 1; // Global version number for the user
+    public long Version { get; set; } = Constants.InitialVersion; // Global version number for the user
 }

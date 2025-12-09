@@ -62,7 +62,7 @@ public class UsersController : ControllerBase
                               claimsIdentity?.FindFirst("custom:birthday")?.Value ??
                               claimsIdentity?.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/dateofbirth")?.Value;
             
-            var birthday = DateTime.Parse("1990-01-01");
+            var birthday = DateTime.Parse(Constants.DefaultBirthday);
             
             if (!string.IsNullOrEmpty(birthdateStr))
             {
@@ -154,11 +154,11 @@ public class UsersController : ControllerBase
             userVersion = new UserVersion
             {
                 UserId = userId,
-                GlobalVersion = 1,
-                BudgetsVersion = 1,
-                PlansVersion = 1,
-                AssetsVersion = 1,
-                DebtsVersion = 1,
+                GlobalVersion = Constants.InitialVersion,
+                BudgetsVersion = Constants.InitialVersion,
+                PlansVersion = Constants.InitialVersion,
+                AssetsVersion = Constants.InitialVersion,
+                DebtsVersion = Constants.InitialVersion,
                 CreatedAt = DateTime.UtcNow,
                 LastUpdated = DateTime.UtcNow
             };

@@ -5,7 +5,7 @@ namespace BudgetPlanner.Models;
 /// <summary>
 /// Represents a loan or credit account
 /// </summary>
-[DynamoDBTable("BudgetPlanner-Debts")]
+[DynamoDBTable(Constants.DebtsTable)]
 public class Debt
 {
     [DynamoDBHashKey]
@@ -36,5 +36,5 @@ public class Debt
     public DateTime UpdatedAt { get; set; }
 
     [DynamoDBProperty]
-    public long Version { get; set; } = 1; // Version number for this debt
+    public long Version { get; set; } = Constants.InitialVersion; // Version number for this debt
 }

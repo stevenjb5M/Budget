@@ -5,7 +5,7 @@ namespace BudgetPlanner.Models;
 /// <summary>
 /// Represents a financial plan with monthly projections
 /// </summary>
-[DynamoDBTable("BudgetPlanner-Plans")]
+[DynamoDBTable(Constants.PlansTable)]
 public class Plan
 {
     [DynamoDBHashKey]
@@ -33,7 +33,7 @@ public class Plan
     public DateTime UpdatedAt { get; set; }
 
     [DynamoDBProperty]
-    public long Version { get; set; } = 1; // Version number for this plan
+    public long Version { get; set; } = Constants.InitialVersion; // Version number for this plan
 }
 
 public class PlanMonth

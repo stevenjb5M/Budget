@@ -5,7 +5,7 @@ namespace BudgetPlanner.Models;
 /// <summary>
 /// Represents a monthly budget with income sources and expense categories
 /// </summary>
-[DynamoDBTable("BudgetPlanner-Budgets")]
+[DynamoDBTable(Constants.BudgetsTable)]
 public class Budget
 {
     [DynamoDBHashKey]
@@ -35,7 +35,7 @@ public class Budget
     public DateTime UpdatedAt { get; set; }
 
     [DynamoDBProperty]
-    public long Version { get; set; } = 1; // Version number for this budget
+    public long Version { get; set; } = Constants.InitialVersion; // Version number for this budget
 }
 
 public class IncomeItem

@@ -29,7 +29,7 @@ public class DynamoDBService : IDynamoDBService
 
         user.CreatedAt = DateTime.UtcNow;
         user.UpdatedAt = DateTime.UtcNow;
-        user.Version = 1; // Start with version 1
+        user.Version = Constants.InitialVersion; // Start with version 1
         await _context.SaveAsync(user);
         return user;
     }
@@ -40,7 +40,7 @@ public class DynamoDBService : IDynamoDBService
         // Ensure birthday is valid - if it's MinValue, set it to a default
         if (user.Birthday == DateTime.MinValue || user.Birthday == default(DateTime))
         {
-            user.Birthday = DateTime.Parse("1990-01-01");
+            user.Birthday = DateTime.Parse(Constants.DefaultBirthday);
         }
         await _context.SaveAsync(user);
         return user;
@@ -65,7 +65,7 @@ public class DynamoDBService : IDynamoDBService
     {
         asset.CreatedAt = DateTime.UtcNow;
         asset.UpdatedAt = DateTime.UtcNow;
-        asset.Version = 1; // Start with version 1
+        asset.Version = Constants.InitialVersion; // Start with version 1
         await _context.SaveAsync(asset);
 
         // Update user version tracking
@@ -110,7 +110,7 @@ public class DynamoDBService : IDynamoDBService
     {
         debt.CreatedAt = DateTime.UtcNow;
         debt.UpdatedAt = DateTime.UtcNow;
-        debt.Version = 1; // Start with version 1
+        debt.Version = Constants.InitialVersion; // Start with version 1
         await _context.SaveAsync(debt);
 
         // Update user version tracking
@@ -155,7 +155,7 @@ public class DynamoDBService : IDynamoDBService
     {
         budget.CreatedAt = DateTime.UtcNow;
         budget.UpdatedAt = DateTime.UtcNow;
-        budget.Version = 1; // Start with version 1
+        budget.Version = Constants.InitialVersion; // Start with version 1
         await _context.SaveAsync(budget);
 
         // Update user version tracking
@@ -200,7 +200,7 @@ public class DynamoDBService : IDynamoDBService
     {
         plan.CreatedAt = DateTime.UtcNow;
         plan.UpdatedAt = DateTime.UtcNow;
-        plan.Version = 1; // Start with version 1
+        plan.Version = Constants.InitialVersion; // Start with version 1
         await _context.SaveAsync(plan);
 
         // Update user version tracking
@@ -263,11 +263,11 @@ public class DynamoDBService : IDynamoDBService
             userVersion = new UserVersion
             {
                 UserId = userId,
-                GlobalVersion = 1,
-                BudgetsVersion = 1,
-                PlansVersion = 1,
-                AssetsVersion = 1,
-                DebtsVersion = 1
+                GlobalVersion = Constants.InitialVersion,
+                BudgetsVersion = Constants.InitialVersion,
+                PlansVersion = Constants.InitialVersion,
+                AssetsVersion = Constants.InitialVersion,
+                DebtsVersion = Constants.InitialVersion
             };
             await CreateUserVersionAsync(userVersion);
         }
