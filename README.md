@@ -170,6 +170,3 @@ This project is open source and available under the MIT License.
 
 Created by Steven Brown (stevenjb5M)
 
-For questions or feedback, open an issue on GitHub.
-
-
