@@ -2,7 +2,7 @@
 
 output "api_gateway_url" {
   description = "API Gateway URL"
-  value       = "${aws_apigateway_rest_api.api.id}.execute-api.${var.aws_region}.amazonaws.com/prod"
+  value       = "${aws_api_gateway_rest_api.api.id}.execute-api.${var.aws_region}.amazonaws.com/prod"
 }
 
 output "cloudfront_domain_name" {
@@ -41,7 +41,7 @@ output "lambda_functions" {
 output "environment_variables" {
   description = "Environment variables for frontend"
   value = {
-    VITE_API_URL            = "https://${aws_apigateway_rest_api.api.id}.execute-api.${var.aws_region}.amazonaws.com/prod"
+    VITE_API_URL            = "https://${aws_api_gateway_rest_api.api.id}.execute-api.${var.aws_region}.amazonaws.com/prod"
     VITE_USER_POOL_ID       = "your-cognito-pool-id"
     VITE_USER_POOL_CLIENT_ID = "your-cognito-client-id"
   }
