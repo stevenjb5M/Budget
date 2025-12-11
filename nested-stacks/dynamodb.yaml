@@ -1,0 +1,55 @@
+# nested-stacks/dynamodb.yaml
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Budget Planner - DynamoDB Tables'
+
+Parameters:
+  Environment:
+    Type: String
+
+Resources:
+  UsersTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub 'BudgetPlanner-Users-${Environment}'
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+
+  PlansTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub 'BudgetPlanner-Plans-${Environment}'
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: userId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: UserIndex
+          KeySchema:
+            - AttributeName: userId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+      BillingMode: PAY_PER_REQUEST
+
+Outputs:
+  UsersTableName:
+    Description: Users table name
+    Value: !Ref UsersTable
+    Export:
+      Name: !Sub '${Environment}-UsersTable'
+
+  PlansTableName:
+    Description: Plans table name
+    Value: !Ref PlansTable
+    Export:
+      Name: !Sub '${Environment}-PlansTable'</content>
+<parameter name="filePath">/Users/stevenbrown/Budget/nested-stacks/dynamodb.yaml

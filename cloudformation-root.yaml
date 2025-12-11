@@ -1,0 +1,59 @@
+# BudgetPlanner-Root.yaml - Main Stack
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Budget Planner - Root Stack'
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+
+Resources:
+  # Nested Stack for DynamoDB
+  DynamoDBStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./nested-stacks/dynamodb.yaml
+      Parameters:
+        Environment: !Ref Environment
+
+  # Nested Stack for Lambda Functions
+  LambdaStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./nested-stacks/lambda.yaml
+      Parameters:
+        Environment: !Ref Environment
+        UsersTable: !GetAtt DynamoDBStack.Outputs.UsersTableName
+        PlansTable: !GetAtt DynamoDBStack.Outputs.PlansTableName
+
+  # Nested Stack for API Gateway
+  ApiStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./nested-stacks/api-gateway.yaml
+      Parameters:
+        Environment: !Ref Environment
+        UsersFunction: !GetAtt LambdaStack.Outputs.UsersFunctionArn
+        PlansFunction: !GetAtt LambdaStack.Outputs.PlansFunctionArn
+
+  # Nested Stack for Frontend
+  FrontendStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./nested-stacks/frontend.yaml
+      Parameters:
+        Environment: !Ref Environment
+
+Outputs:
+  ApiUrl:
+    Description: API Gateway URL
+    Value: !GetAtt ApiStack.Outputs.ApiUrl
+    Export:
+      Name: !Sub '${Environment}-ApiUrl'
+
+  FrontendUrl:
+    Description: CloudFront URL
+    Value: !GetAtt FrontendStack.Outputs.FrontendUrl
+    Export:
+      Name: !Sub '${Environment}-FrontendUrl'</content>
+<parameter name="filePath">/Users/stevenbrown/Budget/cloudformation-root.yaml
