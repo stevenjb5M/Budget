@@ -22,9 +22,13 @@ export const API_ENDPOINTS = {
   },
 } as const;
 
-// Default URLs
-export const DEFAULT_API_URL_PROD = 'https://budget-api-prod.eba-xibqzxmn.us-east-1.elasticbeanstalk.com';
-export const DEFAULT_API_URL_DEV = 'http://localhost:5000';
+// Default URLs - Lambda API Gateway endpoints
+// Development: Local Lambda or API Gateway
+// eslint-disable-next-line no-undef
+export const DEFAULT_API_URL_DEV = (typeof process !== 'undefined' && process.env?.['VITE_API_URL_DEV']) || 'http://localhost:5000';
+// Production: API Gateway endpoint (set via environment variable)
+// eslint-disable-next-line no-undef
+export const DEFAULT_API_URL_PROD = (typeof process !== 'undefined' && process.env?.['VITE_API_URL_PROD']) || '';
 
 // Local Storage
 export const STORAGE_PREFIX = 'budget_app_';
