@@ -1,0 +1,78 @@
+import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
+import dynamodbService from '../services/dynamodbService';
+import { validateAuthorization } from '../middleware/auth';
+import { successResponse, errorResponse, parseBody, validateRequiredFields } from '../utils/response';
+import { HTTP_STATUS, ERROR_MESSAGES } from '../constants';
+
+export const getUserHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+  try {
+    const userId = validateAuthorization(event);
+    if (!userId) {
+      return errorResponse(HTTP_STATUS.UNAUTHORIZED, ERROR_MESSAGES.UNAUTHORIZED);
+    }
+
+    const user = await dynamodbService.getUser(userId);
+    if (!user) {
+      return errorResponse(HTTP_STATUS.NOT_FOUND, ERROR_MESSAGES.USER_NOT_FOUND);
+    }
+
+    return successResponse(user);
+  } catch (error) {
+    console.error('Error getting user:', error);
+    return errorResponse(HTTP_STATUS.INTERNAL_SERVER_ERROR, ERROR_MESSAGES.INTERNAL_ERROR);
+  }
+};
+
+export const updateUserHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+  try {
+    const userId = validateAuthorization(event);
+    if (!userId) {
+      return errorResponse(HTTP_STATUS.UNAUTHORIZED, ERROR_MESSAGES.UNAUTHORIZED);
+    }
+
+    const body = parseBody(event.body);
+    
+    // Prevent ID and version manipulation
+    delete (body as any).id;
+    delete (body as any).version;
+    delete (body as any).createdAt;
+
+    const user = await dynamodbService.updateUser(userId, body as any);
+    return successResponse(user);
+  } catch (error) {
+    console.error('Error updating user:', error);
+    return errorResponse(HTTP_STATUS.INTERNAL_SERVER_ERROR, ERROR_MESSAGES.INTERNAL_ERROR);
+  }
+};
+
+export const createUserHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+  try {
+    const body = parseBody(event.body);
+    
+    const validation = validateRequiredFields(body, [
+      'firstName',
+      'lastName',
+      'email',
+    ]);
+
+    if (!validation.valid) {
+      return errorResponse(
+        HTTP_STATUS.BAD_REQUEST,
+        ERROR_MESSAGES.MISSING_REQUIRED_FIELDS,
+        { missingFields: validation.missingFields }
+      );
+    }
+
+    const user = await dynamodbService.createUser({
+      firstName: body.firstName as string,
+      lastName: body.lastName as string,
+      email: body.email as string,
+      birthDate: (body.birthDate as string) || '1990-01-01',
+    });
+
+    return successResponse(user, HTTP_STATUS.CREATED);
+  } catch (error) {
+    console.error('Error creating user:', error);
+    return errorResponse(HTTP_STATUS.INTERNAL_SERVER_ERROR, ERROR_MESSAGES.INTERNAL_ERROR);
+  }
+};
