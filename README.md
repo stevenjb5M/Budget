@@ -1,7 +1,7 @@
 # Budget Planner
 
 A modern budgeting web app that helps users plan income, expenses, and savings across multiple months and scenarios.  
-Built with **React**, **C# (ASP.NET Core)**, and fully deployed on **AWS**.
+Built with **React**, **Node.js Lambda**, and fully deployed on **AWS**.
 
 ## Overview
 
@@ -18,11 +18,14 @@ This is designed as a **flexible, multi-scenario budgeting tool** for students a
 
 | Layer | Technology | Purpose |
 |-------|-------------|----------|
-| **Frontend** | React + Vite + TailwindCSS | Responsive, fast UI hosted on AWS Amplify |
-| **Backend** | ASP.NET Core Web API (C#) | REST API hosted on AWS Elastic Beanstalk |
+| **Frontend** | React + Vite + TailwindCSS | Responsive, fast UI hosted on S3 + CloudFront |
+| **Backend** | Node.js Lambda Functions | Serverless REST API via API Gateway |
 | **Database** | Amazon DynamoDB | NoSQL JSON-style storage |
 | **Authentication** | Amazon Cognito | Secure user sign-up, login, JWT-based auth |
-| **Hosting** | AWS Amplify, EB, DynamoDB, Cognito | Fully cloud-hosted on AWS |
+| **API Gateway** | AWS API Gateway | REST endpoint with Lambda integration |
+| **CDN** | AWS CloudFront | Global content delivery for frontend |
+| **Storage** | AWS S3 | Frontend assets and static files |
+| **Infrastructure** | Terraform | IaC for AWS resources |
 | **Monitoring** | AWS CloudWatch | Logs and performance metrics |
 
 ## Versioning & Offline Support
@@ -50,13 +53,12 @@ Budget Planner features a **sophisticated version-based synchronization system**
 
 ## Quick Start
 
-### Backend Setup
+### Backend (Lambda Functions) Setup
 ```bash
 cd backend
-dotnet restore
-dotnet run
+npm install
+npm run build
 ```
-Backend runs on http://localhost:5000
 
 ### Frontend Setup
 ```bash
@@ -64,20 +66,23 @@ cd frontend
 npm install
 npm run dev
 ```
-Frontend runs on http://localhost:5173
+Frontend runs on http://localhost:5173 with API proxy to Lambda
 
-For detailed deployment options, see [DEPLOYMENT_SUMMARY.md](DEPLOYMENT_SUMMARY.md), [AMPLIFY_SETUP.md](AMPLIFY_SETUP.md), or [ELASTIC_BEANSTALK_DEPLOYMENT.md](ELASTIC_BEANSTALK_DEPLOYMENT.md).
+### Deployment
+For detailed deployment options, see [FRONTEND_DEPLOYMENT.md](FRONTEND_DEPLOYMENT.md) for S3 + CloudFront setup, or [terraform/](terraform/) for infrastructure-as-code documentation.
 
 ## Project Structure
 
 ```
 Budget/
-├── backend/                    # ASP.NET Core API
-│   ├── Models/                # Data models
-│   ├── Controllers/           # API endpoints
-│   ├── Services/              # Business logic
-│   ├── Program.cs             # Configuration
-│   └── BudgetPlanner.API.csproj
+├── backend/                    # Node.js Lambda Functions
+│   ├── src/
+│   │   ├── handlers/          # Lambda handler functions
+│   │   ├── services/          # Business logic
+│   │   ├── utils/             # Helper functions
+│   │   └── types/             # TypeScript types
+│   ├── package.json
+│   └── tsconfig.json
 ├── frontend/                   # React + Vite app
 │   ├── src/
 │   │   ├── api/              # API client
@@ -89,12 +94,16 @@ Budget/
 │   ├── package.json
 │   ├── vite.config.ts
 │   └── tailwind.config.cjs
-├── amplify/                    # AWS Amplify configuration
-├── scripts/                    # Database & utility scripts
+├── terraform/                  # Infrastructure as Code
+│   ├── main.tf               # Main Terraform configuration
+│   ├── variables.tf          # Variable definitions
+│   ├── outputs.tf            # Output values
+│   └── terraform.tfvars      # Variable values
+├── scripts/                    # Deployment & utility scripts
+│   ├── deploy-frontend.sh    # S3 + CloudFront deployment
+│   └── deploy-all.sh         # Full stack deployment
 ├── ProjectDesign.md            # Project design & architecture
-├── DEPLOYMENT_SUMMARY.md       # Deployment overview
-├── AMPLIFY_SETUP.md            # AWS Amplify setup
-├── ELASTIC_BEANSTALK_DEPLOYMENT.md  # EB deployment guide
+├── FRONTEND_DEPLOYMENT.md      # Frontend deployment guide
 └── README.md                   # This file
 ```
 
@@ -149,18 +158,19 @@ All endpoints require JWT authentication via Cognito.
 ## Documentation
 
 - [ProjectDesign.md](ProjectDesign.md) – Project design, architecture, and data model
-- [DEPLOYMENT_SUMMARY.md](DEPLOYMENT_SUMMARY.md) – Deployment overview and architecture
-- [AMPLIFY_SETUP.md](AMPLIFY_SETUP.md) – AWS Amplify backend setup and configuration
-- [ELASTIC_BEANSTALK_DEPLOYMENT.md](ELASTIC_BEANSTALK_DEPLOYMENT.md) – Elastic Beanstalk API deployment guide
+- [FRONTEND_DEPLOYMENT.md](FRONTEND_DEPLOYMENT.md) – Frontend deployment to S3 + CloudFront with caching strategy
+- [terraform/](terraform/) – Infrastructure-as-code for Lambda, API Gateway, and supporting services
 
 ## Project Status
 
 Budget Planner is a budgeting application with:
-- ✅ Complete backend API with user authentication and data management
+- ✅ Complete serverless backend with Lambda and API Gateway
 - ✅ Responsive React frontend with budget visualization
-- ✅ AWS cloud deployment (Amplify, Elastic Beanstalk, DynamoDB, Cognito)
+- ✅ S3 + CloudFront frontend hosting with optimized caching
+- ✅ Infrastructure as Code with Terraform for reproducible deployments
 - ✅ Version-based synchronization for offline support
 - ✅ Multi-scenario financial planning
+- ✅ AWS cloud deployment (Lambda, API Gateway, DynamoDB, Cognito, S3, CloudFront)
 
 ## License
 
