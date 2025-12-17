@@ -12,8 +12,6 @@ Budget Planner allows users to:
 - Add **one-off transactions** (bonuses, unexpected expenses)
 - Visualize financial projections for 36 months
 
-This is designed as a **flexible, multi-scenario budgeting tool** for students and families to explore different financial strategies.
-
 ## Tech Stack
 
 | Layer | Technology | Purpose |
