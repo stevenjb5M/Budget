@@ -6,11 +6,19 @@ import { getStorage } from './index';
 import { User, Plan, Budget, Asset, Debt, Transaction } from './types';
 
 class OfflineModeClient {
-  private store = getStorage();
+  private store: ReturnType<typeof getStorage> | null = null;
+
+  private getStore() {
+    if (!this.store) {
+      this.store = getStorage();
+    }
+    return this.store;
+  }
 
   // Users
   async getCurrentUser(): Promise<User> {
-    const users = await this.store.all<User>('users');
+    const store = this.getStore();
+    const users = await store.all<User>('users');
     if (users.length === 0) {
       throw new Error('No user found in local storage');
     }
@@ -22,17 +30,17 @@ class OfflineModeClient {
       ...user,
       updatedAt: Date.now(),
     };
-    await this.store.put('users', updatedUser);
+    await this.getStore().put('users', updatedUser);
     return updatedUser;
   }
 
   // Plans
   async getPlans(userId: string): Promise<Plan[]> {
-    return this.store.query<Plan>('plans', (p) => p.userId === userId);
+    return this.getStore().query<Plan>('plans', (p) => p.userId === userId);
   }
 
   async getPlan(id: string): Promise<Plan> {
-    const plan = await this.store.get<Plan>('plans', id);
+    const plan = await this.getStore().get<Plan>('plans', id);
     if (!plan) throw new Error(`Plan not found: ${id}`);
     return plan;
   }
@@ -44,20 +52,20 @@ class OfflineModeClient {
       createdAt: Date.now(),
       updatedAt: Date.now(),
     };
-    await this.store.put('plans', newPlan);
+    await this.getStore().put('plans', newPlan);
     return newPlan;
   }
 
   async updatePlan(plan: Plan): Promise<Plan> {
     const updatedPlan = { ...plan, updatedAt: Date.now() };
-    await this.store.put('plans', updatedPlan);
+    await this.getStore().put('plans', updatedPlan);
     return updatedPlan;
   }
 
   async deletePlan(id: string): Promise<void> {
-    await this.store.delete('plans', id);
+    await this.getStore().delete('plans', id);
     // Cascade delete: remove related budgets and transactions
-    const budgets = await this.store.query<Budget>('budgets', (b) => b.planId === id);
+    const budgets = await this.getStore().query<Budget>('budgets', (b) => b.planId === id);
     for (const budget of budgets) {
       await this.deleteBudget(budget.id);
     }
@@ -65,13 +73,13 @@ class OfflineModeClient {
 
   // Budgets
   async getBudgets(userId: string, planId?: string): Promise<Budget[]> {
-    return this.store.query<Budget>('budgets', (b) =>
+    return this.getStore().query<Budget>('budgets', (b) =>
       planId ? b.userId === userId && b.planId === planId : b.userId === userId
     );
   }
 
   async getBudget(id: string): Promise<Budget> {
-    const budget = await this.store.get<Budget>('budgets', id);
+    const budget = await this.getStore().get<Budget>('budgets', id);
     if (!budget) throw new Error(`Budget not found: ${id}`);
     return budget;
   }
@@ -85,35 +93,35 @@ class OfflineModeClient {
       createdAt: Date.now(),
       updatedAt: Date.now(),
     };
-    await this.store.put('budgets', newBudget);
+    await this.getStore().put('budgets', newBudget);
     return newBudget;
   }
 
   async updateBudget(budget: Budget): Promise<Budget> {
     const updatedBudget = { ...budget, updatedAt: Date.now() };
-    await this.store.put('budgets', updatedBudget);
+    await this.getStore().put('budgets', updatedBudget);
     return updatedBudget;
   }
 
   async deleteBudget(id: string): Promise<void> {
-    await this.store.delete('budgets', id);
+    await this.getStore().delete('budgets', id);
     // Cascade delete: remove related transactions
-    const transactions = await this.store.query<Transaction>(
+    const transactions = await this.getStore().query<Transaction>(
       'transactions',
       (t) => t.budgetId === id
     );
     for (const transaction of transactions) {
-      await this.store.delete('transactions', transaction.id);
+      await this.getStore().delete('transactions', transaction.id);
     }
   }
 
   // Assets
   async getAssets(userId: string): Promise<Asset[]> {
-    return this.store.query<Asset>('assets', (a) => a.userId === userId);
+    return this.getStore().query<Asset>('assets', (a) => a.userId === userId);
   }
 
   async getAsset(id: string): Promise<Asset> {
-    const asset = await this.store.get<Asset>('assets', id);
+    const asset = await this.getStore().get<Asset>('assets', id);
     if (!asset) throw new Error(`Asset not found: ${id}`);
     return asset;
   }
@@ -127,27 +135,27 @@ class OfflineModeClient {
       createdAt: Date.now(),
       updatedAt: Date.now(),
     };
-    await this.store.put('assets', newAsset);
+    await this.getStore().put('assets', newAsset);
     return newAsset;
   }
 
   async updateAsset(asset: Asset): Promise<Asset> {
     const updatedAsset = { ...asset, updatedAt: Date.now() };
-    await this.store.put('assets', updatedAsset);
+    await this.getStore().put('assets', updatedAsset);
     return updatedAsset;
   }
 
   async deleteAsset(id: string): Promise<void> {
-    await this.store.delete('assets', id);
+    await this.getStore().delete('assets', id);
   }
 
   // Debts
   async getDebts(userId: string): Promise<Debt[]> {
-    return this.store.query<Debt>('debts', (d) => d.userId === userId);
+    return this.getStore().query<Debt>('debts', (d) => d.userId === userId);
   }
 
   async getDebt(id: string): Promise<Debt> {
-    const debt = await this.store.get<Debt>('debts', id);
+    const debt = await this.getStore().get<Debt>('debts', id);
     if (!debt) throw new Error(`Debt not found: ${id}`);
     return debt;
   }
@@ -161,29 +169,29 @@ class OfflineModeClient {
       createdAt: Date.now(),
       updatedAt: Date.now(),
     };
-    await this.store.put('debts', newDebt);
+    await this.getStore().put('debts', newDebt);
     return newDebt;
   }
 
   async updateDebt(debt: Debt): Promise<Debt> {
     const updatedDebt = { ...debt, updatedAt: Date.now() };
-    await this.store.put('debts', updatedDebt);
+    await this.getStore().put('debts', updatedDebt);
     return updatedDebt;
   }
 
   async deleteDebt(id: string): Promise<void> {
-    await this.store.delete('debts', id);
+    await this.getStore().delete('debts', id);
   }
 
   // Transactions
   async getTransactions(userId: string, budgetId?: string): Promise<Transaction[]> {
-    return this.store.query<Transaction>('transactions', (t) =>
+    return this.getStore().query<Transaction>('transactions', (t) =>
       budgetId ? t.userId === userId && t.budgetId === budgetId : t.userId === userId
     );
   }
 
   async getTransaction(id: string): Promise<Transaction> {
-    const transaction = await this.store.get<Transaction>('transactions', id);
+    const transaction = await this.getStore().get<Transaction>('transactions', id);
     if (!transaction) throw new Error(`Transaction not found: ${id}`);
     return transaction;
   }
@@ -197,18 +205,18 @@ class OfflineModeClient {
       createdAt: Date.now(),
       updatedAt: Date.now(),
     };
-    await this.store.put('transactions', newTransaction);
+    await this.getStore().put('transactions', newTransaction);
     return newTransaction;
   }
 
   async updateTransaction(transaction: Transaction): Promise<Transaction> {
     const updatedTransaction = { ...transaction, updatedAt: Date.now() };
-    await this.store.put('transactions', updatedTransaction);
+    await this.getStore().put('transactions', updatedTransaction);
     return updatedTransaction;
   }
 
   async deleteTransaction(id: string): Promise<void> {
-    await this.store.delete('transactions', id);
+    await this.getStore().delete('transactions', id);
   }
 
   // Helper
