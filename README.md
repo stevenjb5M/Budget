@@ -10,7 +10,7 @@ Budget Planner allows users to:
 - Define **monthly budgets** with income and expenses
 - Track **assets** (savings accounts or investments) and **debts** (loans, credit cards)
 - Add **one-off transactions** (bonuses, unexpected expenses)
-- Visualize financial projections for 36 months
+- Visualize financial projections for 36 months. Soon to be longer. 
 
 ## Tech Stack
 
