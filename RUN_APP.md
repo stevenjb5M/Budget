@@ -5,9 +5,12 @@
 ### Quick Start
 1. Open **Finder**
 2. Navigate to your Budget Planner folder
-3. **Double-click** `run-offline-app.sh`
+3. **Double-click** `run-offline-app` (no file extension)
+   - If prompted about an unidentified developer, click **"Open"**
 4. A terminal window will open and your browser will launch automatically
 5. The app runs at `http://localhost:4173`
+
+**Note:** Use `run-offline-app` for double-clicking. The `.sh` version is for terminal use.
 
 ### First Time Setup
 If it's your first time, the script will:
