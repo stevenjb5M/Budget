@@ -11,6 +11,12 @@ const queryClient = new QueryClient()
 // Configure AWS Amplify
 Amplify.configure(awsConfig)
 
+// Initialize offline storage for offline-mode branch
+import { initializeStorage } from './services/storage'
+initializeStorage().catch((error) => {
+  console.error('Failed to initialize offline storage:', error)
+})
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
