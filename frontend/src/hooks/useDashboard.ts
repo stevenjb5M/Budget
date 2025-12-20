@@ -46,8 +46,8 @@ export function useDashboard(): UseDashboardReturn {
         debtsAPI.getDebts()
       ])
 
-      setAssets(assetsResponse.data)
-      setDebts(debtsResponse.data)
+      setAssets(Array.isArray(assetsResponse.data) ? assetsResponse.data : [])
+      setDebts(Array.isArray(debtsResponse.data) ? debtsResponse.data : [])
 
     } catch (error) {
       console.error('Error fetching dashboard data:', error)

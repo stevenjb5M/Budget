@@ -37,24 +37,30 @@ export function Nav() {
     try {
       const updatedUser = {
         ...currentUser,
-        displayName,
-        birthdayString: birthday,
-        retirementAge
+        displayName: displayName || currentUser?.displayName || 'User',
+        birthdayString: birthday || '',
+        retirementAge: Number(retirementAge) || 65
       }
       await usersAPI.updateCurrentUser(updatedUser)
       
       // Update Cognito attributes
-      await updateUserAttributes({
-        userAttributes: {
-          name: displayName
-        }
-      })
+      try {
+        await updateUserAttributes({
+          userAttributes: {
+            name: displayName
+          }
+        })
+      } catch {
+        // In offline mode, Cognito won't be available, so just continue
+        console.log('Cognito update skipped (offline mode)')
+      }
       
       setIsSettingsOpen(false)
       // Dispatch custom event to notify other components
       window.dispatchEvent(new CustomEvent('userUpdated'))
     } catch (error) {
       console.error('Error updating user:', error)
+      // Modal stays open on error
     } finally {
       setLoading(false)
     }
