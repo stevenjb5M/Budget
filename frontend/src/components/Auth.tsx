@@ -3,6 +3,7 @@ import '@aws-amplify/ui-react/styles.css'
 import React, { useEffect, useState } from 'react'
 import { AuthProps } from '../types'
 import { AuthContext } from '../utils/auth'
+import { OfflineAuth } from './OfflineAuth'
 import './Auth.css'
 
 export function AuthProvider({ children, signOut, user }: { children: React.ReactNode, signOut: (() => void) | undefined, user: any }) {
@@ -123,23 +124,77 @@ function autoFillTestCredentials() {
 }
 
 export function Auth({ children }: AuthProps) {
+  const [isOfflineMode, setIsOfflineMode] = useState(false);
+  const [offlineUser, setOfflineUser] = useState<{ userId: string; userName: string } | null>(null);
+
   useEffect(() => {
-    // Add keyboard listener for hotkey (Ctrl+Shift+T)
-    const handleKeyDown = (event: KeyboardEvent) => {
-      // Ctrl+Shift+T: Auto-fill test credentials
-      if (event.ctrlKey && event.key === 'a') {
-        event.preventDefault()
-        autoFillTestCredentials()
-        console.log('Test credentials auto-filled. Use Ctrl+Shift+T to fill again.')
+    // Check if we're in offline mode by checking if storage is initialized
+    const checkOfflineMode = async () => {
+      try {
+        const { getStorage } = await import('../services/storage');
+        try {
+          getStorage();
+          // If we get here, storage is initialized - we're in offline mode
+          setIsOfflineMode(true);
+          
+          // Check if user is already signed in
+          const { localAuth: auth } = await import('../services/localAuth');
+          const user = auth.getCurrentUser();
+          if (user && user.isAuthenticated) {
+            setOfflineUser({ userId: user.userId, userName: user.username });
+          }
+        } catch {
+          // Storage not initialized yet or not in offline mode
+          setIsOfflineMode(false);
+        }
+      } catch {
+        setIsOfflineMode(false);
       }
-    }
+    };
 
-    window.addEventListener('keydown', handleKeyDown)
+    checkOfflineMode();
+
+    // Add keyboard listener for hotkey
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.ctrlKey && event.key === 'a') {
+        event.preventDefault();
+        autoFillTestCredentials();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
     return () => {
-      window.removeEventListener('keydown', handleKeyDown)
-    }
-  }, [])
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
 
+  const handleOfflineSignIn = (userId: string) => {
+    setOfflineUser({ userId, userName: 'User' });
+  };
+
+  const handleOfflineSignOut = () => {
+    import('../services/localAuth').then(({ localAuth: auth }) => auth.signOut());
+    setOfflineUser(null);
+  };
+
+  // Offline mode authentication
+  if (isOfflineMode) {
+    if (!offlineUser) {
+      return <OfflineAuth onSignIn={handleOfflineSignIn} />;
+    }
+
+    // User is signed in, create context and render app
+    return (
+      <AuthContext.Provider value={{ 
+        user: { username: offlineUser.userName, attributes: { sub: offlineUser.userId } },
+        signOut: handleOfflineSignOut
+      }}>
+        {children}
+      </AuthContext.Provider>
+    );
+  }
+
+  // Regular Cognito authentication
   return (
     <div className="auth-container">
       <div className="auth-card">
@@ -202,7 +257,7 @@ export function Auth({ children }: AuthProps) {
         </Authenticator>
       </div>
     </div>
-  )
+  );
 }
 
 export default Auth
