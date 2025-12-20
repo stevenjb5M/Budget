@@ -1,7 +1,10 @@
 /**
  * Local authentication service for offline mode
- * Stores user in localStorage
+ * Stores user in localStorage and creates IndexedDB record
  */
+
+import { getStorage } from './storage/index'
+import { User } from '../types'
 
 export interface LocalUser {
   userId: string;
@@ -40,7 +43,7 @@ export const localAuth = {
   },
 
   /**
-   * Sign in with local credentials
+   * Sign in with local credentials and create user record in IndexedDB
    */
   async signIn(username: string): Promise<LocalUser> {
     // Simple validation - in offline mode, just accept any username
@@ -48,14 +51,35 @@ export const localAuth = {
       throw new Error('Username is required');
     }
 
-    const user: LocalUser = {
+    const localUser: LocalUser = {
       ...DEFAULT_USER,
       username: username.trim(),
       isAuthenticated: true,
     };
 
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
-    return user;
+    // Create full user record in IndexedDB
+    const now = new Date().toISOString();
+    const user: User = {
+      id: localUser.userId,
+      displayName: localUser.username,
+      email: localUser.email,
+      birthdayString: '', // Optional for offline users
+      retirementAge: 67, // Default retirement age
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    // Store in IndexedDB
+    try {
+      const store = getStorage();
+      await store.put('users', user);
+    } catch (error) {
+      console.error('Failed to store user in IndexedDB:', error);
+      // Continue anyway - localStorage backup is available
+    }
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(localUser));
+    return localUser;
   },
 
   /**
@@ -75,6 +99,6 @@ export const localAuth = {
     }
 
     // Auto sign in with default user
-    return this.signIn(DEFAULT_USER.username, '');
+    return this.signIn(DEFAULT_USER.username);
   },
 };

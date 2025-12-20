@@ -48,8 +48,8 @@ export function SortableAssetItem({ asset, onEdit }: SortableAssetItemProps) {
         <div className="asset-name">{asset.name}</div>
         <div className="asset-notes">{asset.notes || 'No notes'}</div>
       </div>
-      <div className="asset-value">${asset.currentValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-      <div className="asset-apy">{asset.annualAPY.toFixed(2)}%</div>
+      <div className="asset-value">${(asset.currentValue ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+      <div className="asset-apy">{(asset.annualAPY ?? 0).toFixed(2)}%</div>
       <div className="edit-button-container">
         <button
           onClick={() => onEdit(asset)}

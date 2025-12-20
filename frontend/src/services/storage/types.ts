@@ -55,10 +55,12 @@ export interface IDataStore {
 // Entity types
 export interface User extends StorageEntity {
   id: string;
+  displayName: string;
   email: string;
-  name: string;
-  createdAt: number;
-  updatedAt: number;
+  birthdayString: string;
+  retirementAge: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Plan extends StorageEntity {
@@ -66,40 +68,55 @@ export interface Plan extends StorageEntity {
   userId: string;
   name: string;
   description?: string;
-  createdAt: number;
-  updatedAt: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Budget extends StorageEntity {
   id: string;
-  planId: string;
   userId: string;
-  month: number;
-  year: number;
-  income: number;
-  createdAt: number;
-  updatedAt: number;
+  name: string;
+  isActive: boolean;
+  income: Array<{
+    id: string;
+    name: string;
+    amount: number;
+    category: string;
+  }>;
+  expenses: Array<{
+    id: string;
+    name: string;
+    amount: number;
+    category: string;
+    linkedAssetId?: string;
+    linkedDebtId?: string;
+    type?: 'regular' | 'asset' | 'debt';
+  }>;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Asset extends StorageEntity {
   id: string;
   userId: string;
   name: string;
-  type: string;
-  balance: number;
-  createdAt: number;
-  updatedAt: number;
+  currentValue: number;
+  annualAPY: number;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Debt extends StorageEntity {
   id: string;
   userId: string;
   name: string;
-  type: string;
-  balance: number;
+  currentBalance: number;
   interestRate: number;
-  createdAt: number;
-  updatedAt: number;
+  minimumPayment: number;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Transaction extends StorageEntity {
@@ -113,6 +130,6 @@ export interface Transaction extends StorageEntity {
   type: 'income' | 'expense';
   linkedAssetId?: string;
   linkedDebtId?: string;
-  createdAt: number;
-  updatedAt: number;
+  createdAt: string;
+  updatedAt: string;
 }

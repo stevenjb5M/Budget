@@ -48,9 +48,9 @@ export function SortableDebtItem({ debt, onEdit }: SortableDebtItemProps) {
         <div className="debt-name">{debt.name}</div>
         <div className="debt-notes">{debt.notes || 'No notes'}</div>
       </div>
-      <div className="debt-balance">${debt.currentBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-      <div className="debt-rate">{debt.interestRate.toFixed(2)}%</div>
-      <div className="debt-minimum-payment">${debt.minimumPayment.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+      <div className="debt-balance">${(debt.currentBalance ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+      <div className="debt-rate">{(debt.interestRate ?? 0).toFixed(2)}%</div>
+      <div className="debt-minimum-payment">${(debt.minimumPayment ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
       <div className="debt-edit-button-container">
         <button
           onClick={() => onEdit(debt)}
