@@ -10,7 +10,7 @@ export function Home() {
 
   // Calculate dates
   const today = new Date()
-  const birthDate = user ? new Date(user.birthdayString.split('T')[0]) : new Date()
+  const birthDate = user && user.birthdayString ? new Date(user.birthdayString.split('T')[0]) : new Date()
 
   return (
     <div className="home-page">
