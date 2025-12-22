@@ -227,6 +227,96 @@ resource "aws_api_gateway_integration_response" "users_me_options_integration_re
   depends_on = [aws_api_gateway_method_response.users_me_options_response]
 }
 
+# /api/users/versions endpoint
+resource "aws_api_gateway_resource" "users_versions" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  parent_id   = aws_api_gateway_resource.users.id
+  path_part   = "versions"
+}
+
+resource "aws_api_gateway_method" "users_versions_get" {
+  rest_api_id      = aws_api_gateway_rest_api.api.id
+  resource_id      = aws_api_gateway_resource.users_versions.id
+  http_method      = "GET"
+  authorization    = "COGNITO_USER_POOLS"
+  authorizer_id    = aws_api_gateway_authorizer.cognito.id
+}
+
+resource "aws_api_gateway_integration" "users_versions_get_integration" {
+  rest_api_id             = aws_api_gateway_rest_api.api.id
+  resource_id             = aws_api_gateway_resource.users_versions.id
+  http_method             = aws_api_gateway_method.users_versions_get.http_method
+  type                    = "AWS_PROXY"
+  integration_http_method = "POST"
+  uri                     = aws_lambda_function.users.invoke_arn
+}
+
+resource "aws_api_gateway_method_response" "users_versions_get_response" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.users_versions.id
+  http_method = aws_api_gateway_method.users_versions_get.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = true
+  }
+}
+
+resource "aws_api_gateway_integration_response" "users_versions_get_integration_response" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.users_versions.id
+  http_method = aws_api_gateway_method.users_versions_get.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = "'*'"
+  }
+
+  depends_on = [aws_api_gateway_method_response.users_versions_get_response]
+}
+
+resource "aws_api_gateway_method" "users_versions_options" {
+  rest_api_id   = aws_api_gateway_rest_api.api.id
+  resource_id   = aws_api_gateway_resource.users_versions.id
+  http_method   = "OPTIONS"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "users_versions_options_integration" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.users_versions.id
+  http_method = aws_api_gateway_method.users_versions_options.http_method
+  type        = "MOCK"
+}
+
+resource "aws_api_gateway_method_response" "users_versions_options_response" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.users_versions.id
+  http_method = aws_api_gateway_method.users_versions_options.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = true
+    "method.response.header.Access-Control-Allow-Methods" = true
+    "method.response.header.Access-Control-Allow-Origin"  = true
+  }
+}
+
+resource "aws_api_gateway_integration_response" "users_versions_options_integration_response" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.users_versions.id
+  http_method = aws_api_gateway_method.users_versions_options.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+    "method.response.header.Access-Control-Allow-Methods" = "'GET,OPTIONS'"
+    "method.response.header.Access-Control-Allow-Origin"  = "'*'"
+  }
+
+  depends_on = [aws_api_gateway_method_response.users_versions_options_response]
+}
+
 # Method for users endpoint
 resource "aws_api_gateway_method" "users_get" {
   rest_api_id      = aws_api_gateway_rest_api.api.id
@@ -303,6 +393,10 @@ resource "aws_api_gateway_deployment" "api" {
     aws_api_gateway_integration_response.users_me_get_integration_response,
     aws_api_gateway_integration_response.users_me_put_integration_response,
     aws_api_gateway_integration_response.users_me_options_integration_response,
+    # Users /versions
+    aws_api_gateway_integration.users_versions_get_integration,
+    aws_api_gateway_integration_response.users_versions_get_integration_response,
+    aws_api_gateway_integration_response.users_versions_options_integration_response,
     # Plans
     aws_api_gateway_integration.plans_integration,
     aws_api_gateway_integration.plans_post_integration,
