@@ -52,7 +52,7 @@ resource "aws_api_gateway_authorizer" "cognito" {
   type            = "COGNITO_USER_POOLS"
 
   provider_arns = [
-    "arn:aws:cognito-idp:${var.aws_region}:YOUR_ACCOUNT_ID:userpool/YOUR_POOL_ID"
+    aws_cognito_user_pool.main.arn
   ]
 }
 
