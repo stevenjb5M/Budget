@@ -9,11 +9,70 @@ resource "aws_api_gateway_rest_api" "api" {
   }
 }
 
+# Gateway response for 4XX errors - adds CORS headers
+resource "aws_api_gateway_gateway_response" "cors_4xx" {
+  rest_api_id   = aws_api_gateway_rest_api.api.id
+  response_type = "DEFAULT_4XX"
+
+  response_parameters = {
+    "gatewayresponse.header.Access-Control-Allow-Origin"  = "'*'"
+    "gatewayresponse.header.Access-Control-Allow-Headers" = "'Content-Type,Authorization'"
+    "gatewayresponse.header.Access-Control-Allow-Methods" = "'GET,POST,PUT,DELETE,OPTIONS'"
+  }
+}
+
+# Gateway response for 5XX errors - adds CORS headers
+resource "aws_api_gateway_gateway_response" "cors_5xx" {
+  rest_api_id   = aws_api_gateway_rest_api.api.id
+  response_type = "DEFAULT_5XX"
+
+  response_parameters = {
+    "gatewayresponse.header.Access-Control-Allow-Origin"  = "'*'"
+    "gatewayresponse.header.Access-Control-Allow-Headers" = "'Content-Type,Authorization'"
+    "gatewayresponse.header.Access-Control-Allow-Methods" = "'GET,POST,PUT,DELETE,OPTIONS'"
+  }
+}
+
+# API resource
+resource "aws_api_gateway_resource" "api" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  parent_id   = aws_api_gateway_rest_api.api.root_resource_id
+  path_part   = "api"
+}
+
 # Users endpoint
 resource "aws_api_gateway_resource" "users" {
   rest_api_id = aws_api_gateway_rest_api.api.id
-  parent_id   = aws_api_gateway_rest_api.api.root_resource_id
+  parent_id   = aws_api_gateway_resource.api.id
   path_part   = "users"
+}
+
+# Plans endpoint
+resource "aws_api_gateway_resource" "plans" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  parent_id   = aws_api_gateway_resource.api.id
+  path_part   = "plans"
+}
+
+# Budgets endpoint
+resource "aws_api_gateway_resource" "budgets" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  parent_id   = aws_api_gateway_resource.api.id
+  path_part   = "budgets"
+}
+
+# Assets endpoint
+resource "aws_api_gateway_resource" "assets" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  parent_id   = aws_api_gateway_resource.api.id
+  path_part   = "assets"
+}
+
+# Debts endpoint
+resource "aws_api_gateway_resource" "debts" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  parent_id   = aws_api_gateway_resource.api.id
+  path_part   = "debts"
 }
 
 # Lambda permission for users function
@@ -25,6 +84,149 @@ resource "aws_lambda_permission" "users_api" {
   source_arn    = "${aws_api_gateway_rest_api.api.execution_arn}/*/*"
 }
 
+# Users /me sub-resource
+resource "aws_api_gateway_resource" "users_me" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  parent_id   = aws_api_gateway_resource.users.id
+  path_part   = "me"
+}
+
+# GET method for /api/users/me
+resource "aws_api_gateway_method" "users_me_get" {
+  rest_api_id      = aws_api_gateway_rest_api.api.id
+  resource_id      = aws_api_gateway_resource.users_me.id
+  http_method      = "GET"
+  authorization    = "COGNITO_USER_POOLS"
+  authorizer_id    = aws_api_gateway_authorizer.cognito.id
+}
+
+# PUT method for /api/users/me
+resource "aws_api_gateway_method" "users_me_put" {
+  rest_api_id      = aws_api_gateway_rest_api.api.id
+  resource_id      = aws_api_gateway_resource.users_me.id
+  http_method      = "PUT"
+  authorization    = "COGNITO_USER_POOLS"
+  authorizer_id    = aws_api_gateway_authorizer.cognito.id
+}
+
+# Integration for GET /api/users/me
+resource "aws_api_gateway_integration" "users_me_get_integration" {
+  rest_api_id             = aws_api_gateway_rest_api.api.id
+  resource_id             = aws_api_gateway_resource.users_me.id
+  http_method             = aws_api_gateway_method.users_me_get.http_method
+  type                    = "AWS_PROXY"
+  integration_http_method = "POST"
+  uri                     = aws_lambda_function.users.invoke_arn
+}
+
+# Integration for PUT /api/users/me
+resource "aws_api_gateway_integration" "users_me_put_integration" {
+  rest_api_id             = aws_api_gateway_rest_api.api.id
+  resource_id             = aws_api_gateway_resource.users_me.id
+  http_method             = aws_api_gateway_method.users_me_put.http_method
+  type                    = "AWS_PROXY"
+  integration_http_method = "POST"
+  uri                     = aws_lambda_function.users.invoke_arn
+}
+
+# OPTIONS method for /api/users/me (CORS preflight)
+resource "aws_api_gateway_method" "users_me_options" {
+  rest_api_id      = aws_api_gateway_rest_api.api.id
+  resource_id      = aws_api_gateway_resource.users_me.id
+  http_method      = "OPTIONS"
+  authorization    = "NONE"
+}
+
+# OPTIONS integration for /api/users/me
+resource "aws_api_gateway_integration" "users_me_options_integration" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.users_me.id
+  http_method = aws_api_gateway_method.users_me_options.http_method
+  type        = "MOCK"
+
+  request_templates = {
+    "application/json" = "{\"statusCode\": 200}"
+  }
+}
+
+# Method responses for /api/users/me
+resource "aws_api_gateway_method_response" "users_me_get_response" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.users_me.id
+  http_method = aws_api_gateway_method.users_me_get.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = true
+  }
+}
+
+resource "aws_api_gateway_method_response" "users_me_put_response" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.users_me.id
+  http_method = aws_api_gateway_method.users_me_put.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = true
+  }
+}
+
+resource "aws_api_gateway_method_response" "users_me_options_response" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.users_me.id
+  http_method = aws_api_gateway_method.users_me_options.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = true
+    "method.response.header.Access-Control-Allow-Methods" = true
+    "method.response.header.Access-Control-Allow-Origin"  = true
+  }
+}
+
+# Integration responses for /api/users/me
+resource "aws_api_gateway_integration_response" "users_me_get_integration_response" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.users_me.id
+  http_method = aws_api_gateway_method.users_me_get.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = "'*'"
+  }
+
+  depends_on = [aws_api_gateway_method_response.users_me_get_response]
+}
+
+resource "aws_api_gateway_integration_response" "users_me_put_integration_response" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.users_me.id
+  http_method = aws_api_gateway_method.users_me_put.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = "'*'"
+  }
+
+  depends_on = [aws_api_gateway_method_response.users_me_put_response]
+}
+
+resource "aws_api_gateway_integration_response" "users_me_options_integration_response" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.users_me.id
+  http_method = aws_api_gateway_method.users_me_options.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+    "method.response.header.Access-Control-Allow-Methods" = "'GET,PUT,OPTIONS'"
+    "method.response.header.Access-Control-Allow-Origin"  = "'*'"
+  }
+
+  depends_on = [aws_api_gateway_method_response.users_me_options_response]
+}
+
 # Method for users endpoint
 resource "aws_api_gateway_method" "users_get" {
   rest_api_id      = aws_api_gateway_rest_api.api.id
@@ -32,6 +234,18 @@ resource "aws_api_gateway_method" "users_get" {
   http_method      = "GET"
   authorization    = "COGNITO_USER_POOLS"
   authorizer_id    = aws_api_gateway_authorizer.cognito.id
+}
+
+# Method Response for CORS
+resource "aws_api_gateway_method_response" "users_get_response" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.users.id
+  http_method = aws_api_gateway_method.users_get.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = true
+  }
 }
 
 # Integration for users endpoint
@@ -42,6 +256,20 @@ resource "aws_api_gateway_integration" "users_integration" {
   type             = "AWS_PROXY"
   integration_http_method = "POST"
   uri              = aws_lambda_function.users.invoke_arn
+}
+
+# Integration Response for CORS
+resource "aws_api_gateway_integration_response" "users_get_integration_response" {
+  rest_api_id      = aws_api_gateway_rest_api.api.id
+  resource_id      = aws_api_gateway_resource.users.id
+  http_method      = aws_api_gateway_method.users_get.http_method
+  status_code      = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = "'*'"
+  }
+
+  depends_on = [aws_api_gateway_method_response.users_get_response]
 }
 
 # Cognito Authorizer
@@ -61,8 +289,670 @@ resource "aws_api_gateway_deployment" "api" {
   rest_api_id = aws_api_gateway_rest_api.api.id
 
   depends_on = [
-    aws_api_gateway_integration.users_integration
+    # Gateway Responses (CORS for errors)
+    aws_api_gateway_gateway_response.cors_4xx,
+    aws_api_gateway_gateway_response.cors_5xx,
+    # Users
+    aws_api_gateway_integration.users_integration,
+    aws_api_gateway_integration_response.users_get_integration_response,
+    aws_api_gateway_method_response.users_options_response,
+    aws_api_gateway_integration_response.users_options_integration_response,
+    # Users /me
+    aws_api_gateway_integration.users_me_get_integration,
+    aws_api_gateway_integration.users_me_put_integration,
+    aws_api_gateway_integration_response.users_me_get_integration_response,
+    aws_api_gateway_integration_response.users_me_put_integration_response,
+    aws_api_gateway_integration_response.users_me_options_integration_response,
+    # Plans
+    aws_api_gateway_integration.plans_integration,
+    aws_api_gateway_integration.plans_post_integration,
+    aws_api_gateway_integration_response.plans_integration_response,
+    aws_api_gateway_integration_response.plans_post_integration_response,
+    aws_api_gateway_integration_response.plans_options_integration_response,
+    # Budgets
+    aws_api_gateway_integration.budgets_integration,
+    aws_api_gateway_integration.budgets_post_integration,
+    aws_api_gateway_integration_response.budgets_integration_response,
+    aws_api_gateway_integration_response.budgets_post_integration_response,
+    aws_api_gateway_integration_response.budgets_options_integration_response,
+    # Assets
+    aws_api_gateway_integration.assets_integration,
+    aws_api_gateway_integration.assets_post_integration,
+    aws_api_gateway_integration_response.assets_integration_response,
+    aws_api_gateway_integration_response.assets_post_integration_response,
+    aws_api_gateway_integration_response.assets_options_integration_response,
+    # Debts
+    aws_api_gateway_integration.debts_integration,
+    aws_api_gateway_integration.debts_post_integration,
+    aws_api_gateway_integration_response.debts_integration_response,
+    aws_api_gateway_integration_response.debts_post_integration_response,
+    aws_api_gateway_integration_response.debts_options_integration_response,
   ]
+}
+
+# OPTIONS method for CORS preflight
+resource "aws_api_gateway_method" "users_options" {
+  rest_api_id      = aws_api_gateway_rest_api.api.id
+  resource_id      = aws_api_gateway_resource.users.id
+  http_method      = "OPTIONS"
+  authorization    = "NONE"
+}
+
+# Method Response for OPTIONS
+resource "aws_api_gateway_method_response" "users_options_response" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.users.id
+  http_method = aws_api_gateway_method.users_options.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = true
+    "method.response.header.Access-Control-Allow-Methods" = true
+    "method.response.header.Access-Control-Allow-Origin"  = true
+  }
+}
+
+# Integration for OPTIONS
+resource "aws_api_gateway_integration" "users_options_integration" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.users.id
+  http_method = aws_api_gateway_method.users_options.http_method
+  type        = "MOCK"
+
+  request_templates = {
+    "application/json" = "{\"statusCode\": 200}"
+  }
+}
+
+# Integration Response for OPTIONS
+resource "aws_api_gateway_integration_response" "users_options_integration_response" {
+  rest_api_id      = aws_api_gateway_rest_api.api.id
+  resource_id      = aws_api_gateway_resource.users.id
+  http_method      = aws_api_gateway_method.users_options.http_method
+  status_code      = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+    "method.response.header.Access-Control-Allow-Methods" = "'GET,POST,PUT,DELETE,OPTIONS'"
+    "method.response.header.Access-Control-Allow-Origin"  = "'*'"
+  }
+
+  depends_on = [aws_api_gateway_method_response.users_options_response]
+}
+
+# ===== PLANS ENDPOINT =====
+
+# Lambda permission for plans function
+resource "aws_lambda_permission" "plans_api" {
+  statement_id  = "AllowAPIGatewayInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.plans.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_api_gateway_rest_api.api.execution_arn}/*/*"
+}
+
+# GET/POST methods for plans
+resource "aws_api_gateway_method" "plans_method" {
+  rest_api_id      = aws_api_gateway_rest_api.api.id
+  resource_id      = aws_api_gateway_resource.plans.id
+  http_method      = "GET"
+  authorization    = "COGNITO_USER_POOLS"
+  authorizer_id    = aws_api_gateway_authorizer.cognito.id
+}
+
+resource "aws_api_gateway_method" "plans_post" {
+  rest_api_id      = aws_api_gateway_rest_api.api.id
+  resource_id      = aws_api_gateway_resource.plans.id
+  http_method      = "POST"
+  authorization    = "COGNITO_USER_POOLS"
+  authorizer_id    = aws_api_gateway_authorizer.cognito.id
+}
+
+# Integration for plans
+resource "aws_api_gateway_integration" "plans_integration" {
+  rest_api_id      = aws_api_gateway_rest_api.api.id
+  resource_id      = aws_api_gateway_resource.plans.id
+  http_method      = aws_api_gateway_method.plans_method.http_method
+  type             = "AWS_PROXY"
+  integration_http_method = "POST"
+  uri              = aws_lambda_function.plans.invoke_arn
+}
+
+resource "aws_api_gateway_integration" "plans_post_integration" {
+  rest_api_id      = aws_api_gateway_rest_api.api.id
+  resource_id      = aws_api_gateway_resource.plans.id
+  http_method      = aws_api_gateway_method.plans_post.http_method
+  type             = "AWS_PROXY"
+  integration_http_method = "POST"
+  uri              = aws_lambda_function.plans.invoke_arn
+}
+
+# Method responses for GET/POST methods (with CORS headers)
+resource "aws_api_gateway_method_response" "plans_method_response" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.plans.id
+  http_method = aws_api_gateway_method.plans_method.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = true
+  }
+}
+
+resource "aws_api_gateway_method_response" "plans_post_response" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.plans.id
+  http_method = aws_api_gateway_method.plans_post.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = true
+  }
+}
+
+# Integration responses for GET/POST methods
+resource "aws_api_gateway_integration_response" "plans_integration_response" {
+  rest_api_id      = aws_api_gateway_rest_api.api.id
+  resource_id      = aws_api_gateway_resource.plans.id
+  http_method      = aws_api_gateway_method.plans_method.http_method
+  status_code      = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = "'*'"
+  }
+
+  depends_on = [aws_api_gateway_method_response.plans_method_response]
+}
+
+resource "aws_api_gateway_integration_response" "plans_post_integration_response" {
+  rest_api_id      = aws_api_gateway_rest_api.api.id
+  resource_id      = aws_api_gateway_resource.plans.id
+  http_method      = aws_api_gateway_method.plans_post.http_method
+  status_code      = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = "'*'"
+  }
+
+  depends_on = [aws_api_gateway_method_response.plans_post_response]
+}
+
+# ===== BUDGETS - Method and Integration Responses =====
+resource "aws_api_gateway_method_response" "budgets_method_response" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.budgets.id
+  http_method = aws_api_gateway_method.budgets_method.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = true
+  }
+}
+
+resource "aws_api_gateway_method_response" "budgets_post_response" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.budgets.id
+  http_method = aws_api_gateway_method.budgets_post.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = true
+  }
+}
+
+resource "aws_api_gateway_integration_response" "budgets_integration_response" {
+  rest_api_id      = aws_api_gateway_rest_api.api.id
+  resource_id      = aws_api_gateway_resource.budgets.id
+  http_method      = aws_api_gateway_method.budgets_method.http_method
+  status_code      = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = "'*'"
+  }
+
+  depends_on = [aws_api_gateway_method_response.budgets_method_response]
+}
+
+resource "aws_api_gateway_integration_response" "budgets_post_integration_response" {
+  rest_api_id      = aws_api_gateway_rest_api.api.id
+  resource_id      = aws_api_gateway_resource.budgets.id
+  http_method      = aws_api_gateway_method.budgets_post.http_method
+  status_code      = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = "'*'"
+  }
+
+  depends_on = [aws_api_gateway_method_response.budgets_post_response]
+}
+
+# ===== ASSETS - Method and Integration Responses =====
+resource "aws_api_gateway_method_response" "assets_method_response" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.assets.id
+  http_method = aws_api_gateway_method.assets_method.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = true
+  }
+}
+
+resource "aws_api_gateway_method_response" "assets_post_response" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.assets.id
+  http_method = aws_api_gateway_method.assets_post.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = true
+  }
+}
+
+resource "aws_api_gateway_integration_response" "assets_integration_response" {
+  rest_api_id      = aws_api_gateway_rest_api.api.id
+  resource_id      = aws_api_gateway_resource.assets.id
+  http_method      = aws_api_gateway_method.assets_method.http_method
+  status_code      = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = "'*'"
+  }
+
+  depends_on = [aws_api_gateway_method_response.assets_method_response]
+}
+
+resource "aws_api_gateway_integration_response" "assets_post_integration_response" {
+  rest_api_id      = aws_api_gateway_rest_api.api.id
+  resource_id      = aws_api_gateway_resource.assets.id
+  http_method      = aws_api_gateway_method.assets_post.http_method
+  status_code      = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = "'*'"
+  }
+
+  depends_on = [aws_api_gateway_method_response.assets_post_response]
+}
+
+# ===== DEBTS - Method and Integration Responses =====
+resource "aws_api_gateway_method_response" "debts_method_response" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.debts.id
+  http_method = aws_api_gateway_method.debts_method.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = true
+  }
+}
+
+resource "aws_api_gateway_method_response" "debts_post_response" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.debts.id
+  http_method = aws_api_gateway_method.debts_post.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = true
+  }
+}
+
+resource "aws_api_gateway_integration_response" "debts_integration_response" {
+  rest_api_id      = aws_api_gateway_rest_api.api.id
+  resource_id      = aws_api_gateway_resource.debts.id
+  http_method      = aws_api_gateway_method.debts_method.http_method
+  status_code      = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = "'*'"
+  }
+
+  depends_on = [aws_api_gateway_method_response.debts_method_response]
+}
+
+resource "aws_api_gateway_integration_response" "debts_post_integration_response" {
+  rest_api_id      = aws_api_gateway_rest_api.api.id
+  resource_id      = aws_api_gateway_resource.debts.id
+  http_method      = aws_api_gateway_method.debts_post.http_method
+  status_code      = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = "'*'"
+  }
+
+  depends_on = [aws_api_gateway_method_response.debts_post_response]
+}
+
+# OPTIONS for plans
+resource "aws_api_gateway_method" "plans_options" {
+  rest_api_id      = aws_api_gateway_rest_api.api.id
+  resource_id      = aws_api_gateway_resource.plans.id
+  http_method      = "OPTIONS"
+  authorization    = "NONE"
+}
+
+resource "aws_api_gateway_integration" "plans_options_integration" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.plans.id
+  http_method = aws_api_gateway_method.plans_options.http_method
+  type        = "MOCK"
+
+  request_templates = {
+    "application/json" = "{\"statusCode\": 200}"
+  }
+}
+
+# ===== BUDGETS ENDPOINT =====
+
+# Lambda permission for budgets function
+resource "aws_lambda_permission" "budgets_api" {
+  statement_id  = "AllowAPIGatewayInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.budgets.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_api_gateway_rest_api.api.execution_arn}/*/*"
+}
+
+# GET/POST methods for budgets
+resource "aws_api_gateway_method" "budgets_method" {
+  rest_api_id      = aws_api_gateway_rest_api.api.id
+  resource_id      = aws_api_gateway_resource.budgets.id
+  http_method      = "GET"
+  authorization    = "COGNITO_USER_POOLS"
+  authorizer_id    = aws_api_gateway_authorizer.cognito.id
+}
+
+resource "aws_api_gateway_method" "budgets_post" {
+  rest_api_id      = aws_api_gateway_rest_api.api.id
+  resource_id      = aws_api_gateway_resource.budgets.id
+  http_method      = "POST"
+  authorization    = "COGNITO_USER_POOLS"
+  authorizer_id    = aws_api_gateway_authorizer.cognito.id
+}
+
+# Integration for budgets
+resource "aws_api_gateway_integration" "budgets_integration" {
+  rest_api_id      = aws_api_gateway_rest_api.api.id
+  resource_id      = aws_api_gateway_resource.budgets.id
+  http_method      = aws_api_gateway_method.budgets_method.http_method
+  type             = "AWS_PROXY"
+  integration_http_method = "POST"
+  uri              = aws_lambda_function.budgets.invoke_arn
+}
+
+resource "aws_api_gateway_integration" "budgets_post_integration" {
+  rest_api_id      = aws_api_gateway_rest_api.api.id
+  resource_id      = aws_api_gateway_resource.budgets.id
+  http_method      = aws_api_gateway_method.budgets_post.http_method
+  type             = "AWS_PROXY"
+  integration_http_method = "POST"
+  uri              = aws_lambda_function.budgets.invoke_arn
+}
+
+# OPTIONS for budgets
+resource "aws_api_gateway_method" "budgets_options" {
+  rest_api_id      = aws_api_gateway_rest_api.api.id
+  resource_id      = aws_api_gateway_resource.budgets.id
+  http_method      = "OPTIONS"
+  authorization    = "NONE"
+}
+
+resource "aws_api_gateway_integration" "budgets_options_integration" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.budgets.id
+  http_method = aws_api_gateway_method.budgets_options.http_method
+  type        = "MOCK"
+
+  request_templates = {
+    "application/json" = "{\"statusCode\": 200}"
+  }
+}
+
+# ===== ASSETS ENDPOINT =====
+
+# Lambda permission for assets function
+resource "aws_lambda_permission" "assets_api" {
+  statement_id  = "AllowAPIGatewayInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.assets.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_api_gateway_rest_api.api.execution_arn}/*/*"
+}
+
+# GET/POST methods for assets
+resource "aws_api_gateway_method" "assets_method" {
+  rest_api_id      = aws_api_gateway_rest_api.api.id
+  resource_id      = aws_api_gateway_resource.assets.id
+  http_method      = "GET"
+  authorization    = "COGNITO_USER_POOLS"
+  authorizer_id    = aws_api_gateway_authorizer.cognito.id
+}
+
+resource "aws_api_gateway_method" "assets_post" {
+  rest_api_id      = aws_api_gateway_rest_api.api.id
+  resource_id      = aws_api_gateway_resource.assets.id
+  http_method      = "POST"
+  authorization    = "COGNITO_USER_POOLS"
+  authorizer_id    = aws_api_gateway_authorizer.cognito.id
+}
+
+# Integration for assets
+resource "aws_api_gateway_integration" "assets_integration" {
+  rest_api_id      = aws_api_gateway_rest_api.api.id
+  resource_id      = aws_api_gateway_resource.assets.id
+  http_method      = aws_api_gateway_method.assets_method.http_method
+  type             = "AWS_PROXY"
+  integration_http_method = "POST"
+  uri              = aws_lambda_function.assets.invoke_arn
+}
+
+resource "aws_api_gateway_integration" "assets_post_integration" {
+  rest_api_id      = aws_api_gateway_rest_api.api.id
+  resource_id      = aws_api_gateway_resource.assets.id
+  http_method      = aws_api_gateway_method.assets_post.http_method
+  type             = "AWS_PROXY"
+  integration_http_method = "POST"
+  uri              = aws_lambda_function.assets.invoke_arn
+}
+
+# OPTIONS for assets
+resource "aws_api_gateway_method" "assets_options" {
+  rest_api_id      = aws_api_gateway_rest_api.api.id
+  resource_id      = aws_api_gateway_resource.assets.id
+  http_method      = "OPTIONS"
+  authorization    = "NONE"
+}
+
+resource "aws_api_gateway_integration" "assets_options_integration" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.assets.id
+  http_method = aws_api_gateway_method.assets_options.http_method
+  type        = "MOCK"
+
+  request_templates = {
+    "application/json" = "{\"statusCode\": 200}"
+  }
+}
+
+# ===== DEBTS ENDPOINT =====
+
+# Lambda permission for debts function
+resource "aws_lambda_permission" "debts_api" {
+  statement_id  = "AllowAPIGatewayInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.debts.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_api_gateway_rest_api.api.execution_arn}/*/*"
+}
+
+# GET/POST methods for debts
+resource "aws_api_gateway_method" "debts_method" {
+  rest_api_id      = aws_api_gateway_rest_api.api.id
+  resource_id      = aws_api_gateway_resource.debts.id
+  http_method      = "GET"
+  authorization    = "COGNITO_USER_POOLS"
+  authorizer_id    = aws_api_gateway_authorizer.cognito.id
+}
+
+resource "aws_api_gateway_method" "debts_post" {
+  rest_api_id      = aws_api_gateway_rest_api.api.id
+  resource_id      = aws_api_gateway_resource.debts.id
+  http_method      = "POST"
+  authorization    = "COGNITO_USER_POOLS"
+  authorizer_id    = aws_api_gateway_authorizer.cognito.id
+}
+
+# Integration for debts
+resource "aws_api_gateway_integration" "debts_integration" {
+  rest_api_id      = aws_api_gateway_rest_api.api.id
+  resource_id      = aws_api_gateway_resource.debts.id
+  http_method      = aws_api_gateway_method.debts_method.http_method
+  type             = "AWS_PROXY"
+  integration_http_method = "POST"
+  uri              = aws_lambda_function.debts.invoke_arn
+}
+
+resource "aws_api_gateway_integration" "debts_post_integration" {
+  rest_api_id      = aws_api_gateway_rest_api.api.id
+  resource_id      = aws_api_gateway_resource.debts.id
+  http_method      = aws_api_gateway_method.debts_post.http_method
+  type             = "AWS_PROXY"
+  integration_http_method = "POST"
+  uri              = aws_lambda_function.debts.invoke_arn
+}
+
+# OPTIONS for debts
+resource "aws_api_gateway_method" "debts_options" {
+  rest_api_id      = aws_api_gateway_rest_api.api.id
+  resource_id      = aws_api_gateway_resource.debts.id
+  http_method      = "OPTIONS"
+  authorization    = "NONE"
+}
+
+resource "aws_api_gateway_integration" "debts_options_integration" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.debts.id
+  http_method = aws_api_gateway_method.debts_options.http_method
+  type        = "MOCK"
+
+  request_templates = {
+    "application/json" = "{\"statusCode\": 200}"
+  }
+}
+
+# Method responses for all OPTIONS methods
+resource "aws_api_gateway_method_response" "plans_options_response" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.plans.id
+  http_method = aws_api_gateway_method.plans_options.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = true
+    "method.response.header.Access-Control-Allow-Methods" = true
+    "method.response.header.Access-Control-Allow-Origin"  = true
+  }
+}
+
+resource "aws_api_gateway_method_response" "budgets_options_response" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.budgets.id
+  http_method = aws_api_gateway_method.budgets_options.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = true
+    "method.response.header.Access-Control-Allow-Methods" = true
+    "method.response.header.Access-Control-Allow-Origin"  = true
+  }
+}
+
+resource "aws_api_gateway_method_response" "assets_options_response" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.assets.id
+  http_method = aws_api_gateway_method.assets_options.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = true
+    "method.response.header.Access-Control-Allow-Methods" = true
+    "method.response.header.Access-Control-Allow-Origin"  = true
+  }
+}
+
+resource "aws_api_gateway_method_response" "debts_options_response" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.debts.id
+  http_method = aws_api_gateway_method.debts_options.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = true
+    "method.response.header.Access-Control-Allow-Methods" = true
+    "method.response.header.Access-Control-Allow-Origin"  = true
+  }
+}
+
+# Integration responses for all OPTIONS methods
+resource "aws_api_gateway_integration_response" "plans_options_integration_response" {
+  rest_api_id      = aws_api_gateway_rest_api.api.id
+  resource_id      = aws_api_gateway_resource.plans.id
+  http_method      = aws_api_gateway_method.plans_options.http_method
+  status_code      = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+    "method.response.header.Access-Control-Allow-Methods" = "'GET,POST,PUT,DELETE,OPTIONS'"
+    "method.response.header.Access-Control-Allow-Origin"  = "'*'"
+  }
+
+  depends_on = [aws_api_gateway_method_response.plans_options_response]
+}
+
+resource "aws_api_gateway_integration_response" "budgets_options_integration_response" {
+  rest_api_id      = aws_api_gateway_rest_api.api.id
+  resource_id      = aws_api_gateway_resource.budgets.id
+  http_method      = aws_api_gateway_method.budgets_options.http_method
+  status_code      = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+    "method.response.header.Access-Control-Allow-Methods" = "'GET,POST,PUT,DELETE,OPTIONS'"
+    "method.response.header.Access-Control-Allow-Origin"  = "'*'"
+  }
+
+  depends_on = [aws_api_gateway_method_response.budgets_options_response]
+}
+
+resource "aws_api_gateway_integration_response" "assets_options_integration_response" {
+  rest_api_id      = aws_api_gateway_rest_api.api.id
+  resource_id      = aws_api_gateway_resource.assets.id
+  http_method      = aws_api_gateway_method.assets_options.http_method
+  status_code      = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+    "method.response.header.Access-Control-Allow-Methods" = "'GET,POST,PUT,DELETE,OPTIONS'"
+    "method.response.header.Access-Control-Allow-Origin"  = "'*'"
+  }
+
+  depends_on = [aws_api_gateway_method_response.assets_options_response]
+}
+
+resource "aws_api_gateway_integration_response" "debts_options_integration_response" {
+  rest_api_id      = aws_api_gateway_rest_api.api.id
+  resource_id      = aws_api_gateway_resource.debts.id
+  http_method      = aws_api_gateway_method.debts_options.http_method
+  status_code      = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+    "method.response.header.Access-Control-Allow-Methods" = "'GET,POST,PUT,DELETE,OPTIONS'"
+    "method.response.header.Access-Control-Allow-Origin"  = "'*'"
+  }
+
+  depends_on = [aws_api_gateway_method_response.debts_options_response]
 }
 
 # API stage

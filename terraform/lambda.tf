@@ -64,7 +64,7 @@ resource "aws_lambda_function" "users" {
   filename      = "lambda-functions.zip"
   function_name = "BudgetPlanner-Users-${var.environment}"
   role          = aws_iam_role.lambda_role.arn
-  handler       = "functions/users.handler"
+  handler       = "dist/users-handler.handler"
   runtime       = "nodejs20.x"
   memory_size   = var.lambda_memory
   timeout       = var.lambda_timeout
@@ -83,7 +83,7 @@ resource "aws_lambda_function" "plans" {
   filename      = "lambda-functions.zip"
   function_name = "BudgetPlanner-Plans-${var.environment}"
   role          = aws_iam_role.lambda_role.arn
-  handler       = "functions/plans.handler"
+  handler       = "dist/plans-handler.handler"
   runtime       = "nodejs20.x"
   memory_size   = var.lambda_memory
   timeout       = var.lambda_timeout
@@ -102,7 +102,7 @@ resource "aws_lambda_function" "budgets" {
   filename      = "lambda-functions.zip"
   function_name = "BudgetPlanner-Budgets-${var.environment}"
   role          = aws_iam_role.lambda_role.arn
-  handler       = "functions/budgets.handler"
+  handler       = "dist/budgets-handler.handler"
   runtime       = "nodejs20.x"
   memory_size   = var.lambda_memory
   timeout       = var.lambda_timeout
@@ -121,7 +121,7 @@ resource "aws_lambda_function" "assets" {
   filename      = "lambda-functions.zip"
   function_name = "BudgetPlanner-Assets-${var.environment}"
   role          = aws_iam_role.lambda_role.arn
-  handler       = "functions/assets.handler"
+  handler       = "dist/assets-handler.handler"
   runtime       = "nodejs20.x"
   memory_size   = var.lambda_memory
   timeout       = var.lambda_timeout
@@ -140,7 +140,7 @@ resource "aws_lambda_function" "debts" {
   filename      = "lambda-functions.zip"
   function_name = "BudgetPlanner-Debts-${var.environment}"
   role          = aws_iam_role.lambda_role.arn
-  handler       = "functions/debts.handler"
+  handler       = "dist/debts-handler.handler"
   runtime       = "nodejs20.x"
   memory_size   = var.lambda_memory
   timeout       = var.lambda_timeout

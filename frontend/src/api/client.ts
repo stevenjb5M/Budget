@@ -1,19 +1,10 @@
 import axios from 'axios'
 import { fetchAuthSession } from 'aws-amplify/auth'
-import { API_ENDPOINTS, DEFAULT_API_URL_PROD, DEFAULT_API_URL_DEV } from '../utils/constants'
+import { API_ENDPOINTS } from '../utils/constants'
 
 // Determine API base URL based on environment
-const getApiBaseUrl = (): string => {
-  // Production: Use the Elastic Beanstalk endpoint
-  if (import.meta.env.PROD) {
-    return import.meta.env.VITE_API_URL || DEFAULT_API_URL_PROD
-  }
-  
-  // Development: Use localhost
-  return import.meta.env.VITE_API_URL || DEFAULT_API_URL_DEV
-}
-
-const API_BASE_URL = getApiBaseUrl()
+const API_BASE_URL = 'https://5m78zqlfve.execute-api.us-east-1.amazonaws.com/prod'
+console.log('API_BASE_URL:', API_BASE_URL)
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,

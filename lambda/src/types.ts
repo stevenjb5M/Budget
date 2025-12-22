@@ -7,10 +7,10 @@ export interface LambdaRequest {
 
 export interface User {
   id: string;
-  firstName: string;
-  lastName: string;
+  displayName: string;
   email: string;
-  birthDate: string;
+  birthdayString: string;
+  retirementAge: number;
   version: number;
   createdAt: string;
   updatedAt: string;

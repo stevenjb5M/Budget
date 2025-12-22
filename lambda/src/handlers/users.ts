@@ -1,6 +1,6 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import dynamodbService from '../services/dynamodbService';
-import { validateAuthorization } from '../middleware/auth';
+import { validateAuthorization, getUserEmailFromToken, getUserNameFromToken, getUserBirthdateFromToken } from '../middleware/auth';
 import { successResponse, errorResponse, parseBody, validateRequiredFields } from '../utils/response';
 import { HTTP_STATUS, ERROR_MESSAGES } from '../constants';
 
@@ -11,9 +11,20 @@ export const getUserHandler = async (event: APIGatewayProxyEvent): Promise<APIGa
       return errorResponse(HTTP_STATUS.UNAUTHORIZED, ERROR_MESSAGES.UNAUTHORIZED);
     }
 
-    const user = await dynamodbService.getUser(userId);
+    let user = await dynamodbService.getUser(userId);
+    
+    // Auto-create user if they don't exist (first login after Cognito signup)
     if (!user) {
-      return errorResponse(HTTP_STATUS.NOT_FOUND, ERROR_MESSAGES.USER_NOT_FOUND);
+      const email = getUserEmailFromToken(event) || 'unknown@example.com';
+      const name = getUserNameFromToken(event) || 'User';
+      const birthdate = getUserBirthdateFromToken(event) || '1990-01-01';
+      
+      user = await dynamodbService.createUser({
+        displayName: name,
+        email: email,
+        birthdayString: birthdate,
+        retirementAge: 65,
+      }, userId);
     }
 
     return successResponse(user);
@@ -50,8 +61,7 @@ export const createUserHandler = async (event: APIGatewayProxyEvent): Promise<AP
     const body = parseBody(event.body);
     
     const validation = validateRequiredFields(body, [
-      'firstName',
-      'lastName',
+      'displayName',
       'email',
     ]);
 
@@ -64,10 +74,10 @@ export const createUserHandler = async (event: APIGatewayProxyEvent): Promise<AP
     }
 
     const user = await dynamodbService.createUser({
-      firstName: body.firstName as string,
-      lastName: body.lastName as string,
+      displayName: body.displayName as string,
       email: body.email as string,
-      birthDate: (body.birthDate as string) || '1990-01-01',
+      birthdayString: (body.birthdayString as string) || '1990-01-01',
+      retirementAge: (body.retirementAge as number) || 65,
     });
 
     return successResponse(user, HTTP_STATUS.CREATED);

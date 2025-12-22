@@ -25,10 +25,10 @@ export class DynamoDBService {
     return (result.Item as User) || null;
   }
 
-  async createUser(user: Omit<User, 'id' | 'version' | 'createdAt' | 'updatedAt'>): Promise<User> {
+  async createUser(user: Omit<User, 'id' | 'version' | 'createdAt' | 'updatedAt'>, userId?: string): Promise<User> {
     const now = new Date().toISOString();
     const newUser: User = {
-      id: uuidv4(),
+      id: userId || uuidv4(),
       ...user,
       version: DEFAULTS.INITIAL_VERSION,
       createdAt: now,

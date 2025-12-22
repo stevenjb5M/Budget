@@ -36,7 +36,10 @@ export function calculateNetWorth(assetsTotal: number, debtsTotal: number): numb
 /**
  * Calculate user's age based on birthday
  */
-export function calculateAge(birthdayString: string): number {
+export function calculateAge(birthdayString: string | undefined | null): number {
+  if (!birthdayString) {
+    return 0
+  }
   const today = new Date()
   const birthDate = new Date(birthdayString.split('T')[0]) // Remove time part if present
   let age = today.getFullYear() - birthDate.getFullYear()
