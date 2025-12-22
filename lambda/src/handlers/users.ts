@@ -86,3 +86,28 @@ export const createUserHandler = async (event: APIGatewayProxyEvent): Promise<AP
     return errorResponse(HTTP_STATUS.INTERNAL_SERVER_ERROR, ERROR_MESSAGES.INTERNAL_ERROR);
   }
 };
+
+export const getUserVersionsHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+  try {
+    const userId = validateAuthorization(event);
+    if (!userId) {
+      return errorResponse(HTTP_STATUS.UNAUTHORIZED, ERROR_MESSAGES.UNAUTHORIZED);
+    }
+
+    // Return current version information
+    // In a real implementation, this would track actual data versions
+    // For now, return a default version object
+    const versions = {
+      globalVersion: 1,
+      budgetsVersion: 1,
+      plansVersion: 1,
+      assetsVersion: 1,
+      debtsVersion: 1,
+    };
+
+    return successResponse(versions);
+  } catch (error) {
+    console.error('Error getting user versions:', error);
+    return errorResponse(HTTP_STATUS.INTERNAL_SERVER_ERROR, ERROR_MESSAGES.INTERNAL_ERROR);
+  }
+};

@@ -84,7 +84,7 @@ export class DynamoDBService {
   async getUserPlans(userId: string): Promise<Plan[]> {
     const command = new QueryCommand({
       TableName: TABLES.PLANS,
-      IndexName: 'userIdIndex',
+      IndexName: 'UserIndex',
       KeyConditionExpression: 'userId = :userId',
       ExpressionAttributeValues: {
         ':userId': userId,
@@ -162,10 +162,10 @@ export class DynamoDBService {
   async getPlanBudgets(planId: string): Promise<Budget[]> {
     const command = new QueryCommand({
       TableName: TABLES.BUDGETS,
-      IndexName: 'planIdIndex',
-      KeyConditionExpression: 'planId = :planId',
+      IndexName: 'UserIndex',
+      KeyConditionExpression: 'userId = :userId',
       ExpressionAttributeValues: {
-        ':planId': planId,
+        ':userId': planId,
       },
     });
     const result = await docClient.send(command);
@@ -242,7 +242,7 @@ export class DynamoDBService {
   async getUserAssets(userId: string): Promise<Asset[]> {
     const command = new QueryCommand({
       TableName: TABLES.ASSETS,
-      IndexName: 'userIdIndex',
+      IndexName: 'UserIndex',
       KeyConditionExpression: 'userId = :userId',
       ExpressionAttributeValues: {
         ':userId': userId,
@@ -320,7 +320,7 @@ export class DynamoDBService {
   async getUserDebts(userId: string): Promise<Debt[]> {
     const command = new QueryCommand({
       TableName: TABLES.DEBTS,
-      IndexName: 'userIdIndex',
+      IndexName: 'UserIndex',
       KeyConditionExpression: 'userId = :userId',
       ExpressionAttributeValues: {
         ':userId': userId,
