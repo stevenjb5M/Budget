@@ -189,8 +189,8 @@ export const usePlans = () => {
   }
 
   // Calculate current net worth (assets - debts)
-  const currentAssetsTotal = assets.reduce((sum: number, asset: any) => sum + asset.currentValue, 0)
-  const currentDebtsTotal = debts.reduce((sum: number, debt: any) => sum + debt.currentBalance, 0)
+  const currentAssetsTotal = (Array.isArray(assets) ? assets : []).reduce((sum: number, asset: any) => sum + asset.currentValue, 0)
+  const currentDebtsTotal = (Array.isArray(debts) ? debts : []).reduce((sum: number, debt: any) => sum + debt.currentBalance, 0)
   const currentNetWorth = currentAssetsTotal - currentDebtsTotal
 
   // Recalculate net worth values when component mounts or current net worth changes

@@ -15,14 +15,20 @@ export interface DashboardData {
 /**
  * Calculate total value of all assets
  */
-export function calculateAssetsTotal(assets: Asset[]): number {
+export function calculateAssetsTotal(assets: Asset[] | undefined | null): number {
+  if (!assets || !Array.isArray(assets)) {
+    return 0
+  }
   return assets.reduce((sum, asset) => sum + asset.currentValue, 0)
 }
 
 /**
  * Calculate total value of all debts
  */
-export function calculateDebtsTotal(debts: Debt[]): number {
+export function calculateDebtsTotal(debts: Debt[] | undefined | null): number {
+  if (!debts || !Array.isArray(debts)) {
+    return 0
+  }
   return debts.reduce((sum, debt) => sum + debt.currentBalance, 0)
 }
 
