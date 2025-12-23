@@ -172,6 +172,19 @@ export class DynamoDBService {
     return (result.Items as Budget[]) || [];
   }
 
+  async getUserBudgets(userId: string): Promise<Budget[]> {
+    const command = new QueryCommand({
+      TableName: TABLES.BUDGETS,
+      IndexName: 'UserIndex',
+      KeyConditionExpression: 'userId = :userId',
+      ExpressionAttributeValues: {
+        ':userId': userId,
+      },
+    });
+    const result = await docClient.send(command);
+    return (result.Items as Budget[]) || [];
+  }
+
   async getBudget(budgetId: string): Promise<Budget | null> {
     const command = new GetCommand({
       TableName: TABLES.BUDGETS,

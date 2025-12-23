@@ -11,12 +11,8 @@ export const getBudgetsHandler = async (event: APIGatewayProxyEvent): Promise<AP
       return errorResponse(HTTP_STATUS.UNAUTHORIZED, ERROR_MESSAGES.UNAUTHORIZED);
     }
 
-    const planId = event.queryStringParameters?.planId;
-    if (!planId) {
-      return errorResponse(HTTP_STATUS.BAD_REQUEST, 'Plan ID is required');
-    }
-
-    const budgets = await dynamodbService.getPlanBudgets(planId);
+    // Get all budgets for the user
+    const budgets = await dynamodbService.getUserBudgets(userId);
     return successResponse(budgets);
   } catch (error) {
     console.error('Error getting budgets:', error);

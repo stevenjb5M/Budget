@@ -287,6 +287,10 @@ resource "aws_api_gateway_integration" "users_versions_options_integration" {
   resource_id = aws_api_gateway_resource.users_versions.id
   http_method = aws_api_gateway_method.users_versions_options.http_method
   type        = "MOCK"
+
+  request_templates = {
+    "application/json" = "{\"statusCode\": 200}"
+  }
 }
 
 resource "aws_api_gateway_method_response" "users_versions_options_response" {
