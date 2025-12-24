@@ -1,8 +1,10 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
-import dynamodbService from '../services/dynamodbService';
+import { UserService } from '../services/business/userService';
 import { validateAuthorization, getUserEmailFromToken, getUserNameFromToken, getUserBirthdateFromToken } from '../middleware/auth';
 import { successResponse, errorResponse, parseBody, validateRequiredFields } from '../utils/response';
 import { HTTP_STATUS, ERROR_MESSAGES } from '../constants';
+
+const userService = new UserService();
 
 export const getUserHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   try {
@@ -11,15 +13,15 @@ export const getUserHandler = async (event: APIGatewayProxyEvent): Promise<APIGa
       return errorResponse(HTTP_STATUS.UNAUTHORIZED, ERROR_MESSAGES.UNAUTHORIZED);
     }
 
-    let user = await dynamodbService.getUser(userId);
-    
+    let user = await userService.getUser(userId);
+
     // Auto-create user if they don't exist (first login after Cognito signup)
     if (!user) {
       const email = getUserEmailFromToken(event) || 'unknown@example.com';
       const name = getUserNameFromToken(event) || 'User';
       const birthdate = getUserBirthdateFromToken(event) || '1990-01-01';
-      
-      user = await dynamodbService.createUser({
+
+      user = await userService.createUser({
         displayName: name,
         email: email,
         birthdayString: birthdate,
@@ -42,13 +44,8 @@ export const updateUserHandler = async (event: APIGatewayProxyEvent): Promise<AP
     }
 
     const body = parseBody(event.body);
-    
-    // Prevent ID and version manipulation
-    delete (body as any).id;
-    delete (body as any).version;
-    delete (body as any).createdAt;
 
-    const user = await dynamodbService.updateUser(userId, body as any);
+    const user = await userService.updateUser(userId, body as any);
     return successResponse(user);
   } catch (error) {
     console.error('Error updating user:', error);
@@ -59,7 +56,7 @@ export const updateUserHandler = async (event: APIGatewayProxyEvent): Promise<AP
 export const createUserHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   try {
     const body = parseBody(event.body);
-    
+
     const validation = validateRequiredFields(body, [
       'displayName',
       'email',
@@ -73,7 +70,7 @@ export const createUserHandler = async (event: APIGatewayProxyEvent): Promise<AP
       );
     }
 
-    const user = await dynamodbService.createUser({
+    const user = await userService.createUser({
       displayName: body.displayName as string,
       email: body.email as string,
       birthdayString: (body.birthdayString as string) || '1990-01-01',
