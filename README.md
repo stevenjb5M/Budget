@@ -10,7 +10,36 @@ Budget Planner allows users to:
 - Define **monthly budgets** with income and expenses
 - Track **assets** (savings accounts or investments) and **debts** (loans, credit cards)
 - Add **one-off transactions** (bonuses, unexpected expenses)
-- Visualize financial projections for 36 months. Soon to be longer. 
+- Visualize financial projections for 36 months. Soon to be longer.
+
+## Quick Start Local Setup
+
+**Requirements**: Node.js 20+, npm
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Frontend runs on `http://localhost:5173` and connects to the deployed AWS backend. Open your browser and start building!
+
+### Build for Production
+```bash
+# Optimized Lambda bundle
+cd lambda
+npm run package    # Creates lambda.zip (~14 KB)
+
+# Frontend assets
+cd frontend
+npm run build      # Creates dist/ for S3 deployment
+```
+
+---
+
+---
+
+## Architecture & Features 
 
 ## Tech Stack
 
@@ -109,25 +138,12 @@ Budget Planner features a **sophisticated version-based synchronization system**
 - 🔄 **Reliable Offline**: Full functionality without internet connection
 - 📶 **Bandwidth Efficient**: Minimal data transfer through selective syncing
 
-## Quick Start
+## Production Deployment
 
-### Backend (Lambda Functions) Setup
-```bash
-cd lambda
-npm install
-npm run build    # Uses esbuild for optimized bundle
-```
-
-### Frontend Setup
-```bash
-cd frontend
-npm install
-npm run dev
-```
-Frontend runs on http://localhost:5173 with API proxy to Lambda
-
-### Deployment
-For detailed deployment options, see [FRONTEND_DEPLOYMENT.md](FRONTEND_DEPLOYMENT.md) for S3 + CloudFront setup, or [terraform/](terraform/) for infrastructure-as-code documentation.
+For detailed deployment options, see:
+- **Frontend**: [FRONTEND_DEPLOYMENT.md](FRONTEND_DEPLOYMENT.md) (S3 + CloudFront setup)
+- **Infrastructure**: [terraform/](terraform/) (Infrastructure-as-Code documentation)
+- **CI/CD**: [amplify/](amplify/) (AWS Amplify integration)
 
 ## Project Structure
 

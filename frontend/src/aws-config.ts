@@ -1,6 +1,19 @@
 // AWS Amplify Configuration
 // Updated with production Cognito values from AWS deployment
 
+// Determine redirect URLs based on current environment
+const getRedirectUrls = () => {
+  const isLocalDev = typeof window !== 'undefined' && window.location.hostname === 'localhost'
+  const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://dbwgrrx6epya7.cloudfront.net'
+  
+  return {
+    redirectSignIn: isLocalDev ? `${baseUrl}/home` : 'https://dbwgrrx6epya7.cloudfront.net/home',
+    redirectSignOut: isLocalDev ? baseUrl : 'https://dbwgrrx6epya7.cloudfront.net/'
+  }
+}
+
+const redirectUrls = getRedirectUrls()
+
 export const awsConfig = {
   aws_project_region: 'us-east-1',
   aws_cognito_region: 'us-east-1',
@@ -9,8 +22,8 @@ export const awsConfig = {
   oauth: {
     domain: 'budget-planner-dev-654654434566.auth.us-east-1.amazoncognito.com',
     scope: ['email', 'profile', 'openid'],
-    redirectSignIn: 'https://dbwgrrx6epya7.cloudfront.net/home',
-    redirectSignOut: 'https://dbwgrrx6epya7.cloudfront.net/',
+    redirectSignIn: redirectUrls.redirectSignIn,
+    redirectSignOut: redirectUrls.redirectSignOut,
     responseType: 'code'
   }
 }
