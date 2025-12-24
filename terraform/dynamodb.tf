@@ -34,7 +34,7 @@ resource "aws_dynamodb_table" "plans" {
   global_secondary_index {
     name            = "UserIndex"
     hash_key        = "userId"
-    projection_type = "ALL"
+    projection_type = "KEYS_ONLY"
   }
 
   tags = {
@@ -60,7 +60,7 @@ resource "aws_dynamodb_table" "budgets" {
   global_secondary_index {
     name            = "UserIndex"
     hash_key        = "userId"
-    projection_type = "ALL"
+    projection_type = "KEYS_ONLY"
   }
 
   tags = {
@@ -86,7 +86,7 @@ resource "aws_dynamodb_table" "assets" {
   global_secondary_index {
     name            = "UserIndex"
     hash_key        = "userId"
-    projection_type = "ALL"
+    projection_type = "KEYS_ONLY"
   }
 
   tags = {
@@ -112,7 +112,7 @@ resource "aws_dynamodb_table" "debts" {
   global_secondary_index {
     name            = "UserIndex"
     hash_key        = "userId"
-    projection_type = "ALL"
+    projection_type = "KEYS_ONLY"
   }
 
   tags = {

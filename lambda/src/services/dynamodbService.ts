@@ -92,7 +92,8 @@ export class DynamoDBService {
 
   // Plans operations
   async getUserPlans(userId: string): Promise<Plan[]> {
-    const command = new QueryCommand({
+    // Query GSI to get IDs (KEYS_ONLY projection)
+    const queryCommand = new QueryCommand({
       TableName: TABLES.PLANS,
       IndexName: 'UserIndex',
       KeyConditionExpression: 'userId = :userId',
@@ -100,8 +101,16 @@ export class DynamoDBService {
         ':userId': userId,
       },
     });
-    const result = await docClient.send(command);
-    return (result.Items as Plan[]) || [];
+    const queryResult = await docClient.send(queryCommand);
+    const planIds = (queryResult.Items as Array<{ id: string }>) || [];
+    
+    if (planIds.length === 0) return [];
+
+    // Batch fetch full objects
+    const plans = await Promise.all(
+      planIds.map(item => this.getPlan(item.id))
+    );
+    return plans.filter((plan): plan is Plan => plan !== null);
   }
 
   async getPlan(planId: string): Promise<Plan | null> {
@@ -193,7 +202,8 @@ export class DynamoDBService {
   }
 
   async getUserBudgets(userId: string): Promise<Budget[]> {
-    const command = new QueryCommand({
+    // Query GSI to get IDs (KEYS_ONLY projection)
+    const queryCommand = new QueryCommand({
       TableName: TABLES.BUDGETS,
       IndexName: 'UserIndex',
       KeyConditionExpression: 'userId = :userId',
@@ -201,8 +211,16 @@ export class DynamoDBService {
         ':userId': userId,
       },
     });
-    const result = await docClient.send(command);
-    return (result.Items as Budget[]) || [];
+    const queryResult = await docClient.send(queryCommand);
+    const budgetIds = (queryResult.Items as Array<{ id: string }>) || [];
+    
+    if (budgetIds.length === 0) return [];
+
+    // Batch fetch full objects
+    const budgets = await Promise.all(
+      budgetIds.map(item => this.getBudget(item.id))
+    );
+    return budgets.filter((budget): budget is Budget => budget !== null);
   }
 
   async getBudget(budgetId: string): Promise<Budget | null> {
@@ -283,7 +301,8 @@ export class DynamoDBService {
 
   // Assets operations
   async getUserAssets(userId: string): Promise<Asset[]> {
-    const command = new QueryCommand({
+    // Query GSI to get IDs (KEYS_ONLY projection)
+    const queryCommand = new QueryCommand({
       TableName: TABLES.ASSETS,
       IndexName: 'UserIndex',
       KeyConditionExpression: 'userId = :userId',
@@ -291,8 +310,16 @@ export class DynamoDBService {
         ':userId': userId,
       },
     });
-    const result = await docClient.send(command);
-    return (result.Items as Asset[]) || [];
+    const queryResult = await docClient.send(queryCommand);
+    const assetIds = (queryResult.Items as Array<{ id: string }>) || [];
+    
+    if (assetIds.length === 0) return [];
+
+    // Batch fetch full objects
+    const assets = await Promise.all(
+      assetIds.map(item => this.getAsset(item.id))
+    );
+    return assets.filter((asset): asset is Asset => asset !== null);
   }
 
   async getAsset(assetId: string): Promise<Asset | null> {
@@ -371,7 +398,8 @@ export class DynamoDBService {
 
   // Debts operations
   async getUserDebts(userId: string): Promise<Debt[]> {
-    const command = new QueryCommand({
+    // Query GSI to get IDs (KEYS_ONLY projection)
+    const queryCommand = new QueryCommand({
       TableName: TABLES.DEBTS,
       IndexName: 'UserIndex',
       KeyConditionExpression: 'userId = :userId',
@@ -379,8 +407,16 @@ export class DynamoDBService {
         ':userId': userId,
       },
     });
-    const result = await docClient.send(command);
-    return (result.Items as Debt[]) || [];
+    const queryResult = await docClient.send(queryCommand);
+    const debtIds = (queryResult.Items as Array<{ id: string }>) || [];
+    
+    if (debtIds.length === 0) return [];
+
+    // Batch fetch full objects
+    const debts = await Promise.all(
+      debtIds.map(item => this.getDebt(item.id))
+    );
+    return debts.filter((debt): debt is Debt => debt !== null);
   }
 
   async getDebt(debtId: string): Promise<Debt | null> {
