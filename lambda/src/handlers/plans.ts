@@ -54,8 +54,6 @@ export const createPlanHandler = async (event: APIGatewayProxyEvent): Promise<AP
     
     const validation = validateRequiredFields(body, [
       'name',
-      'startDate',
-      'endDate',
     ]);
 
     if (!validation.valid) {
