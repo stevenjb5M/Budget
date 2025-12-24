@@ -45,13 +45,22 @@ export class DynamoDBService {
 
   async updateUser(userId: string, updates: Partial<User>): Promise<User> {
     const now = new Date().toISOString();
-    const updateExpression = Object.keys(updates)
-      .filter((key) => key !== 'id')
-      .map((key) => `${key} = :${key}`)
+    const keys = Object.keys(updates).filter((key) => !['id', 'updatedAt', 'createdAt'].includes(key));
+    
+    const updateExpression = keys
+      .map((key) => `#${key} = :${key}`)
       .join(', ');
 
+    const expressionAttributeNames = keys.reduce(
+      (acc, key) => ({
+        ...acc,
+        [`#${key}`]: key,
+      }),
+      { '#updatedAt': 'updatedAt' }
+    );
+
     const expressionAttributeValues = Object.entries(updates)
-      .filter(([key]) => key !== 'id')
+      .filter(([key]) => !['id', 'updatedAt', 'createdAt'].includes(key))
       .reduce(
         (acc, [key, value]) => ({
           ...acc,
@@ -63,7 +72,8 @@ export class DynamoDBService {
     const command = new UpdateCommand({
       TableName: TABLES.USERS,
       Key: { id: userId },
-      UpdateExpression: `SET ${updateExpression}, updatedAt = :updatedAt`,
+      UpdateExpression: `SET ${updateExpression}, #updatedAt = :updatedAt`,
+      ExpressionAttributeNames: expressionAttributeNames,
       ExpressionAttributeValues: expressionAttributeValues,
       ReturnValues: 'ALL_NEW',
     });
@@ -123,13 +133,22 @@ export class DynamoDBService {
 
   async updatePlan(planId: string, updates: Partial<Plan>): Promise<Plan> {
     const now = new Date().toISOString();
-    const updateExpression = Object.keys(updates)
-      .filter((key) => key !== 'id')
-      .map((key) => `${key} = :${key}`)
+    const keys = Object.keys(updates).filter((key) => !['id', 'updatedAt', 'createdAt'].includes(key));
+    
+    const updateExpression = keys
+      .map((key) => `#${key} = :${key}`)
       .join(', ');
 
+    const expressionAttributeNames = keys.reduce(
+      (acc, key) => ({
+        ...acc,
+        [`#${key}`]: key,
+      }),
+      { '#updatedAt': 'updatedAt' }
+    );
+
     const expressionAttributeValues = Object.entries(updates)
-      .filter(([key]) => key !== 'id')
+      .filter(([key]) => !['id', 'updatedAt', 'createdAt'].includes(key))
       .reduce(
         (acc, [key, value]) => ({
           ...acc,
@@ -141,7 +160,8 @@ export class DynamoDBService {
     const command = new UpdateCommand({
       TableName: TABLES.PLANS,
       Key: { id: planId },
-      UpdateExpression: `SET ${updateExpression}, updatedAt = :updatedAt`,
+      UpdateExpression: `SET ${updateExpression}, #updatedAt = :updatedAt`,
+      ExpressionAttributeNames: expressionAttributeNames,
       ExpressionAttributeValues: expressionAttributeValues,
       ReturnValues: 'ALL_NEW',
     });
@@ -216,13 +236,22 @@ export class DynamoDBService {
 
   async updateBudget(budgetId: string, updates: Partial<Budget>): Promise<Budget> {
     const now = new Date().toISOString();
-    const updateExpression = Object.keys(updates)
-      .filter((key) => key !== 'id')
-      .map((key) => `${key} = :${key}`)
+    const keys = Object.keys(updates).filter((key) => !['id', 'updatedAt', 'createdAt'].includes(key));
+    
+    const updateExpression = keys
+      .map((key) => `#${key} = :${key}`)
       .join(', ');
 
+    const expressionAttributeNames = keys.reduce(
+      (acc, key) => ({
+        ...acc,
+        [`#${key}`]: key,
+      }),
+      { '#updatedAt': 'updatedAt' }
+    );
+
     const expressionAttributeValues = Object.entries(updates)
-      .filter(([key]) => key !== 'id')
+      .filter(([key]) => !['id', 'updatedAt', 'createdAt'].includes(key))
       .reduce(
         (acc, [key, value]) => ({
           ...acc,
@@ -234,7 +263,8 @@ export class DynamoDBService {
     const command = new UpdateCommand({
       TableName: TABLES.BUDGETS,
       Key: { id: budgetId },
-      UpdateExpression: `SET ${updateExpression}, updatedAt = :updatedAt`,
+      UpdateExpression: `SET ${updateExpression}, #updatedAt = :updatedAt`,
+      ExpressionAttributeNames: expressionAttributeNames,
       ExpressionAttributeValues: expressionAttributeValues,
       ReturnValues: 'ALL_NEW',
     });
@@ -294,13 +324,22 @@ export class DynamoDBService {
 
   async updateAsset(assetId: string, updates: Partial<Asset>): Promise<Asset> {
     const now = new Date().toISOString();
-    const updateExpression = Object.keys(updates)
-      .filter((key) => key !== 'id')
-      .map((key) => `${key} = :${key}`)
+    const keys = Object.keys(updates).filter((key) => !['id', 'updatedAt', 'createdAt'].includes(key));
+    
+    const updateExpression = keys
+      .map((key) => `#${key} = :${key}`)
       .join(', ');
 
+    const expressionAttributeNames = keys.reduce(
+      (acc, key) => ({
+        ...acc,
+        [`#${key}`]: key,
+      }),
+      { '#updatedAt': 'updatedAt' }
+    );
+
     const expressionAttributeValues = Object.entries(updates)
-      .filter(([key]) => key !== 'id')
+      .filter(([key]) => !['id', 'updatedAt', 'createdAt'].includes(key))
       .reduce(
         (acc, [key, value]) => ({
           ...acc,
@@ -312,7 +351,8 @@ export class DynamoDBService {
     const command = new UpdateCommand({
       TableName: TABLES.ASSETS,
       Key: { id: assetId },
-      UpdateExpression: `SET ${updateExpression}, updatedAt = :updatedAt`,
+      UpdateExpression: `SET ${updateExpression}, #updatedAt = :updatedAt`,
+      ExpressionAttributeNames: expressionAttributeNames,
       ExpressionAttributeValues: expressionAttributeValues,
       ReturnValues: 'ALL_NEW',
     });
@@ -372,13 +412,22 @@ export class DynamoDBService {
 
   async updateDebt(debtId: string, updates: Partial<Debt>): Promise<Debt> {
     const now = new Date().toISOString();
-    const updateExpression = Object.keys(updates)
-      .filter((key) => key !== 'id')
-      .map((key) => `${key} = :${key}`)
+    const keys = Object.keys(updates).filter((key) => !['id', 'updatedAt', 'createdAt'].includes(key));
+    
+    const updateExpression = keys
+      .map((key) => `#${key} = :${key}`)
       .join(', ');
 
+    const expressionAttributeNames = keys.reduce(
+      (acc, key) => ({
+        ...acc,
+        [`#${key}`]: key,
+      }),
+      { '#updatedAt': 'updatedAt' }
+    );
+
     const expressionAttributeValues = Object.entries(updates)
-      .filter(([key]) => key !== 'id')
+      .filter(([key]) => !['id', 'updatedAt', 'createdAt'].includes(key))
       .reduce(
         (acc, [key, value]) => ({
           ...acc,
@@ -390,7 +439,8 @@ export class DynamoDBService {
     const command = new UpdateCommand({
       TableName: TABLES.DEBTS,
       Key: { id: debtId },
-      UpdateExpression: `SET ${updateExpression}, updatedAt = :updatedAt`,
+      UpdateExpression: `SET ${updateExpression}, #updatedAt = :updatedAt`,
+      ExpressionAttributeNames: expressionAttributeNames,
       ExpressionAttributeValues: expressionAttributeValues,
       ReturnValues: 'ALL_NEW',
     });
