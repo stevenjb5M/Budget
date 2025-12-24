@@ -17,6 +17,18 @@ variable "environment" {
   }
 }
 
+variable "cloudfront_domain" {
+  description = "CloudFront domain for CORS"
+  type        = string
+  default     = "https://dbwgrrx6epya7.cloudfront.net"
+}
+
+variable "allowed_local_origins" {
+  description = "Additional local origins allowed for development (comma-separated, for dev environment only)"
+  type        = string
+  default     = "http://localhost:5173"
+}
+
 variable "dynamodb_billing_mode" {
   description = "DynamoDB billing mode (PROVISIONED or PAY_PER_REQUEST)"
   type        = string

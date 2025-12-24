@@ -225,7 +225,7 @@ resource "aws_api_gateway_integration_response" "users_me_get_integration_respon
   status_code = "200"
 
   response_parameters = {
-    "method.response.header.Access-Control-Allow-Origin" = "'https://dbwgrrx6epya7.cloudfront.net'"
+    "method.response.header.Access-Control-Allow-Origin" = "'*'"
   }
 
   depends_on = [aws_api_gateway_method_response.users_me_get_response]
@@ -238,7 +238,7 @@ resource "aws_api_gateway_integration_response" "users_me_put_integration_respon
   status_code = "200"
 
   response_parameters = {
-    "method.response.header.Access-Control-Allow-Origin" = "'https://dbwgrrx6epya7.cloudfront.net'"
+    "method.response.header.Access-Control-Allow-Origin" = "'*'"
   }
 
   depends_on = [aws_api_gateway_method_response.users_me_put_response]
@@ -253,7 +253,7 @@ resource "aws_api_gateway_integration_response" "users_me_options_integration_re
   response_parameters = {
     "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
     "method.response.header.Access-Control-Allow-Methods" = "'GET,PUT,OPTIONS'"
-    "method.response.header.Access-Control-Allow-Origin"  = "'https://dbwgrrx6epya7.cloudfront.net'"
+    "method.response.header.Access-Control-Allow-Origin"  = "'*'"
   }
 
   depends_on = [aws_api_gateway_method_response.users_me_options_response]
@@ -301,7 +301,7 @@ resource "aws_api_gateway_integration_response" "users_versions_get_integration_
   status_code = "200"
 
   response_parameters = {
-    "method.response.header.Access-Control-Allow-Origin" = "'https://dbwgrrx6epya7.cloudfront.net'"
+    "method.response.header.Access-Control-Allow-Origin" = "'*'"
   }
 
   depends_on = [aws_api_gateway_method_response.users_versions_get_response]
@@ -347,7 +347,7 @@ resource "aws_api_gateway_integration_response" "users_versions_options_integrat
   response_parameters = {
     "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
     "method.response.header.Access-Control-Allow-Methods" = "'GET,OPTIONS'"
-    "method.response.header.Access-Control-Allow-Origin"  = "'https://dbwgrrx6epya7.cloudfront.net'"
+    "method.response.header.Access-Control-Allow-Origin"  = "'*'"
   }
 
   depends_on = [aws_api_gateway_method_response.users_versions_options_response]
@@ -392,7 +392,7 @@ resource "aws_api_gateway_integration_response" "users_get_integration_response"
   status_code      = "200"
 
   response_parameters = {
-    "method.response.header.Access-Control-Allow-Origin" = "'https://dbwgrrx6epya7.cloudfront.net'"
+    "method.response.header.Access-Control-Allow-Origin" = "'*'"
   }
 
   depends_on = [aws_api_gateway_method_response.users_get_response]
@@ -810,7 +810,7 @@ resource "aws_api_gateway_integration_response" "users_options_integration_respo
   response_parameters = {
     "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
     "method.response.header.Access-Control-Allow-Methods" = "'GET,POST,PUT,DELETE,OPTIONS'"
-    "method.response.header.Access-Control-Allow-Origin"  = "'https://dbwgrrx6epya7.cloudfront.net'"
+    "method.response.header.Access-Control-Allow-Origin"  = "'*'"
   }
 
   depends_on = [aws_api_gateway_method_response.users_options_response]
@@ -894,7 +894,7 @@ resource "aws_api_gateway_integration_response" "plans_integration_response" {
   status_code      = "200"
 
   response_parameters = {
-    "method.response.header.Access-Control-Allow-Origin" = "'https://dbwgrrx6epya7.cloudfront.net'"
+    "method.response.header.Access-Control-Allow-Origin" = "'*'"
   }
 
   depends_on = [aws_api_gateway_method_response.plans_method_response]
@@ -907,7 +907,7 @@ resource "aws_api_gateway_integration_response" "plans_post_integration_response
   status_code      = "200"
 
   response_parameters = {
-    "method.response.header.Access-Control-Allow-Origin" = "'https://dbwgrrx6epya7.cloudfront.net'"
+    "method.response.header.Access-Control-Allow-Origin" = "'*'"
   }
 
   depends_on = [aws_api_gateway_method_response.plans_post_response]
@@ -943,7 +943,7 @@ resource "aws_api_gateway_integration_response" "budgets_integration_response" {
   status_code      = "200"
 
   response_parameters = {
-    "method.response.header.Access-Control-Allow-Origin" = "'https://dbwgrrx6epya7.cloudfront.net'"
+    "method.response.header.Access-Control-Allow-Origin" = "'*'"
   }
 
   depends_on = [aws_api_gateway_method_response.budgets_method_response]
@@ -956,7 +956,7 @@ resource "aws_api_gateway_integration_response" "budgets_post_integration_respon
   status_code      = "200"
 
   response_parameters = {
-    "method.response.header.Access-Control-Allow-Origin" = "'https://dbwgrrx6epya7.cloudfront.net'"
+    "method.response.header.Access-Control-Allow-Origin" = "'*'"
   }
 
   depends_on = [aws_api_gateway_method_response.budgets_post_response]
@@ -992,7 +992,7 @@ resource "aws_api_gateway_integration_response" "assets_integration_response" {
   status_code      = "200"
 
   response_parameters = {
-    "method.response.header.Access-Control-Allow-Origin" = "'https://dbwgrrx6epya7.cloudfront.net'"
+    "method.response.header.Access-Control-Allow-Origin" = "'*'"
   }
 
   depends_on = [aws_api_gateway_method_response.assets_method_response]
@@ -1005,7 +1005,7 @@ resource "aws_api_gateway_integration_response" "assets_post_integration_respons
   status_code      = "200"
 
   response_parameters = {
-    "method.response.header.Access-Control-Allow-Origin" = "'https://dbwgrrx6epya7.cloudfront.net'"
+    "method.response.header.Access-Control-Allow-Origin" = "'*'"
   }
 
   depends_on = [aws_api_gateway_method_response.assets_post_response]
@@ -1041,7 +1041,7 @@ resource "aws_api_gateway_integration_response" "debts_integration_response" {
   status_code      = "200"
 
   response_parameters = {
-    "method.response.header.Access-Control-Allow-Origin" = "'https://dbwgrrx6epya7.cloudfront.net'"
+    "method.response.header.Access-Control-Allow-Origin" = "'*'"
   }
 
   depends_on = [aws_api_gateway_method_response.debts_method_response]
@@ -1054,7 +1054,7 @@ resource "aws_api_gateway_integration_response" "debts_post_integration_response
   status_code      = "200"
 
   response_parameters = {
-    "method.response.header.Access-Control-Allow-Origin" = "'https://dbwgrrx6epya7.cloudfront.net'"
+    "method.response.header.Access-Control-Allow-Origin" = "'*'"
   }
 
   depends_on = [aws_api_gateway_method_response.debts_post_response]
@@ -1340,7 +1340,7 @@ resource "aws_api_gateway_integration_response" "plans_options_integration_respo
   response_parameters = {
     "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
     "method.response.header.Access-Control-Allow-Methods" = "'GET,POST,PUT,DELETE,OPTIONS'"
-    "method.response.header.Access-Control-Allow-Origin"  = "'https://dbwgrrx6epya7.cloudfront.net'"
+    "method.response.header.Access-Control-Allow-Origin"  = "'*'"
   }
 
   depends_on = [aws_api_gateway_method_response.plans_options_response]
@@ -1355,7 +1355,7 @@ resource "aws_api_gateway_integration_response" "budgets_options_integration_res
   response_parameters = {
     "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
     "method.response.header.Access-Control-Allow-Methods" = "'GET,POST,PUT,DELETE,OPTIONS'"
-    "method.response.header.Access-Control-Allow-Origin"  = "'https://dbwgrrx6epya7.cloudfront.net'"
+    "method.response.header.Access-Control-Allow-Origin"  = "'*'"
   }
 
   depends_on = [aws_api_gateway_method_response.budgets_options_response]
@@ -1370,7 +1370,7 @@ resource "aws_api_gateway_integration_response" "assets_options_integration_resp
   response_parameters = {
     "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
     "method.response.header.Access-Control-Allow-Methods" = "'GET,POST,PUT,DELETE,OPTIONS'"
-    "method.response.header.Access-Control-Allow-Origin"  = "'https://dbwgrrx6epya7.cloudfront.net'"
+    "method.response.header.Access-Control-Allow-Origin"  = "'*'"
   }
 
   depends_on = [aws_api_gateway_method_response.assets_options_response]
@@ -1385,7 +1385,7 @@ resource "aws_api_gateway_integration_response" "debts_options_integration_respo
   response_parameters = {
     "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
     "method.response.header.Access-Control-Allow-Methods" = "'GET,POST,PUT,DELETE,OPTIONS'"
-    "method.response.header.Access-Control-Allow-Origin"  = "'https://dbwgrrx6epya7.cloudfront.net'"
+    "method.response.header.Access-Control-Allow-Origin"  = "'*'"
   }
 
   depends_on = [aws_api_gateway_method_response.debts_options_response]
@@ -1432,7 +1432,7 @@ resource "aws_api_gateway_integration_response" "plans_id_put_integration_respon
   status_code = "200"
 
   response_parameters = {
-    "method.response.header.Access-Control-Allow-Origin" = "'https://dbwgrrx6epya7.cloudfront.net'"
+    "method.response.header.Access-Control-Allow-Origin" = "'*'"
   }
 
   depends_on = [aws_api_gateway_method_response.plans_id_put_response]
@@ -1445,7 +1445,7 @@ resource "aws_api_gateway_integration_response" "plans_id_delete_integration_res
   status_code = "200"
 
   response_parameters = {
-    "method.response.header.Access-Control-Allow-Origin" = "'https://dbwgrrx6epya7.cloudfront.net'"
+    "method.response.header.Access-Control-Allow-Origin" = "'*'"
   }
 
   depends_on = [aws_api_gateway_method_response.plans_id_delete_response]
@@ -1458,7 +1458,7 @@ resource "aws_api_gateway_integration_response" "plans_id_get_integration_respon
   status_code = "200"
 
   response_parameters = {
-    "method.response.header.Access-Control-Allow-Origin" = "'https://dbwgrrx6epya7.cloudfront.net'"
+    "method.response.header.Access-Control-Allow-Origin" = "'*'"
   }
 
   depends_on = [aws_api_gateway_method_response.plans_id_get_response]
@@ -1486,7 +1486,7 @@ resource "aws_api_gateway_integration_response" "plans_id_options_integration_re
   response_parameters = {
     "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
     "method.response.header.Access-Control-Allow-Methods" = "'GET,PUT,DELETE,OPTIONS'"
-    "method.response.header.Access-Control-Allow-Origin"  = "'https://dbwgrrx6epya7.cloudfront.net'"
+    "method.response.header.Access-Control-Allow-Origin"  = "'*'"
   }
 
   depends_on = [aws_api_gateway_method_response.plans_id_options_response]
@@ -1533,7 +1533,7 @@ resource "aws_api_gateway_integration_response" "budgets_id_put_integration_resp
   status_code = "200"
 
   response_parameters = {
-    "method.response.header.Access-Control-Allow-Origin" = "'https://dbwgrrx6epya7.cloudfront.net'"
+    "method.response.header.Access-Control-Allow-Origin" = "'*'"
   }
 
   depends_on = [aws_api_gateway_method_response.budgets_id_put_response]
@@ -1546,7 +1546,7 @@ resource "aws_api_gateway_integration_response" "budgets_id_delete_integration_r
   status_code = "200"
 
   response_parameters = {
-    "method.response.header.Access-Control-Allow-Origin" = "'https://dbwgrrx6epya7.cloudfront.net'"
+    "method.response.header.Access-Control-Allow-Origin" = "'*'"
   }
 
   depends_on = [aws_api_gateway_method_response.budgets_id_delete_response]
@@ -1559,7 +1559,7 @@ resource "aws_api_gateway_integration_response" "budgets_id_get_integration_resp
   status_code = "200"
 
   response_parameters = {
-    "method.response.header.Access-Control-Allow-Origin" = "'https://dbwgrrx6epya7.cloudfront.net'"
+    "method.response.header.Access-Control-Allow-Origin" = "'*'"
   }
 
   depends_on = [aws_api_gateway_method_response.budgets_id_get_response]
@@ -1587,7 +1587,7 @@ resource "aws_api_gateway_integration_response" "budgets_id_options_integration_
   response_parameters = {
     "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
     "method.response.header.Access-Control-Allow-Methods" = "'GET,PUT,DELETE,OPTIONS'"
-    "method.response.header.Access-Control-Allow-Origin"  = "'https://dbwgrrx6epya7.cloudfront.net'"
+    "method.response.header.Access-Control-Allow-Origin"  = "'*'"
   }
 
   depends_on = [aws_api_gateway_method_response.budgets_id_options_response]
@@ -1634,7 +1634,7 @@ resource "aws_api_gateway_integration_response" "assets_id_put_integration_respo
   status_code = "200"
 
   response_parameters = {
-    "method.response.header.Access-Control-Allow-Origin" = "'https://dbwgrrx6epya7.cloudfront.net'"
+    "method.response.header.Access-Control-Allow-Origin" = "'*'"
   }
 
   depends_on = [aws_api_gateway_method_response.assets_id_put_response]
@@ -1647,7 +1647,7 @@ resource "aws_api_gateway_integration_response" "assets_id_delete_integration_re
   status_code = "200"
 
   response_parameters = {
-    "method.response.header.Access-Control-Allow-Origin" = "'https://dbwgrrx6epya7.cloudfront.net'"
+    "method.response.header.Access-Control-Allow-Origin" = "'*'"
   }
 
   depends_on = [aws_api_gateway_method_response.assets_id_delete_response]
@@ -1660,7 +1660,7 @@ resource "aws_api_gateway_integration_response" "assets_id_get_integration_respo
   status_code = "200"
 
   response_parameters = {
-    "method.response.header.Access-Control-Allow-Origin" = "'https://dbwgrrx6epya7.cloudfront.net'"
+    "method.response.header.Access-Control-Allow-Origin" = "'*'"
   }
 
   depends_on = [aws_api_gateway_method_response.assets_id_get_response]
@@ -1688,7 +1688,7 @@ resource "aws_api_gateway_integration_response" "assets_id_options_integration_r
   response_parameters = {
     "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
     "method.response.header.Access-Control-Allow-Methods" = "'GET,PUT,DELETE,OPTIONS'"
-    "method.response.header.Access-Control-Allow-Origin"  = "'https://dbwgrrx6epya7.cloudfront.net'"
+    "method.response.header.Access-Control-Allow-Origin"  = "'*'"
   }
 
   depends_on = [aws_api_gateway_method_response.assets_id_options_response]
@@ -1735,7 +1735,7 @@ resource "aws_api_gateway_integration_response" "debts_id_put_integration_respon
   status_code = "200"
 
   response_parameters = {
-    "method.response.header.Access-Control-Allow-Origin" = "'https://dbwgrrx6epya7.cloudfront.net'"
+    "method.response.header.Access-Control-Allow-Origin" = "'*'"
   }
 
   depends_on = [aws_api_gateway_method_response.debts_id_put_response]
@@ -1748,7 +1748,7 @@ resource "aws_api_gateway_integration_response" "debts_id_delete_integration_res
   status_code = "200"
 
   response_parameters = {
-    "method.response.header.Access-Control-Allow-Origin" = "'https://dbwgrrx6epya7.cloudfront.net'"
+    "method.response.header.Access-Control-Allow-Origin" = "'*'"
   }
 
   depends_on = [aws_api_gateway_method_response.debts_id_delete_response]
@@ -1761,7 +1761,7 @@ resource "aws_api_gateway_integration_response" "debts_id_get_integration_respon
   status_code = "200"
 
   response_parameters = {
-    "method.response.header.Access-Control-Allow-Origin" = "'https://dbwgrrx6epya7.cloudfront.net'"
+    "method.response.header.Access-Control-Allow-Origin" = "'*'"
   }
 
   depends_on = [aws_api_gateway_method_response.debts_id_get_response]
@@ -1789,7 +1789,7 @@ resource "aws_api_gateway_integration_response" "debts_id_options_integration_re
   response_parameters = {
     "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
     "method.response.header.Access-Control-Allow-Methods" = "'GET,PUT,DELETE,OPTIONS'"
-    "method.response.header.Access-Control-Allow-Origin"  = "'https://dbwgrrx6epya7.cloudfront.net'"
+    "method.response.header.Access-Control-Allow-Origin"  = "'*'"
   }
 
   depends_on = [aws_api_gateway_method_response.debts_id_options_response]
