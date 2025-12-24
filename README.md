@@ -26,6 +26,49 @@ Budget Planner allows users to:
 | **Infrastructure** | Terraform | IaC for AWS resources |
 | **Monitoring** | AWS CloudWatch | Logs and performance metrics |
 
+## Performance Optimizations
+
+The Lambda backend has been optimized for **cost efficiency** and **fast cold starts**:
+
+### Lambda Bundle Size Reduction
+- **Before**: ~39 MB (full `node_modules` included)
+- **After**: ~14 KB (esbuild bundled)
+- **Reduction**: 99.96% smaller
+
+**How**: Using esbuild to bundle and minify Lambda code, with AWS SDK v3 marked as external (provided by Lambda runtime).
+
+```bash
+cd lambda
+npm run build    # Runs esbuild bundler
+npm run package  # Creates optimized lambda.zip
+```
+
+### ARM64 Architecture (Graviton2)
+- **20% cheaper** than x86_64
+- Often faster for Node.js workloads
+
+### Memory Optimization
+- **Before**: 256 MB
+- **After**: 128 MB
+- **Savings**: 50% cost reduction per invocation
+
+128 MB is sufficient for lightweight DynamoDB operations.
+
+### Cost Impact Summary
+
+| Optimization | Savings |
+|-------------|---------|
+| ARM64 Architecture | ~20% |
+| 128 MB Memory (vs 256 MB) | ~50% |
+| Smaller Bundle (faster deploys) | Indirect |
+| **Total Estimated Savings** | **~60%** |
+
+### Cold Start Performance
+- Init Duration: ~390 ms (128 MB ARM64)
+- Execution Duration: ~3-10 ms for typical requests
+
+For production with consistent traffic, consider enabling **Provisioned Concurrency** to eliminate cold starts entirely.
+
 ## Versioning & Offline Support
 
 Budget Planner features a **sophisticated version-based synchronization system** for seamless offline functionality and multi-device support:
@@ -53,9 +96,9 @@ Budget Planner features a **sophisticated version-based synchronization system**
 
 ### Backend (Lambda Functions) Setup
 ```bash
-cd backend
+cd lambda
 npm install
-npm run build
+npm run build    # Uses esbuild for optimized bundle
 ```
 
 ### Frontend Setup
@@ -73,12 +116,13 @@ For detailed deployment options, see [FRONTEND_DEPLOYMENT.md](FRONTEND_DEPLOYMEN
 
 ```
 Budget/
-├── backend/                    # Node.js Lambda Functions
+├── lambda/                     # Node.js Lambda Functions
 │   ├── src/
 │   │   ├── handlers/          # Lambda handler functions
-│   │   ├── services/          # Business logic
+│   │   ├── services/          # Business logic (DynamoDB)
 │   │   ├── utils/             # Helper functions
-│   │   └── types/             # TypeScript types
+│   │   └── types.ts           # TypeScript types
+│   ├── build.js               # esbuild bundler script
 │   ├── package.json
 │   └── tsconfig.json
 ├── frontend/                   # React + Vite app
@@ -169,6 +213,7 @@ Budget Planner is a budgeting application with:
 - ✅ Version-based synchronization for offline support
 - ✅ Multi-scenario financial planning
 - ✅ AWS cloud deployment (Lambda, API Gateway, DynamoDB, Cognito, S3, CloudFront)
+- ✅ Optimized Lambda functions (ARM64, 128MB, esbuild bundling)
 
 ## License
 

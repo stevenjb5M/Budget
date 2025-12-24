@@ -26,7 +26,7 @@ variable "dynamodb_billing_mode" {
 variable "lambda_memory" {
   description = "Lambda function memory in MB"
   type        = number
-  default     = 256
+  default     = 128
 
   validation {
     condition     = var.lambda_memory >= 128 && var.lambda_memory <= 10240

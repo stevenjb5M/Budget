@@ -66,6 +66,7 @@ resource "aws_lambda_function" "users" {
   role          = aws_iam_role.lambda_role.arn
   handler       = "dist/users-handler.handler"
   runtime       = "nodejs20.x"
+  architectures = ["arm64"]
   memory_size   = var.lambda_memory
   timeout       = var.lambda_timeout
 
@@ -85,6 +86,7 @@ resource "aws_lambda_function" "plans" {
   role          = aws_iam_role.lambda_role.arn
   handler       = "dist/plans-handler.handler"
   runtime       = "nodejs20.x"
+  architectures = ["arm64"]
   memory_size   = var.lambda_memory
   timeout       = var.lambda_timeout
 
@@ -104,6 +106,7 @@ resource "aws_lambda_function" "budgets" {
   role          = aws_iam_role.lambda_role.arn
   handler       = "dist/budgets-handler.handler"
   runtime       = "nodejs20.x"
+  architectures = ["arm64"]
   memory_size   = var.lambda_memory
   timeout       = var.lambda_timeout
 
@@ -123,6 +126,7 @@ resource "aws_lambda_function" "assets" {
   role          = aws_iam_role.lambda_role.arn
   handler       = "dist/assets-handler.handler"
   runtime       = "nodejs20.x"
+  architectures = ["arm64"]
   memory_size   = var.lambda_memory
   timeout       = var.lambda_timeout
 
@@ -142,6 +146,7 @@ resource "aws_lambda_function" "debts" {
   role          = aws_iam_role.lambda_role.arn
   handler       = "dist/debts-handler.handler"
   runtime       = "nodejs20.x"
+  architectures = ["arm64"]
   memory_size   = var.lambda_memory
   timeout       = var.lambda_timeout
 
