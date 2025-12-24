@@ -20,9 +20,21 @@ export interface Plan {
   id: string;
   userId: string;
   name: string;
-  description?: string;
-  startDate: string;
-  endDate: string;
+  description: string;
+  isActive: boolean;
+  months: Array<{
+    month: string;
+    budgetId: string | null;
+    netWorth: number;
+    transactions?: Array<{
+      id: string;
+      type: 'asset' | 'debt';
+      targetId: string;
+      amount: number;
+      description: string;
+      isEditing?: boolean;
+    }>;
+  }>;
   version: number;
   createdAt: string;
   updatedAt: string;
@@ -30,11 +42,23 @@ export interface Plan {
 
 export interface Budget {
   id: string;
-  planId: string;
   userId: string;
   name: string;
-  amount: number;
-  spent: number;
+  isActive: boolean;
+  income: Array<{
+    id: string;
+    name: string;
+    amount: number;
+    category: string;
+  }>;
+  expenses: Array<{
+    id: string;
+    name: string;
+    amount: number;
+    category: string;
+    linkedAssetId?: string;
+    linkedDebtId?: string;
+  }>;
   version: number;
   createdAt: string;
   updatedAt: string;
@@ -44,8 +68,9 @@ export interface Asset {
   id: string;
   userId: string;
   name: string;
-  value: number;
-  category: string;
+  currentValue: number;
+  annualAPY: number;
+  notes?: string;
   version: number;
   createdAt: string;
   updatedAt: string;
@@ -54,10 +79,11 @@ export interface Asset {
 export interface Debt {
   id: string;
   userId: string;
-  creditor: string;
-  amount: number;
+  name: string;
+  currentBalance: number;
   interestRate: number;
-  dueDate: string;
+  minimumPayment: number;
+  notes?: string;
   version: number;
   createdAt: string;
   updatedAt: string;

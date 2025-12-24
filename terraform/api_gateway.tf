@@ -75,6 +75,36 @@ resource "aws_api_gateway_resource" "debts" {
   path_part   = "debts"
 }
 
+# ===== ID RESOURCES FOR PUT/DELETE/GET /{id} =====
+
+# Plans/{id} resource
+resource "aws_api_gateway_resource" "plans_id" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  parent_id   = aws_api_gateway_resource.plans.id
+  path_part   = "{id}"
+}
+
+# Budgets/{id} resource
+resource "aws_api_gateway_resource" "budgets_id" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  parent_id   = aws_api_gateway_resource.budgets.id
+  path_part   = "{id}"
+}
+
+# Assets/{id} resource
+resource "aws_api_gateway_resource" "assets_id" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  parent_id   = aws_api_gateway_resource.assets.id
+  path_part   = "{id}"
+}
+
+# Debts/{id} resource
+resource "aws_api_gateway_resource" "debts_id" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  parent_id   = aws_api_gateway_resource.debts.id
+  path_part   = "{id}"
+}
+
 # Lambda permission for users function
 resource "aws_lambda_permission" "users_api" {
   statement_id  = "AllowAPIGatewayInvoke"
@@ -378,6 +408,292 @@ resource "aws_api_gateway_authorizer" "cognito" {
   ]
 }
 
+# ===== METHODS FOR /{id} RESOURCES =====
+
+# Plans/{id} - PUT, DELETE, OPTIONS
+resource "aws_api_gateway_method" "plans_id_put" {
+  rest_api_id      = aws_api_gateway_rest_api.api.id
+  resource_id      = aws_api_gateway_resource.plans_id.id
+  http_method      = "PUT"
+  authorization    = "COGNITO_USER_POOLS"
+  authorizer_id    = aws_api_gateway_authorizer.cognito.id
+}
+
+resource "aws_api_gateway_method" "plans_id_delete" {
+  rest_api_id      = aws_api_gateway_rest_api.api.id
+  resource_id      = aws_api_gateway_resource.plans_id.id
+  http_method      = "DELETE"
+  authorization    = "COGNITO_USER_POOLS"
+  authorizer_id    = aws_api_gateway_authorizer.cognito.id
+}
+
+resource "aws_api_gateway_method" "plans_id_get" {
+  rest_api_id      = aws_api_gateway_rest_api.api.id
+  resource_id      = aws_api_gateway_resource.plans_id.id
+  http_method      = "GET"
+  authorization    = "COGNITO_USER_POOLS"
+  authorizer_id    = aws_api_gateway_authorizer.cognito.id
+}
+
+resource "aws_api_gateway_method" "plans_id_options" {
+  rest_api_id   = aws_api_gateway_rest_api.api.id
+  resource_id   = aws_api_gateway_resource.plans_id.id
+  http_method   = "OPTIONS"
+  authorization = "NONE"
+}
+
+# Plans/{id} - Integrations
+resource "aws_api_gateway_integration" "plans_id_put_integration" {
+  rest_api_id             = aws_api_gateway_rest_api.api.id
+  resource_id             = aws_api_gateway_resource.plans_id.id
+  http_method             = aws_api_gateway_method.plans_id_put.http_method
+  type                    = "AWS_PROXY"
+  integration_http_method = "POST"
+  uri                     = aws_lambda_function.plans.invoke_arn
+}
+
+resource "aws_api_gateway_integration" "plans_id_delete_integration" {
+  rest_api_id             = aws_api_gateway_rest_api.api.id
+  resource_id             = aws_api_gateway_resource.plans_id.id
+  http_method             = aws_api_gateway_method.plans_id_delete.http_method
+  type                    = "AWS_PROXY"
+  integration_http_method = "POST"
+  uri                     = aws_lambda_function.plans.invoke_arn
+}
+
+resource "aws_api_gateway_integration" "plans_id_get_integration" {
+  rest_api_id             = aws_api_gateway_rest_api.api.id
+  resource_id             = aws_api_gateway_resource.plans_id.id
+  http_method             = aws_api_gateway_method.plans_id_get.http_method
+  type                    = "AWS_PROXY"
+  integration_http_method = "POST"
+  uri                     = aws_lambda_function.plans.invoke_arn
+}
+
+resource "aws_api_gateway_integration" "plans_id_options_integration" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.plans_id.id
+  http_method = aws_api_gateway_method.plans_id_options.http_method
+  type        = "MOCK"
+
+  request_templates = {
+    "application/json" = "{\"statusCode\": 200}"
+  }
+}
+
+# Budgets/{id} - PUT, DELETE, OPTIONS
+resource "aws_api_gateway_method" "budgets_id_put" {
+  rest_api_id      = aws_api_gateway_rest_api.api.id
+  resource_id      = aws_api_gateway_resource.budgets_id.id
+  http_method      = "PUT"
+  authorization    = "COGNITO_USER_POOLS"
+  authorizer_id    = aws_api_gateway_authorizer.cognito.id
+}
+
+resource "aws_api_gateway_method" "budgets_id_delete" {
+  rest_api_id      = aws_api_gateway_rest_api.api.id
+  resource_id      = aws_api_gateway_resource.budgets_id.id
+  http_method      = "DELETE"
+  authorization    = "COGNITO_USER_POOLS"
+  authorizer_id    = aws_api_gateway_authorizer.cognito.id
+}
+
+resource "aws_api_gateway_method" "budgets_id_get" {
+  rest_api_id      = aws_api_gateway_rest_api.api.id
+  resource_id      = aws_api_gateway_resource.budgets_id.id
+  http_method      = "GET"
+  authorization    = "COGNITO_USER_POOLS"
+  authorizer_id    = aws_api_gateway_authorizer.cognito.id
+}
+
+resource "aws_api_gateway_method" "budgets_id_options" {
+  rest_api_id   = aws_api_gateway_rest_api.api.id
+  resource_id   = aws_api_gateway_resource.budgets_id.id
+  http_method   = "OPTIONS"
+  authorization = "NONE"
+}
+
+# Budgets/{id} - Integrations
+resource "aws_api_gateway_integration" "budgets_id_put_integration" {
+  rest_api_id             = aws_api_gateway_rest_api.api.id
+  resource_id             = aws_api_gateway_resource.budgets_id.id
+  http_method             = aws_api_gateway_method.budgets_id_put.http_method
+  type                    = "AWS_PROXY"
+  integration_http_method = "POST"
+  uri                     = aws_lambda_function.budgets.invoke_arn
+}
+
+resource "aws_api_gateway_integration" "budgets_id_delete_integration" {
+  rest_api_id             = aws_api_gateway_rest_api.api.id
+  resource_id             = aws_api_gateway_resource.budgets_id.id
+  http_method             = aws_api_gateway_method.budgets_id_delete.http_method
+  type                    = "AWS_PROXY"
+  integration_http_method = "POST"
+  uri                     = aws_lambda_function.budgets.invoke_arn
+}
+
+resource "aws_api_gateway_integration" "budgets_id_get_integration" {
+  rest_api_id             = aws_api_gateway_rest_api.api.id
+  resource_id             = aws_api_gateway_resource.budgets_id.id
+  http_method             = aws_api_gateway_method.budgets_id_get.http_method
+  type                    = "AWS_PROXY"
+  integration_http_method = "POST"
+  uri                     = aws_lambda_function.budgets.invoke_arn
+}
+
+resource "aws_api_gateway_integration" "budgets_id_options_integration" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.budgets_id.id
+  http_method = aws_api_gateway_method.budgets_id_options.http_method
+  type        = "MOCK"
+
+  request_templates = {
+    "application/json" = "{\"statusCode\": 200}"
+  }
+}
+
+# Assets/{id} - PUT, DELETE, OPTIONS
+resource "aws_api_gateway_method" "assets_id_put" {
+  rest_api_id      = aws_api_gateway_rest_api.api.id
+  resource_id      = aws_api_gateway_resource.assets_id.id
+  http_method      = "PUT"
+  authorization    = "COGNITO_USER_POOLS"
+  authorizer_id    = aws_api_gateway_authorizer.cognito.id
+}
+
+resource "aws_api_gateway_method" "assets_id_delete" {
+  rest_api_id      = aws_api_gateway_rest_api.api.id
+  resource_id      = aws_api_gateway_resource.assets_id.id
+  http_method      = "DELETE"
+  authorization    = "COGNITO_USER_POOLS"
+  authorizer_id    = aws_api_gateway_authorizer.cognito.id
+}
+
+resource "aws_api_gateway_method" "assets_id_get" {
+  rest_api_id      = aws_api_gateway_rest_api.api.id
+  resource_id      = aws_api_gateway_resource.assets_id.id
+  http_method      = "GET"
+  authorization    = "COGNITO_USER_POOLS"
+  authorizer_id    = aws_api_gateway_authorizer.cognito.id
+}
+
+resource "aws_api_gateway_method" "assets_id_options" {
+  rest_api_id   = aws_api_gateway_rest_api.api.id
+  resource_id   = aws_api_gateway_resource.assets_id.id
+  http_method   = "OPTIONS"
+  authorization = "NONE"
+}
+
+# Assets/{id} - Integrations
+resource "aws_api_gateway_integration" "assets_id_put_integration" {
+  rest_api_id             = aws_api_gateway_rest_api.api.id
+  resource_id             = aws_api_gateway_resource.assets_id.id
+  http_method             = aws_api_gateway_method.assets_id_put.http_method
+  type                    = "AWS_PROXY"
+  integration_http_method = "POST"
+  uri                     = aws_lambda_function.assets.invoke_arn
+}
+
+resource "aws_api_gateway_integration" "assets_id_delete_integration" {
+  rest_api_id             = aws_api_gateway_rest_api.api.id
+  resource_id             = aws_api_gateway_resource.assets_id.id
+  http_method             = aws_api_gateway_method.assets_id_delete.http_method
+  type                    = "AWS_PROXY"
+  integration_http_method = "POST"
+  uri                     = aws_lambda_function.assets.invoke_arn
+}
+
+resource "aws_api_gateway_integration" "assets_id_get_integration" {
+  rest_api_id             = aws_api_gateway_rest_api.api.id
+  resource_id             = aws_api_gateway_resource.assets_id.id
+  http_method             = aws_api_gateway_method.assets_id_get.http_method
+  type                    = "AWS_PROXY"
+  integration_http_method = "POST"
+  uri                     = aws_lambda_function.assets.invoke_arn
+}
+
+resource "aws_api_gateway_integration" "assets_id_options_integration" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.assets_id.id
+  http_method = aws_api_gateway_method.assets_id_options.http_method
+  type        = "MOCK"
+
+  request_templates = {
+    "application/json" = "{\"statusCode\": 200}"
+  }
+}
+
+# Debts/{id} - PUT, DELETE, OPTIONS
+resource "aws_api_gateway_method" "debts_id_put" {
+  rest_api_id      = aws_api_gateway_rest_api.api.id
+  resource_id      = aws_api_gateway_resource.debts_id.id
+  http_method      = "PUT"
+  authorization    = "COGNITO_USER_POOLS"
+  authorizer_id    = aws_api_gateway_authorizer.cognito.id
+}
+
+resource "aws_api_gateway_method" "debts_id_delete" {
+  rest_api_id      = aws_api_gateway_rest_api.api.id
+  resource_id      = aws_api_gateway_resource.debts_id.id
+  http_method      = "DELETE"
+  authorization    = "COGNITO_USER_POOLS"
+  authorizer_id    = aws_api_gateway_authorizer.cognito.id
+}
+
+resource "aws_api_gateway_method" "debts_id_get" {
+  rest_api_id      = aws_api_gateway_rest_api.api.id
+  resource_id      = aws_api_gateway_resource.debts_id.id
+  http_method      = "GET"
+  authorization    = "COGNITO_USER_POOLS"
+  authorizer_id    = aws_api_gateway_authorizer.cognito.id
+}
+
+resource "aws_api_gateway_method" "debts_id_options" {
+  rest_api_id   = aws_api_gateway_rest_api.api.id
+  resource_id   = aws_api_gateway_resource.debts_id.id
+  http_method   = "OPTIONS"
+  authorization = "NONE"
+}
+
+# Debts/{id} - Integrations
+resource "aws_api_gateway_integration" "debts_id_put_integration" {
+  rest_api_id             = aws_api_gateway_rest_api.api.id
+  resource_id             = aws_api_gateway_resource.debts_id.id
+  http_method             = aws_api_gateway_method.debts_id_put.http_method
+  type                    = "AWS_PROXY"
+  integration_http_method = "POST"
+  uri                     = aws_lambda_function.debts.invoke_arn
+}
+
+resource "aws_api_gateway_integration" "debts_id_delete_integration" {
+  rest_api_id             = aws_api_gateway_rest_api.api.id
+  resource_id             = aws_api_gateway_resource.debts_id.id
+  http_method             = aws_api_gateway_method.debts_id_delete.http_method
+  type                    = "AWS_PROXY"
+  integration_http_method = "POST"
+  uri                     = aws_lambda_function.debts.invoke_arn
+}
+
+resource "aws_api_gateway_integration" "debts_id_get_integration" {
+  rest_api_id             = aws_api_gateway_rest_api.api.id
+  resource_id             = aws_api_gateway_resource.debts_id.id
+  http_method             = aws_api_gateway_method.debts_id_get.http_method
+  type                    = "AWS_PROXY"
+  integration_http_method = "POST"
+  uri                     = aws_lambda_function.debts.invoke_arn
+}
+
+resource "aws_api_gateway_integration" "debts_id_options_integration" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.debts_id.id
+  http_method = aws_api_gateway_method.debts_id_options.http_method
+  type        = "MOCK"
+
+  request_templates = {
+    "application/json" = "{\"statusCode\": 200}"
+  }
+}
+
 # API deployment
 resource "aws_api_gateway_deployment" "api" {
   rest_api_id = aws_api_gateway_rest_api.api.id
@@ -407,24 +723,44 @@ resource "aws_api_gateway_deployment" "api" {
     aws_api_gateway_integration_response.plans_integration_response,
     aws_api_gateway_integration_response.plans_post_integration_response,
     aws_api_gateway_integration_response.plans_options_integration_response,
+    # Plans/{id}
+    aws_api_gateway_integration.plans_id_put_integration,
+    aws_api_gateway_integration.plans_id_delete_integration,
+    aws_api_gateway_integration.plans_id_get_integration,
+    aws_api_gateway_integration_response.plans_id_options_integration_response,
     # Budgets
     aws_api_gateway_integration.budgets_integration,
     aws_api_gateway_integration.budgets_post_integration,
     aws_api_gateway_integration_response.budgets_integration_response,
     aws_api_gateway_integration_response.budgets_post_integration_response,
     aws_api_gateway_integration_response.budgets_options_integration_response,
+    # Budgets/{id}
+    aws_api_gateway_integration.budgets_id_put_integration,
+    aws_api_gateway_integration.budgets_id_delete_integration,
+    aws_api_gateway_integration.budgets_id_get_integration,
+    aws_api_gateway_integration_response.budgets_id_options_integration_response,
     # Assets
     aws_api_gateway_integration.assets_integration,
     aws_api_gateway_integration.assets_post_integration,
     aws_api_gateway_integration_response.assets_integration_response,
     aws_api_gateway_integration_response.assets_post_integration_response,
     aws_api_gateway_integration_response.assets_options_integration_response,
+    # Assets/{id}
+    aws_api_gateway_integration.assets_id_put_integration,
+    aws_api_gateway_integration.assets_id_delete_integration,
+    aws_api_gateway_integration.assets_id_get_integration,
+    aws_api_gateway_integration_response.assets_id_options_integration_response,
     # Debts
     aws_api_gateway_integration.debts_integration,
     aws_api_gateway_integration.debts_post_integration,
     aws_api_gateway_integration_response.debts_integration_response,
     aws_api_gateway_integration_response.debts_post_integration_response,
     aws_api_gateway_integration_response.debts_options_integration_response,
+    # Debts/{id}
+    aws_api_gateway_integration.debts_id_put_integration,
+    aws_api_gateway_integration.debts_id_delete_integration,
+    aws_api_gateway_integration.debts_id_get_integration,
+    aws_api_gateway_integration_response.debts_id_options_integration_response,
   ]
 }
 
@@ -1051,6 +1387,410 @@ resource "aws_api_gateway_integration_response" "debts_options_integration_respo
   }
 
   depends_on = [aws_api_gateway_method_response.debts_options_response]
+}
+
+# Method and Integration responses for /{id} OPTIONS methods
+resource "aws_api_gateway_method_response" "plans_id_put_response" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.plans_id.id
+  http_method = aws_api_gateway_method.plans_id_put.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = true
+  }
+}
+
+resource "aws_api_gateway_method_response" "plans_id_delete_response" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.plans_id.id
+  http_method = aws_api_gateway_method.plans_id_delete.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = true
+  }
+}
+
+resource "aws_api_gateway_method_response" "plans_id_get_response" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.plans_id.id
+  http_method = aws_api_gateway_method.plans_id_get.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = true
+  }
+}
+
+resource "aws_api_gateway_integration_response" "plans_id_put_integration_response" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.plans_id.id
+  http_method = aws_api_gateway_method.plans_id_put.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = "'*'"
+  }
+
+  depends_on = [aws_api_gateway_method_response.plans_id_put_response]
+}
+
+resource "aws_api_gateway_integration_response" "plans_id_delete_integration_response" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.plans_id.id
+  http_method = aws_api_gateway_method.plans_id_delete.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = "'*'"
+  }
+
+  depends_on = [aws_api_gateway_method_response.plans_id_delete_response]
+}
+
+resource "aws_api_gateway_integration_response" "plans_id_get_integration_response" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.plans_id.id
+  http_method = aws_api_gateway_method.plans_id_get.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = "'*'"
+  }
+
+  depends_on = [aws_api_gateway_method_response.plans_id_get_response]
+}
+
+resource "aws_api_gateway_method_response" "plans_id_options_response" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.plans_id.id
+  http_method = aws_api_gateway_method.plans_id_options.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = true
+    "method.response.header.Access-Control-Allow-Methods" = true
+    "method.response.header.Access-Control-Allow-Origin"  = true
+  }
+}
+
+resource "aws_api_gateway_integration_response" "plans_id_options_integration_response" {
+  rest_api_id      = aws_api_gateway_rest_api.api.id
+  resource_id      = aws_api_gateway_resource.plans_id.id
+  http_method      = aws_api_gateway_method.plans_id_options.http_method
+  status_code      = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+    "method.response.header.Access-Control-Allow-Methods" = "'GET,PUT,DELETE,OPTIONS'"
+    "method.response.header.Access-Control-Allow-Origin"  = "'*'"
+  }
+
+  depends_on = [aws_api_gateway_method_response.plans_id_options_response]
+}
+
+# Budgets/{id} responses
+resource "aws_api_gateway_method_response" "budgets_id_put_response" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.budgets_id.id
+  http_method = aws_api_gateway_method.budgets_id_put.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = true
+  }
+}
+
+resource "aws_api_gateway_method_response" "budgets_id_delete_response" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.budgets_id.id
+  http_method = aws_api_gateway_method.budgets_id_delete.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = true
+  }
+}
+
+resource "aws_api_gateway_method_response" "budgets_id_get_response" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.budgets_id.id
+  http_method = aws_api_gateway_method.budgets_id_get.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = true
+  }
+}
+
+resource "aws_api_gateway_integration_response" "budgets_id_put_integration_response" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.budgets_id.id
+  http_method = aws_api_gateway_method.budgets_id_put.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = "'*'"
+  }
+
+  depends_on = [aws_api_gateway_method_response.budgets_id_put_response]
+}
+
+resource "aws_api_gateway_integration_response" "budgets_id_delete_integration_response" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.budgets_id.id
+  http_method = aws_api_gateway_method.budgets_id_delete.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = "'*'"
+  }
+
+  depends_on = [aws_api_gateway_method_response.budgets_id_delete_response]
+}
+
+resource "aws_api_gateway_integration_response" "budgets_id_get_integration_response" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.budgets_id.id
+  http_method = aws_api_gateway_method.budgets_id_get.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = "'*'"
+  }
+
+  depends_on = [aws_api_gateway_method_response.budgets_id_get_response]
+}
+
+resource "aws_api_gateway_method_response" "budgets_id_options_response" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.budgets_id.id
+  http_method = aws_api_gateway_method.budgets_id_options.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = true
+    "method.response.header.Access-Control-Allow-Methods" = true
+    "method.response.header.Access-Control-Allow-Origin"  = true
+  }
+}
+
+resource "aws_api_gateway_integration_response" "budgets_id_options_integration_response" {
+  rest_api_id      = aws_api_gateway_rest_api.api.id
+  resource_id      = aws_api_gateway_resource.budgets_id.id
+  http_method      = aws_api_gateway_method.budgets_id_options.http_method
+  status_code      = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+    "method.response.header.Access-Control-Allow-Methods" = "'GET,PUT,DELETE,OPTIONS'"
+    "method.response.header.Access-Control-Allow-Origin"  = "'*'"
+  }
+
+  depends_on = [aws_api_gateway_method_response.budgets_id_options_response]
+}
+
+# Assets/{id} responses
+resource "aws_api_gateway_method_response" "assets_id_put_response" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.assets_id.id
+  http_method = aws_api_gateway_method.assets_id_put.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = true
+  }
+}
+
+resource "aws_api_gateway_method_response" "assets_id_delete_response" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.assets_id.id
+  http_method = aws_api_gateway_method.assets_id_delete.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = true
+  }
+}
+
+resource "aws_api_gateway_method_response" "assets_id_get_response" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.assets_id.id
+  http_method = aws_api_gateway_method.assets_id_get.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = true
+  }
+}
+
+resource "aws_api_gateway_integration_response" "assets_id_put_integration_response" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.assets_id.id
+  http_method = aws_api_gateway_method.assets_id_put.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = "'*'"
+  }
+
+  depends_on = [aws_api_gateway_method_response.assets_id_put_response]
+}
+
+resource "aws_api_gateway_integration_response" "assets_id_delete_integration_response" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.assets_id.id
+  http_method = aws_api_gateway_method.assets_id_delete.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = "'*'"
+  }
+
+  depends_on = [aws_api_gateway_method_response.assets_id_delete_response]
+}
+
+resource "aws_api_gateway_integration_response" "assets_id_get_integration_response" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.assets_id.id
+  http_method = aws_api_gateway_method.assets_id_get.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = "'*'"
+  }
+
+  depends_on = [aws_api_gateway_method_response.assets_id_get_response]
+}
+
+resource "aws_api_gateway_method_response" "assets_id_options_response" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.assets_id.id
+  http_method = aws_api_gateway_method.assets_id_options.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = true
+    "method.response.header.Access-Control-Allow-Methods" = true
+    "method.response.header.Access-Control-Allow-Origin"  = true
+  }
+}
+
+resource "aws_api_gateway_integration_response" "assets_id_options_integration_response" {
+  rest_api_id      = aws_api_gateway_rest_api.api.id
+  resource_id      = aws_api_gateway_resource.assets_id.id
+  http_method      = aws_api_gateway_method.assets_id_options.http_method
+  status_code      = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+    "method.response.header.Access-Control-Allow-Methods" = "'GET,PUT,DELETE,OPTIONS'"
+    "method.response.header.Access-Control-Allow-Origin"  = "'*'"
+  }
+
+  depends_on = [aws_api_gateway_method_response.assets_id_options_response]
+}
+
+# Debts/{id} responses
+resource "aws_api_gateway_method_response" "debts_id_put_response" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.debts_id.id
+  http_method = aws_api_gateway_method.debts_id_put.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = true
+  }
+}
+
+resource "aws_api_gateway_method_response" "debts_id_delete_response" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.debts_id.id
+  http_method = aws_api_gateway_method.debts_id_delete.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = true
+  }
+}
+
+resource "aws_api_gateway_method_response" "debts_id_get_response" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.debts_id.id
+  http_method = aws_api_gateway_method.debts_id_get.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = true
+  }
+}
+
+resource "aws_api_gateway_integration_response" "debts_id_put_integration_response" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.debts_id.id
+  http_method = aws_api_gateway_method.debts_id_put.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = "'*'"
+  }
+
+  depends_on = [aws_api_gateway_method_response.debts_id_put_response]
+}
+
+resource "aws_api_gateway_integration_response" "debts_id_delete_integration_response" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.debts_id.id
+  http_method = aws_api_gateway_method.debts_id_delete.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = "'*'"
+  }
+
+  depends_on = [aws_api_gateway_method_response.debts_id_delete_response]
+}
+
+resource "aws_api_gateway_integration_response" "debts_id_get_integration_response" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.debts_id.id
+  http_method = aws_api_gateway_method.debts_id_get.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = "'*'"
+  }
+
+  depends_on = [aws_api_gateway_method_response.debts_id_get_response]
+}
+
+resource "aws_api_gateway_method_response" "debts_id_options_response" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.debts_id.id
+  http_method = aws_api_gateway_method.debts_id_options.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = true
+    "method.response.header.Access-Control-Allow-Methods" = true
+    "method.response.header.Access-Control-Allow-Origin"  = true
+  }
+}
+
+resource "aws_api_gateway_integration_response" "debts_id_options_integration_response" {
+  rest_api_id      = aws_api_gateway_rest_api.api.id
+  resource_id      = aws_api_gateway_resource.debts_id.id
+  http_method      = aws_api_gateway_method.debts_id_options.http_method
+  status_code      = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+    "method.response.header.Access-Control-Allow-Methods" = "'GET,PUT,DELETE,OPTIONS'"
+    "method.response.header.Access-Control-Allow-Origin"  = "'*'"
+  }
+
+  depends_on = [aws_api_gateway_method_response.debts_id_options_response]
 }
 
 # API stage
