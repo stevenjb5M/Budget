@@ -29,10 +29,10 @@ export const createDebtHandler = async (event: APIGatewayProxyEvent): Promise<AP
     const body = parseBody(event.body);
     
     const validation = validateRequiredFields(body, [
-      'creditor',
-      'amount',
+      'name',
+      'currentBalance',
       'interestRate',
-      'dueDate',
+      'minimumPayment',
     ]);
 
     if (!validation.valid) {
@@ -45,10 +45,11 @@ export const createDebtHandler = async (event: APIGatewayProxyEvent): Promise<AP
 
     const debt = await dynamodbService.createDebt({
       userId,
-      creditor: body.creditor as string,
-      amount: body.amount as number,
+      name: body.name as string,
+      currentBalance: body.currentBalance as number,
       interestRate: body.interestRate as number,
-      dueDate: body.dueDate as string,
+      minimumPayment: body.minimumPayment as number,
+      notes: (body.notes as string) || undefined,
     });
 
     return successResponse(debt, HTTP_STATUS.CREATED);

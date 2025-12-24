@@ -49,8 +49,8 @@ export function Assets() {
   }, [])
 
   // Calculate totals
-  const assetsTotal = assets.reduce((sum, asset) => sum + asset.currentValue, 0)
-  const debtsTotal = debts.reduce((sum, debt) => sum + debt.currentBalance, 0)
+  const assetsTotal = (Array.isArray(assets) ? assets : []).reduce((sum, asset) => sum + asset.currentValue, 0)
+  const debtsTotal = (Array.isArray(debts) ? debts : []).reduce((sum, debt) => sum + debt.currentBalance, 0)
   const netWorth = assetsTotal - debtsTotal
 
   const sensors = useSensors(

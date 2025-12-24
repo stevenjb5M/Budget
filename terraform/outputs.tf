@@ -42,8 +42,23 @@ output "environment_variables" {
   description = "Environment variables for frontend"
   value = {
     VITE_API_URL            = "https://${aws_api_gateway_rest_api.api.id}.execute-api.${var.aws_region}.amazonaws.com/prod"
-    VITE_USER_POOL_ID       = "your-cognito-pool-id"
-    VITE_USER_POOL_CLIENT_ID = "your-cognito-client-id"
+    VITE_USER_POOL_ID       = aws_cognito_user_pool.main.id
+    VITE_USER_POOL_CLIENT_ID = aws_cognito_user_pool_client.frontend.id
   }
   sensitive = false
+}
+
+output "cognito_user_pool_id" {
+  description = "Cognito User Pool ID"
+  value       = aws_cognito_user_pool.main.id
+}
+
+output "cognito_user_pool_client_id" {
+  description = "Cognito User Pool Client ID"
+  value       = aws_cognito_user_pool_client.frontend.id
+}
+
+output "cognito_domain" {
+  description = "Cognito domain for hosted UI"
+  value       = aws_cognito_user_pool_domain.main.domain
 }

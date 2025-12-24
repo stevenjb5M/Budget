@@ -391,8 +391,8 @@ export function Budgets() {
     }
   }
 
-  const totalIncome = selectedBudget?.income.reduce((sum, item) => sum + item.amount, 0) || 0
-  const totalExpenses = selectedBudget?.expenses.reduce((sum, item) => sum + item.amount, 0) || 0
+  const totalIncome = (selectedBudget?.income && Array.isArray(selectedBudget.income) ? selectedBudget.income : []).reduce((sum, item) => sum + item.amount, 0) || 0
+  const totalExpenses = (selectedBudget?.expenses && Array.isArray(selectedBudget.expenses) ? selectedBudget.expenses : []).reduce((sum, item) => sum + item.amount, 0) || 0
   const netAmount = totalIncome - totalExpenses
 
   return (

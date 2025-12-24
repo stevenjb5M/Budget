@@ -36,7 +36,7 @@ export const errorResponse = (
 };
 
 export const successResponse = (data: unknown, statusCode = HTTP_STATUS.OK): ApiResponse => {
-  return createResponse(statusCode, { data });
+  return createResponse(statusCode, data);
 };
 
 export const validateRequiredFields = (

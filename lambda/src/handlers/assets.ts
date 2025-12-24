@@ -30,8 +30,8 @@ export const createAssetHandler = async (event: APIGatewayProxyEvent): Promise<A
     
     const validation = validateRequiredFields(body, [
       'name',
-      'value',
-      'category',
+      'currentValue',
+      'annualAPY',
     ]);
 
     if (!validation.valid) {
@@ -45,8 +45,9 @@ export const createAssetHandler = async (event: APIGatewayProxyEvent): Promise<A
     const asset = await dynamodbService.createAsset({
       userId,
       name: body.name as string,
-      value: body.value as number,
-      category: body.category as string,
+      currentValue: body.currentValue as number,
+      annualAPY: body.annualAPY as number,
+      notes: (body.notes as string) || undefined,
     });
 
     return successResponse(asset, HTTP_STATUS.CREATED);

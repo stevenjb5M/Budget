@@ -70,8 +70,8 @@ export const createPlanHandler = async (event: APIGatewayProxyEvent): Promise<AP
       userId,
       name: body.name as string,
       description: (body.description as string) || '',
-      startDate: body.startDate as string,
-      endDate: body.endDate as string,
+      isActive: body.isActive !== false,
+      months: (body.months as any[]) || [],
     });
 
     return successResponse(plan, HTTP_STATUS.CREATED);
