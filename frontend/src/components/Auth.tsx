@@ -58,10 +58,10 @@ export function AuthProvider({ children, signOut, user }: { children: React.Reac
 
 // Helper function to auto-fill form fields
 function autoFillTestCredentials() {
-  const testEmail = 'stevenjbrown95@gmail.com'
-  const testPassword = 'Happy123!'
-  const testName = 'Steven Brown'
-  const testBirthdate = '2001-09-05'  // Must be in YYYY-MM-DD format for date inputs
+  const testEmail = 'test@example.com'
+  const testPassword = 'TestPassword123!'
+  const testName = 'Test User'
+  const testBirthdate = '1990-01-01'  // Must be in YYYY-MM-DD format for date inputs
 
   // Find all input fields on the page
   const emailInputs = document.querySelectorAll('input[type="email"], input[placeholder*="email" i]')
