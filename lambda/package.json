@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "Budget Planner API - Node.js Lambda backend",
   "main": "dist/index.js",
-  "type": "module",
   "scripts": {
     "build": "tsc",
     "dev": "ts-node src/index.ts",

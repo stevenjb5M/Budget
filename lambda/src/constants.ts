@@ -23,6 +23,7 @@ export const HTTP_STATUS = {
   FORBIDDEN: 403,
   NOT_FOUND: 404,
   CONFLICT: 409,
+  METHOD_NOT_ALLOWED: 405,
   INTERNAL_SERVER_ERROR: 500,
 };
 
@@ -37,4 +38,5 @@ export const ERROR_MESSAGES = {
   UNAUTHORIZED: 'Unauthorized access',
   INTERNAL_ERROR: 'Internal server error',
   MISSING_REQUIRED_FIELDS: 'Missing required fields',
+  METHOD_NOT_ALLOWED: 'Method not allowed',
 };
