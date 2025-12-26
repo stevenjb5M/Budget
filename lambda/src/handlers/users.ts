@@ -15,7 +15,7 @@ export const getUserHandler = async (event: APIGatewayProxyEvent): Promise<APIGa
 
     let user = await userService.getUser(userId);
 
-    // Auto-create user if they don't exist (first login after Cognito signup
+    // Auto-create user if they don't exist (first login after Cognito signup.
     if (!user) {
       const email = getUserEmailFromToken(event) || 'unknown@example.com';
       const name = getUserNameFromToken(event) || 'User';
