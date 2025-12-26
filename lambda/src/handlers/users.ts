@@ -15,7 +15,7 @@ export const getUserHandler = async (event: APIGatewayProxyEvent): Promise<APIGa
 
     let user = await userService.getUser(userId);
 
-    // Auto-create user if they don't exist
+    // Auto-create user if they don't exist.
     if (!user) {
       const email = getUserEmailFromToken(event) || 'unknown@example.com';
       const name = getUserNameFromToken(event) || 'User';
