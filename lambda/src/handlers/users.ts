@@ -91,17 +91,13 @@ export const getUserVersionsHandler = async (event: APIGatewayProxyEvent): Promi
       return errorResponse(HTTP_STATUS.UNAUTHORIZED, ERROR_MESSAGES.UNAUTHORIZED);
     }
 
-    // Return current version information
-    // In a real implementation, this would track actual data versions
-    const versions = {
-      globalVersion: 1,
-      budgetsVersion: 1,
-      plansVersion: 1,
-      assetsVersion: 1,
-      debtsVersion: 1,
-    };
+    const userVersion = await userService.getUserVersions(userId);
+    
+    if (!userVersion) {
+      return errorResponse(HTTP_STATUS.NOT_FOUND, 'User versions not found');
+    }
 
-    return successResponse(versions);
+    return successResponse(userVersion.data);
   } catch (error) {
     console.error('Error getting user versions:', error);
     return errorResponse(HTTP_STATUS.INTERNAL_SERVER_ERROR, ERROR_MESSAGES.INTERNAL_ERROR);

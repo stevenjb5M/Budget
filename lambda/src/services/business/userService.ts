@@ -1,11 +1,14 @@
 import { UserDAO } from '../../daos/userDAO';
-import { User } from '../../types';
+import { UserVersionDAO } from '../../daos/userVersionDAO';
+import { User, UserVersion } from '../../types';
 
 export class UserService {
   private userDAO: UserDAO;
+  private userVersionDAO: UserVersionDAO;
 
   constructor() {
     this.userDAO = new UserDAO();
+    this.userVersionDAO = new UserVersionDAO();
   }
 
   async getUser(userId: string): Promise<User | null> {
@@ -22,7 +25,23 @@ export class UserService {
       retirementAge: userData.retirementAge || 65,
     };
 
-    return this.userDAO.create(validatedData, userId);
+    const user = await this.userDAO.create(validatedData, userId);
+    
+    // Record version in UserVersions table
+    await this.userVersionDAO.create({
+      userId: user.id,
+      version: user.version,
+      data: {
+        globalVersion: user.version,
+        budgetsVersion: 1,
+        plansVersion: 1,
+        assetsVersion: 1,
+        debtsVersion: 1,
+      },
+      timestamp: new Date().toISOString(),
+    });
+
+    return user;
   }
 
   async updateUser(userId: string, updates: Partial<User>): Promise<User> {
@@ -33,11 +52,29 @@ export class UserService {
     delete (safeUpdates as any).version;
     delete (safeUpdates as any).createdAt;
 
-    return this.userDAO.update(userId, safeUpdates);
+    const updatedUser = await this.userDAO.update(userId, safeUpdates);
+    
+    // Record version in UserVersions table
+    const currentVersions = await this.userVersionDAO.getByUserId(userId);
+    await this.userVersionDAO.create({
+      userId,
+      version: updatedUser.version,
+      data: {
+        ...(currentVersions?.data || {}),
+        globalVersion: updatedUser.version,
+      },
+      timestamp: new Date().toISOString(),
+    });
+
+    return updatedUser;
   }
 
   async deleteUser(userId: string): Promise<void> {
     // Business logic: check if user can be deleted, cascade deletes, etc.
     return this.userDAO.delete(userId);
+  }
+
+  async getUserVersions(userId: string): Promise<UserVersion | null> {
+    return this.userVersionDAO.getByUserId(userId);
   }
 }
