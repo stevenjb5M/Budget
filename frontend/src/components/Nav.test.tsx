@@ -123,9 +123,11 @@ describe('Nav Component', () => {
     })
 
     // Check if form is populated
-    expect(screen.getByDisplayValue('Test Display Name')).toBeInTheDocument()
-    expect(screen.getByDisplayValue('1990-01-01')).toBeInTheDocument()
-    expect(screen.getByDisplayValue('70')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByDisplayValue('Test Display Name')).toBeInTheDocument()
+      expect(screen.getByDisplayValue('1990-01-01')).toBeInTheDocument()
+      expect(screen.getByDisplayValue('70')).toBeInTheDocument()
+    })
   })
 
   it('handles fetch user error gracefully', async () => {

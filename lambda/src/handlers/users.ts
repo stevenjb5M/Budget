@@ -93,7 +93,6 @@ export const getUserVersionsHandler = async (event: APIGatewayProxyEvent): Promi
 
     // Return current version information
     // In a real implementation, this would track actual data versions
-    // For now, return a default version object
     const versions = {
       globalVersion: 1,
       budgetsVersion: 1,
