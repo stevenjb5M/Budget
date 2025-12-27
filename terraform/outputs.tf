@@ -57,8 +57,3 @@ output "cognito_user_pool_client_id" {
   description = "Cognito User Pool Client ID"
   value       = aws_cognito_user_pool_client.frontend.id
 }
-
-output "cognito_domain" {
-  description = "Cognito domain for hosted UI"
-  value       = aws_cognito_user_pool_domain.main.domain
-}

@@ -14,19 +14,6 @@ resource "aws_cognito_user_pool" "main" {
   auto_verified_attributes = ["email"]
   mfa_configuration        = "OFF"
 
-  schema {
-    name              = "email"
-    attribute_data_type = "String"
-    required          = true
-    mutable           = false
-  }
-
-  schema {
-    name              = "name"
-    attribute_data_type = "String"
-    mutable           = true
-  }
-
   tags = {
     Name = "Budget Planner User Pool"
   }
@@ -54,10 +41,10 @@ resource "aws_cognito_user_pool_client" "frontend" {
 }
 
 # Cognito Domain (optional but recommended for hosted UI)
-resource "aws_cognito_user_pool_domain" "main" {
-  domain       = "budget-planner-${var.environment}-${data.aws_caller_identity.current.account_id}"
-  user_pool_id = aws_cognito_user_pool.main.id
-}
+# resource "aws_cognito_user_pool_domain" "main" {
+#   domain       = "budget-planner-${var.environment}-${data.aws_caller_identity.current.account_id}"
+#   user_pool_id = aws_cognito_user_pool.main.id
+# }
 
 # Data source to get current AWS account ID
 data "aws_caller_identity" "current" {}
