@@ -700,6 +700,10 @@ resource "aws_api_gateway_integration" "debts_id_options_integration" {
 resource "aws_api_gateway_deployment" "api" {
   rest_api_id = aws_api_gateway_rest_api.api.id
 
+  lifecycle {
+    create_before_destroy = true
+  }
+
   depends_on = [
     # Gateway Responses (CORS for errors)
     aws_api_gateway_gateway_response.cors_4xx,
