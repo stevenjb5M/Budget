@@ -12,7 +12,7 @@
     "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --ui",
     "lint": "eslint src --ext .ts",
-    "package": "npm run build && zip -r lambda.zip dist"
+    "package": "npm run build && zip -r lambda-functions.zip dist"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.500.0",

@@ -17,8 +17,8 @@ const redirectUrls = getRedirectUrls()
 export const awsConfig = {
   aws_project_region: 'us-east-1',
   aws_cognito_region: 'us-east-1',
-  aws_user_pools_id: 'us-east-1_nF16e4SIt',
-  aws_user_pools_web_client_id: '6q9tamh87utocr04iusqevr73o',
+  aws_user_pools_id: 'us-east-1_CTxmgowG1',
+  aws_user_pools_web_client_id: '2hpdsefl89pngdv7n3e7fvgral',
   oauth: {
     domain: 'budget-planner-dev-654654434566.auth.us-east-1.amazoncognito.com',
     scope: ['email', 'profile', 'openid'],

@@ -14,6 +14,12 @@ resource "aws_cognito_user_pool" "main" {
   auto_verified_attributes = ["email"]
   mfa_configuration        = "OFF"
 
+<<<<<<< Updated upstream
+=======
+  # Note: email and name are standard attributes in Cognito, not custom schemas
+  # They are configured via the user pool client and signup form
+
+>>>>>>> Stashed changes
   tags = {
     Name = "Budget Planner User Pool"
   }

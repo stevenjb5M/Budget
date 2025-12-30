@@ -400,7 +400,7 @@ resource "aws_api_gateway_integration_response" "users_get_integration_response"
 
 # Cognito Authorizer
 resource "aws_api_gateway_authorizer" "cognito" {
-  name            = "CognitoAuthorizer"
+  name            = "CognitoUserPoolsAuthorizer"
   rest_api_id     = aws_api_gateway_rest_api.api.id
   identity_source = "method.request.header.Authorization"
   type            = "COGNITO_USER_POOLS"
