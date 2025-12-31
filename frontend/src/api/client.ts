@@ -14,17 +14,21 @@ const apiClient = axios.create({
 })
 
 // Add JWT token to requests
-// Note: Cognito User Pools authorizer expects the raw token, not "Bearer <token>"
+// Note: Cognito User Pools authorizer can use either ID token or access token
 apiClient.interceptors.request.use(async (config) => {
   try {
     const session = await fetchAuthSession()
-    const token = session.tokens?.accessToken?.toString()
+    // Use ID token for Cognito User Pools authorizer
+    const token = session.tokens?.idToken?.toString()
     if (token) {
       config.headers.Authorization = token
+      console.log('Token added to request')
+    } else {
+      console.log('No token found in session')
     }
-  } catch {
+  } catch (error) {
     // User not authenticated, continue without token
-    console.log('No auth session found')
+    console.log('No auth session found:', error)
   }
   return config
 })

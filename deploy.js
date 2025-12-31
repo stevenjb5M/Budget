@@ -188,7 +188,7 @@ async function main() {
     );
     
     // Move Lambda ZIP to terraform directory
-    execSync('mv lambda/lambda.zip terraform/lambda-functions.zip', { stdio: 'inherit' });
+    execSync('mv lambda/lambda-functions.zip terraform/lambda-functions.zip', { stdio: 'inherit' });
 
     // Build frontend
     await runCommand('cd frontend && npm install', 'Installing frontend dependencies');
