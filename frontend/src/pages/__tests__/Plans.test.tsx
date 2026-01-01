@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach, beforeAll, afterAll } from 'vitest'
 import { render, screen, waitFor, fireEvent, act } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Plans } from '../Plans'
@@ -42,6 +42,25 @@ const localStorageMock = { getItem: vi.fn(), setItem: vi.fn(), removeItem: vi.fn
 Object.defineProperty(window, 'localStorage', { value: localStorageMock })
 
 describe('Plans Component - Comprehensive Tests', () => {
+  // Mock current date to Jan 1, 2026
+  const MOCK_DATE = new Date('2026-01-01T00:00:00Z')
+  const RealDate = Date
+  let dateSpy: any
+  beforeAll(() => {
+    dateSpy = vi.spyOn(globalThis, 'Date').mockImplementation((...args: any[]) => {
+      if (args.length === 0) {
+        return new RealDate(MOCK_DATE)
+      }
+      // @ts-expect-error because. 
+      return new RealDate(...args)
+    })
+    Object.setPrototypeOf(Date, RealDate)
+    Object.assign(Date, RealDate)
+  })
+  afterAll(() => {
+    dateSpy?.mockRestore()
+  })
+
   const mockUserId = 'user123'
 
   const mockPlans = [

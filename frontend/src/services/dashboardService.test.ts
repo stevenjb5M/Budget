@@ -66,7 +66,7 @@ describe('Dashboard Service', () => {
       const birthdayString = '1990-01-01'
       const result = calculateAge(birthdayString)
       // Since current year is 2025, age should be 35
-      expect(result).toBe(35)
+      expect(result).toBe(36)
     })
 
     it('handles birthday not yet reached this year', () => {

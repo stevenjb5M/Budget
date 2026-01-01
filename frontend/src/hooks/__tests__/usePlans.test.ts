@@ -27,6 +27,24 @@ vi.mock('../../utils/auth', () => ({
 }))
 
 describe('usePlans hook', () => {
+  // Mock current date to Jan 1, 2026
+  const MOCK_DATE = new Date('2026-01-01T00:00:00Z')
+  const RealDate = Date
+  let dateSpy: any
+  beforeAll(() => {
+    dateSpy = vi.spyOn(globalThis, 'Date').mockImplementation((...args: any[]) => {
+      if (args.length === 0) {
+        return new RealDate(MOCK_DATE)
+      }
+      // @ts-expect-error because.
+      return new RealDate(...args)
+    })
+    Object.setPrototypeOf(Date, RealDate)
+    Object.assign(Date, RealDate)
+  })
+  afterAll(() => {
+    dateSpy?.mockRestore()
+  })
   const mockUserId = 'user123'
 
   const mockPlans = [
@@ -44,8 +62,8 @@ describe('usePlans hook', () => {
           transactions: []
         }
       ],
-      createdAt: '2025-01-01T00:00:00Z',
-      updatedAt: '2025-01-01T00:00:00Z'
+      createdAt: '2026-01-01T00:00:00Z',
+      updatedAt: '2026-01-01T00:00:00Z'
     }
   ]
 
