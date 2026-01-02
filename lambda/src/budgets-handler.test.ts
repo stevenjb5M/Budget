@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { APIGatewayProxyEvent } from 'aws-lambda';
-import { handler } from '../budgets-handler';
+import { handler } from './budgets-handler';
 
-vi.mock('../handlers/budgets', () => ({
+vi.mock('./handlers/budgets', () => ({
   getBudgetsHandler: vi.fn(),
   createBudgetHandler: vi.fn(),
   updateBudgetHandler: vi.fn(),
@@ -31,7 +31,7 @@ describe('Budgets Handler Router', () => {
 
   describe('HTTP Method Routing', () => {
     it('should route GET request to getBudgetsHandler', async () => {
-      const { getBudgetsHandler } = await import('../handlers/budgets');
+      const { getBudgetsHandler } = await import('./handlers/budgets');
       vi.mocked(getBudgetsHandler).mockResolvedValue({
         statusCode: 200,
         body: JSON.stringify([]),
@@ -44,7 +44,7 @@ describe('Budgets Handler Router', () => {
     });
 
     it('should route POST request to createBudgetHandler', async () => {
-      const { createBudgetHandler } = await import('../handlers/budgets');
+      const { createBudgetHandler } = await import('./handlers/budgets');
       vi.mocked(createBudgetHandler).mockResolvedValue({
         statusCode: 201,
         body: JSON.stringify({ id: 'budget-1' }),
@@ -62,7 +62,7 @@ describe('Budgets Handler Router', () => {
     });
 
     it('should route PUT request to updateBudgetHandler', async () => {
-      const { updateBudgetHandler } = await import('../handlers/budgets');
+      const { updateBudgetHandler } = await import('./handlers/budgets');
       vi.mocked(updateBudgetHandler).mockResolvedValue({
         statusCode: 200,
         body: JSON.stringify({ id: 'budget-1', name: 'Updated' }),
@@ -81,7 +81,7 @@ describe('Budgets Handler Router', () => {
     });
 
     it('should route DELETE request to deleteBudgetHandler', async () => {
-      const { deleteBudgetHandler } = await import('../handlers/budgets');
+      const { deleteBudgetHandler } = await import('./handlers/budgets');
       vi.mocked(deleteBudgetHandler).mockResolvedValue({
         statusCode: 200,
         body: JSON.stringify({ message: 'Budget deleted successfully' }),
@@ -102,7 +102,7 @@ describe('Budgets Handler Router', () => {
       const response = await handler(createEvent({ httpMethod: 'PATCH' }));
 
       expect(response.statusCode).toBe(405);
-      expect(JSON.parse(response.body).message).toBe('Method not allowed');
+      expect(JSON.parse(response.body).error).toBe('Method not allowed');
     });
   });
 
@@ -118,7 +118,7 @@ describe('Budgets Handler Router', () => {
     });
 
     it('should include CORS headers in all responses', async () => {
-      const { getBudgetsHandler } = await import('../handlers/budgets');
+      const { getBudgetsHandler } = await import('./handlers/budgets');
       vi.mocked(getBudgetsHandler).mockResolvedValue({
         statusCode: 200,
         headers: {
@@ -135,16 +135,22 @@ describe('Budgets Handler Router', () => {
 
   describe('Error Handling', () => {
     it('should catch handler errors and return 500', async () => {
-      const { getBudgetsHandler } = await import('../handlers/budgets');
+      const { getBudgetsHandler } = await import('./handlers/budgets');
       vi.mocked(getBudgetsHandler).mockRejectedValue(new Error('Handler error'));
 
       const response = await handler(createEvent({ httpMethod: 'GET' }));
 
       expect(response.statusCode).toBe(500);
-      expect(JSON.parse(response.body).message).toBe('Internal server error');
+      expect(JSON.parse(response.body).error).toBe('Internal server error');
     });
 
     it('should handle invalid JSON body gracefully', async () => {
+      const { createBudgetHandler } = await import('./handlers/budgets');
+      vi.mocked(createBudgetHandler).mockResolvedValue({
+        statusCode: 400,
+        body: JSON.stringify({ error: 'Invalid JSON' }),
+      });
+
       const response = await handler(
         createEvent({
           httpMethod: 'POST',
@@ -152,13 +158,13 @@ describe('Budgets Handler Router', () => {
         })
       );
 
-      expect([400, 500]).toContain(response.statusCode);
+      expect(response.statusCode).toBe(400);
     });
   });
 
   describe('Event Forwarding', () => {
     it('should forward entire event to handlers', async () => {
-      const { getBudgetsHandler } = await import('../handlers/budgets');
+      const { getBudgetsHandler } = await import('./handlers/budgets');
       vi.mocked(getBudgetsHandler).mockResolvedValue({
         statusCode: 200,
         body: JSON.stringify([]),
