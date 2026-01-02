@@ -239,6 +239,7 @@ All endpoints require JWT authentication via Cognito.
 ## Future Plans
 
 -Integration with Plaid to sync bank account data
+-AI budget review system
 -Plans to extend forever
 
 ## Project Status
