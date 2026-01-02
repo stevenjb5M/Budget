@@ -236,6 +236,11 @@ All endpoints require JWT authentication via Cognito.
 - [FRONTEND_DEPLOYMENT.md](FRONTEND_DEPLOYMENT.md) – Frontend deployment to S3 + CloudFront with caching strategy
 - [terraform/](terraform/) – Infrastructure-as-code for Lambda, API Gateway, and supporting services
 
+## Future Plans
+
+-Integration with Plaid to sync bank account data
+-Plans to extend forever
+
 ## Project Status
 
 Budget Planner is a budgeting application with:
@@ -247,10 +252,6 @@ Budget Planner is a budgeting application with:
 - ✅ Multi-scenario financial planning
 - ✅ AWS cloud deployment (Lambda, API Gateway, DynamoDB, Cognito, S3, CloudFront)
 - ✅ Optimized Lambda functions (ARM64, 128MB, esbuild bundling)
-
-## License
-
-This project is open source and available under the MIT License.
 
 ## Contact
 
