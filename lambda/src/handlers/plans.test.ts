@@ -82,7 +82,7 @@ describe('Plans Handlers', () => {
 
       expect(response.statusCode).toBe(401);
       const body = JSON.parse(response.body);
-      expect(body.error).toBe('Unauthorized');
+      expect(body.error).toBe('Unauthorized access');
     });
 
     it('should return 500 on service error', async () => {

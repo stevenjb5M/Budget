@@ -1,13 +1,16 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { UserService } from '../business/userService';
 import { UserDAO } from '../../daos/userDAO';
+import { UserVersionDAO } from '../../daos/userVersionDAO';
 import { User } from '../../types';
 
 vi.mock('../../daos/userDAO');
+vi.mock('../../daos/userVersionDAO');
 
 describe('UserService', () => {
   let userService: UserService;
   let mockUserDAO: any;
+  let mockUserVersionDAO: any;
 
   beforeEach(() => {
     mockUserDAO = {
@@ -17,7 +20,13 @@ describe('UserService', () => {
       delete: vi.fn(),
     };
 
+    mockUserVersionDAO = {
+      create: vi.fn(),
+      getByUserId: vi.fn(),
+    };
+
     vi.mocked(UserDAO).mockImplementation(() => mockUserDAO);
+    vi.mocked(UserVersionDAO).mockImplementation(() => mockUserVersionDAO);
     userService = new UserService();
   });
 
