@@ -2,4 +2,5 @@
 . "$(dirname "$0")/_/husky.sh"
 
 npm run lint --prefix frontend
+npm run test --prefix frontend -- --run
 npm run test --prefix lambda
