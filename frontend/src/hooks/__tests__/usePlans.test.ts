@@ -690,4 +690,76 @@ describe('usePlans hook', () => {
       nowSpy.mockRestore()
     })
   })
+
+  describe('Net Worth Calculation', () => {
+    it('calculates net worth as assets - debts without double-counting income', async () => {
+      const testMockAssets = [
+        { id: 'asset1', name: 'Savings', currentValue: 100000 }
+      ]
+      const testMockDebts = [
+        { id: 'debt1', name: 'Loan', currentBalance: 50000 }
+      ]
+      const testMockBudget = {
+        id: 'budget1',
+        name: 'Monthly Budget',
+        income: [{ amount: 5000 }],
+        expenses: [
+          { id: 'exp1', name: 'Rent', amount: 2000, type: 'regular' }
+          // No asset deposits - income just sits as extra
+        ]
+      }
+      const testMockPlan = {
+        id: 'plan1',
+        userId: mockUserId,
+        name: 'Test Plan',
+        description: 'Test',
+        isActive: true,
+        months: [
+          {
+            month: '2026-02',
+            budgetId: 'budget1',
+            netWorth: 0, // Will be recalculated
+            transactions: []
+          }
+        ],
+        createdAt: '2026-01-01T00:00:00Z',
+        updatedAt: '2026-01-01T00:00:00Z'
+      }
+
+      vi.mocked(getCurrentUserId).mockResolvedValue(mockUserId)
+      vi.mocked(versionSyncService.getData).mockImplementation((key) => {
+        switch (key) {
+          case 'plans':
+            return Promise.resolve([testMockPlan])
+          case 'budgets':
+            return Promise.resolve([testMockBudget])
+          case 'assets':
+            return Promise.resolve(testMockAssets)
+          case 'debts':
+            return Promise.resolve(testMockDebts)
+          default:
+            return Promise.resolve([])
+        }
+      })
+      vi.mocked(plansAPI.getPlans).mockResolvedValue({ data: [testMockPlan] })
+      vi.mocked(plansAPI.updatePlan).mockResolvedValue({ data: testMockPlan })
+
+      const { result } = renderHook(() => usePlans())
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
+
+      const selectedPlan = result.current.selectedPlan
+      expect(selectedPlan).toBeDefined()
+      
+      const firstMonth = selectedPlan?.months[0]
+      expect(firstMonth).toBeDefined()
+
+      // Expected: Assets ($100,000) - Debts ($50,000) = $50,000
+      // BUG would calculate: $100,000 + $5,000 (income) - $2,000 (expenses) - $50,000 = $53,000
+      // FIXED calculates: $100,000 - $50,000 = $50,000
+      expect(firstMonth?.netWorth).toBe(50000)
+    })
+  })
 })

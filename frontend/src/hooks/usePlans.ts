@@ -198,34 +198,14 @@ export const usePlans = () => {
     setPlans(currentPlans =>
       currentPlans.map(plan => ({
         ...plan,
-        months: plan.months.map((month, index) => {
-          // Calculate net worth as projected assets - projected debts + cumulative income - cumulative regular expenses
-          let totalAssets = assets.reduce((sum, asset) => sum + calculateAssetValueForMonth(asset, month.month, plan, budgets), 0)
-          let totalDebts = debts.reduce((sum, debt) => sum + calculateDebtRemainingForMonth(debt, month.month, plan, budgets), 0)
-
-          // Add up all income and regular expenses from month 0 to current month
-          let cumulativeIncome = 0
-          let cumulativeRegularExpenses = 0
-
-          for (let i = 0; i <= index; i++) {
-            const monthData = plan.months[i]
-            if (monthData.budgetId) {
-              const budget = budgets.find(b => b.id === monthData.budgetId)
-              if (budget) {
-                const income = budget.income.reduce((sum, item) => sum + item.amount, 0)
-                const regularExpenses = budget.expenses
-                  .filter((exp: any) => exp.type === 'regular')
-                  .reduce((sum, item) => sum + item.amount, 0)
-
-                cumulativeIncome += income
-                cumulativeRegularExpenses += regularExpenses
-                // Note: assetDeposits and debtPayments are already included in calculateAssetValueForMonth and calculateDebtRemainingForMonth
-              }
-            }
-          }
-
-          // Net worth = projected assets + cumulative income - cumulative regular expenses - projected debts
-          const netWorth = totalAssets + cumulativeIncome - cumulativeRegularExpenses - totalDebts
+        months: plan.months.map((month) => {
+          // Calculate net worth as: projected assets - projected debts
+          // Asset value already includes cumulative deposits from budgets
+          // Debt balance already includes cumulative payments from budgets
+          // So we don't need to add income/expenses separately
+          const totalAssets = assets.reduce((sum, asset) => sum + calculateAssetValueForMonth(asset, month.month, plan, budgets), 0)
+          const totalDebts = debts.reduce((sum, debt) => sum + calculateDebtRemainingForMonth(debt, month.month, plan, budgets), 0)
+          const netWorth = totalAssets - totalDebts
 
           return {
             ...month,

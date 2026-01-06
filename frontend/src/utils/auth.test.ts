@@ -7,10 +7,37 @@ vi.mock('aws-amplify/auth', () => ({
   fetchAuthSession: vi.fn()
 }))
 
+// Mock localStorage
+const localStorageMock = (() => {
+  let store: Record<string, string> = {}
+
+  return {
+    getItem: (key: string) => store[key] || null,
+    setItem: (key: string, value: string) => {
+      store[key] = value.toString()
+    },
+    removeItem: (key: string) => {
+      delete store[key]
+    },
+    clear: () => {
+      store = {}
+    }
+  }
+})()
+
+Object.defineProperty(window, 'localStorage', {
+  value: localStorageMock
+})
+
 describe('auth utils', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    localStorage.clear()
+    // Clear localStorage if available
+    try {
+      localStorage.clear()
+    } catch (e) {
+      // localStorage might not be available in test environment
+    }
   })
 
   describe('getCurrentUserId', () => {
