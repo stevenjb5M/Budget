@@ -14,7 +14,7 @@ Budget Planner allows users to:
 
 ## Quick Start Local Setup
 
-**Requirements**: Node.js 20+, npm.
+**Requirements**: Node.js 20+, npm
 
 ```bash
 cd frontend
