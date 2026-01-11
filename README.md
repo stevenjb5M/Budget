@@ -13,8 +13,8 @@ Budget Planner allows users to:
 - Visualize financial projections for 36 months. Soon to be longer.
 
 ## Quick Start Local Setup
-
-**Requirements**: Node.js 20+, npm
+s
+**Requirements**: Node.js 20+, npm.
 
 ```bash
 cd frontend
