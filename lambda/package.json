@@ -4,7 +4,7 @@
   "description": "Budget Planner API - Node.js Lambda backend",
   "main": "dist/index.js",
   "scripts": {
-    "build": "node build.js",
+    "build": "tsc",
     "build:tsc": "tsc",
     "dev": "ts-node src/index.ts",
     "test": "vitest run",
