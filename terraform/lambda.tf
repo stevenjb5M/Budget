@@ -58,6 +58,25 @@ resource "aws_iam_role_policy" "lambda_dynamodb" {
   })
 }
 
+# Allow Lambda to invoke Bedrock API
+resource "aws_iam_role_policy" "lambda_bedrock" {
+  name = "BudgetPlanner-Lambda-Bedrock-${var.environment}"
+  role = aws_iam_role.lambda_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "bedrock:InvokeModel"
+        ]
+        Resource = "arn:aws:bedrock:${var.aws_region}::foundation-model/anthropic.claude-3-5-haiku-20241022-v1:0"
+      }
+    ]
+  })
+}
+
 # Lambda functions for each endpoint
 
 resource "aws_lambda_function" "users" {
@@ -158,4 +177,24 @@ resource "aws_lambda_function" "debts" {
   }
 
   depends_on = [aws_iam_role_policy.lambda_dynamodb]
+}
+
+resource "aws_lambda_function" "bedrock" {
+  filename      = "lambda-functions.zip"
+  function_name = "BudgetPlanner-Bedrock-${var.environment}"
+  role          = aws_iam_role.lambda_role.arn
+  handler       = "dist/bedrock-handler.handler"
+  runtime       = "nodejs20.x"
+  architectures = ["arm64"]
+  memory_size   = var.lambda_memory
+  timeout       = var.lambda_timeout
+
+  environment {
+    variables = {
+      AWS_REGION         = var.aws_region
+      ENVIRONMENT        = var.environment
+    }
+  }
+
+  depends_on = [aws_iam_role_policy.lambda_bedrock]
 }

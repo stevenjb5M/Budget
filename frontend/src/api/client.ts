@@ -71,4 +71,8 @@ export const debtsAPI = {
   deleteDebt: (debtId: string) => apiClient.delete(API_ENDPOINTS.DEBTS.BY_ID(debtId)),
 }
 
+export const bedrockAPI = {
+  getBudgetFeedback: (budgetData: any) => apiClient.post(API_ENDPOINTS.BEDROCK.FEEDBACK, budgetData),
+}
+
 export default apiClient

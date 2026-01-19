@@ -20,6 +20,9 @@ export const API_ENDPOINTS = {
     BASE: '/api/debts',
     BY_ID: (id: string) => `/api/debts/${id}`,
   },
+  BEDROCK: {
+    FEEDBACK: '/api/bedrock/feedback',
+  },
 } as const;
 
 // Default URLs - Lambda API Gateway endpoints

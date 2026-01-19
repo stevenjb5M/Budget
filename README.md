@@ -238,9 +238,21 @@ All endpoints require JWT authentication via Cognito.
 
 ## Future Plans
 
--Integration with Plaid to sync bank account data
--AI budget review system
--Plans to extend forever
+- Integration with Plaid to sync bank account data
+- Plans to extend forever
+
+## AI Budget Feedback
+
+Budget Planner includes an **AI-powered budget analysis feature** using AWS Bedrock and Claude 3.5 Haiku:
+
+- 💡 **Smart Analysis** – Click "✨ Get AI Feedback" to analyze your budget
+- 💰 **Actionable Suggestions** – Get 2-3 specific improvement recommendations
+- ✅ **Recognize Strengths** – See what you're doing well financially
+- 🎯 **Free Tier Compliant** – Uses Claude 3.5 Haiku (~3K tokens per analysis, 100K/month free)
+
+The feedback appears in a modal showing a summary, areas for improvement, and financial strengths.
+
+**To deploy**: See [SETUP_GUIDE.md](SETUP_GUIDE.md) for deployment instructions and [AI_FEATURE_IMPLEMENTATION.md](AI_FEATURE_IMPLEMENTATION.md) for technical details.
 
 ## Project Status
 

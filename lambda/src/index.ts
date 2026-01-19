@@ -3,3 +3,4 @@ export { getPlansHandler, getPlanHandler, createPlanHandler, updatePlanHandler, 
 export { getBudgetsHandler, createBudgetHandler, updateBudgetHandler, deleteBudgetHandler } from './handlers/budgets';
 export { getAssetsHandler, createAssetHandler, updateAssetHandler, deleteAssetHandler } from './handlers/assets';
 export { getDebtsHandler, createDebtHandler, updateDebtHandler, deleteDebtHandler } from './handlers/debts';
+export { getBudgetFeedbackHandler } from './handlers/bedrock';

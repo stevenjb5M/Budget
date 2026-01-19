@@ -1800,6 +1800,121 @@ resource "aws_api_gateway_integration_response" "debts_id_options_integration_re
   depends_on = [aws_api_gateway_method_response.debts_id_options_response]
 }
 
+# Bedrock endpoint for AI budget feedback
+resource "aws_api_gateway_resource" "bedrock" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  parent_id   = aws_api_gateway_resource.api.id
+  path_part   = "bedrock"
+}
+
+resource "aws_api_gateway_resource" "bedrock_feedback" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  parent_id   = aws_api_gateway_resource.bedrock.id
+  path_part   = "feedback"
+}
+
+# Lambda permission for Bedrock function
+resource "aws_lambda_permission" "bedrock_api" {
+  statement_id  = "AllowAPIGatewayInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.bedrock.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_api_gateway_rest_api.api.execution_arn}/*/*"
+}
+
+# POST method for /api/bedrock/feedback
+resource "aws_api_gateway_method" "bedrock_feedback_post" {
+  rest_api_id      = aws_api_gateway_rest_api.api.id
+  resource_id      = aws_api_gateway_resource.bedrock_feedback.id
+  http_method      = "POST"
+  authorization    = "COGNITO_USER_POOLS"
+  authorizer_id    = aws_api_gateway_authorizer.cognito.id
+}
+
+# Integration for POST /api/bedrock/feedback
+resource "aws_api_gateway_integration" "bedrock_feedback_post_integration" {
+  rest_api_id             = aws_api_gateway_rest_api.api.id
+  resource_id             = aws_api_gateway_resource.bedrock_feedback.id
+  http_method             = aws_api_gateway_method.bedrock_feedback_post.http_method
+  type                    = "AWS_PROXY"
+  integration_http_method = "POST"
+  uri                     = aws_lambda_function.bedrock.invoke_arn
+}
+
+# OPTIONS method for /api/bedrock/feedback (CORS preflight)
+resource "aws_api_gateway_method" "bedrock_feedback_options" {
+  rest_api_id      = aws_api_gateway_rest_api.api.id
+  resource_id      = aws_api_gateway_resource.bedrock_feedback.id
+  http_method      = "OPTIONS"
+  authorization    = "NONE"
+}
+
+# OPTIONS integration for /api/bedrock/feedback
+resource "aws_api_gateway_integration" "bedrock_feedback_options_integration" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.bedrock_feedback.id
+  http_method = aws_api_gateway_method.bedrock_feedback_options.http_method
+  type        = "MOCK"
+
+  request_templates = {
+    "application/json" = "{\"statusCode\": 200}"
+  }
+}
+
+# Method responses for /api/bedrock/feedback
+resource "aws_api_gateway_method_response" "bedrock_feedback_post_response" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.bedrock_feedback.id
+  http_method = aws_api_gateway_method.bedrock_feedback_post.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = true
+  }
+}
+
+resource "aws_api_gateway_method_response" "bedrock_feedback_options_response" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.bedrock_feedback.id
+  http_method = aws_api_gateway_method.bedrock_feedback_options.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = true
+    "method.response.header.Access-Control-Allow-Methods" = true
+    "method.response.header.Access-Control-Allow-Origin"  = true
+  }
+}
+
+# Integration responses for /api/bedrock/feedback
+resource "aws_api_gateway_integration_response" "bedrock_feedback_post_integration_response" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.bedrock_feedback.id
+  http_method = aws_api_gateway_method.bedrock_feedback_post.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = "'https://dbwgrrx6epya7.cloudfront.net'"
+  }
+
+  depends_on = [aws_api_gateway_method_response.bedrock_feedback_post_response]
+}
+
+resource "aws_api_gateway_integration_response" "bedrock_feedback_options_integration_response" {
+  rest_api_id      = aws_api_gateway_rest_api.api.id
+  resource_id      = aws_api_gateway_resource.bedrock_feedback.id
+  http_method      = aws_api_gateway_method.bedrock_feedback_options.http_method
+  status_code      = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+    "method.response.header.Access-Control-Allow-Methods" = "'POST,OPTIONS'"
+    "method.response.header.Access-Control-Allow-Origin"  = "'https://dbwgrrx6epya7.cloudfront.net'"
+  }
+
+  depends_on = [aws_api_gateway_method_response.bedrock_feedback_options_response]
+}
+
 # API stage
 resource "aws_api_gateway_stage" "prod" {
   deployment_id = aws_api_gateway_deployment.api.id

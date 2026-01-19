@@ -3,6 +3,8 @@ import { Nav } from '../components/Nav'
 import { Footer } from '../components/Footer'
 import { budgetsAPI, assetsAPI, debtsAPI } from '../api/client'
 import { versionSyncService } from '../services/versionSyncService'
+import { budgetFeedbackService, BudgetFeedback } from '../services/budgetFeedbackService'
+import { BudgetFeedbackModal } from '../components/BudgetFeedbackModal'
 import { getCurrentUserId } from '../utils/auth'
 import { Budget, BudgetItem, Asset, Debt } from '../types'
 import './Budgets.css'
@@ -23,6 +25,10 @@ export function Budgets() {
   const [editingItem, setEditingItem] = useState<{ type: 'income' | 'expenses', id: string, field: 'name' | 'amount' | 'category' } | null>(null)
   const [editValue, setEditValue] = useState('')
   const [budgetsMinimized, setBudgetsMinimized] = useState(true)
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false)
+  const [feedbackLoading, setFeedbackLoading] = useState(false)
+  const [feedbackError, setFeedbackError] = useState<string | null>(null)
+  const [budgetFeedback, setBudgetFeedback] = useState<BudgetFeedback | null>(null)
 
   // Fetch budgets, assets, and debts on component mount
   useEffect(() => {
@@ -391,6 +397,23 @@ export function Budgets() {
     }
   }
 
+  const handleGetAIFeedback = async () => {
+    if (!selectedBudget) return
+
+    try {
+      setFeedbackLoading(true)
+      setFeedbackError(null)
+      const feedback = await budgetFeedbackService.getBudgetFeedback(selectedBudget)
+      setBudgetFeedback(feedback)
+      setShowFeedbackModal(true)
+    } catch (err) {
+      console.error('Error getting AI feedback:', err)
+      setFeedbackError('Failed to get AI feedback. Please try again.')
+    } finally {
+      setFeedbackLoading(false)
+    }
+  }
+
   const totalIncome = (selectedBudget?.income && Array.isArray(selectedBudget.income) ? selectedBudget.income : []).reduce((sum, item) => sum + item.amount, 0) || 0
   const totalExpenses = (selectedBudget?.expenses && Array.isArray(selectedBudget.expenses) ? selectedBudget.expenses : []).reduce((sum, item) => sum + item.amount, 0) || 0
   const netAmount = totalIncome - totalExpenses
@@ -534,6 +557,16 @@ export function Budgets() {
                         </div>
                         <div className="text-sm text-gray-600">Net Amount</div>
                       </div>
+                    </div>
+                    <div className="mt-6 flex justify-end">
+                      <button
+                        onClick={handleGetAIFeedback}
+                        disabled={feedbackLoading}
+                        className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white px-4 py-2 rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+                      >
+                        <span>✨</span>
+                        {feedbackLoading ? 'Analyzing...' : 'Get AI Feedback'}
+                      </button>
                     </div>
                   </div>
 
@@ -983,6 +1016,18 @@ export function Budgets() {
           </div>
         </div>
       )}
+      
+      <BudgetFeedbackModal
+        isOpen={showFeedbackModal}
+        feedback={budgetFeedback}
+        isLoading={feedbackLoading}
+        error={feedbackError}
+        onClose={() => {
+          setShowFeedbackModal(false)
+          setBudgetFeedback(null)
+          setFeedbackError(null)
+        }}
+      />
     </div>
   )
 }
