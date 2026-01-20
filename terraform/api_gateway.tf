@@ -768,6 +768,10 @@ resource "aws_api_gateway_deployment" "api" {
     aws_api_gateway_integration.debts_id_delete_integration,
     aws_api_gateway_integration.debts_id_get_integration,
     aws_api_gateway_integration_response.debts_id_options_integration_response,
+    # Bedrock
+    aws_api_gateway_integration.bedrock_feedback_post_integration,
+    aws_api_gateway_integration_response.bedrock_feedback_post_integration_response,
+    aws_api_gateway_integration_response.bedrock_feedback_options_integration_response,
   ]
 }
 

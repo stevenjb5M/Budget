@@ -91,8 +91,9 @@ resource "aws_lambda_function" "users" {
 
   environment {
     variables = {
-      USERS_TABLE        = aws_dynamodb_table.users.name
-      ENVIRONMENT        = var.environment
+      USERS_TABLE           = aws_dynamodb_table.users.name
+      USER_VERSIONS_TABLE   = aws_dynamodb_table.user_versions.name
+      ENVIRONMENT           = var.environment
     }
   }
 
@@ -191,8 +192,7 @@ resource "aws_lambda_function" "bedrock" {
 
   environment {
     variables = {
-      AWS_REGION         = var.aws_region
-      ENVIRONMENT        = var.environment
+      ENVIRONMENT = var.environment
     }
   }
 
