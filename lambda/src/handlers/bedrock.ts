@@ -10,7 +10,8 @@ const bedrockClient = new BedrockRuntime({
 
 // Bedrock free tier: 100K tokens per month (Claude 3.5 Haiku)
 // Using Haiku for cost efficiency - ~3k tokens per request average
-const MODEL_ID = 'anthropic.claude-3-5-haiku-20241022-v1:0';
+// Use inference profile for on-demand throughput support
+const MODEL_ID = 'us.anthropic.claude-3-5-haiku-20241022-v1:0';
 
 interface BudgetFeedbackRequest {
   budgetId?: string;

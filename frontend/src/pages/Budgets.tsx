@@ -36,10 +36,14 @@ export function Budgets() {
       try {
         setError(null)
         
-        // Use version sync to check if cache is fresh
-        await versionSyncService.syncData()
+        // Try to sync versions, but don't fail if it errors
+        try {
+          await versionSyncService.syncData()
+        } catch (versionError) {
+          console.warn('Version sync failed, fetching fresh data:', versionError)
+        }
         
-        // Now fetch from cache (which will be fresh if server versions are newer)
+        // Now fetch data (from cache if version sync succeeded, or fresh if it failed)
         const [budgetsData, assetsData, debtsData] = await Promise.all([
           versionSyncService.getData('budgets', () => budgetsAPI.getBudgets().then(r => r.data)),
           versionSyncService.getData('assets', () => assetsAPI.getAssets().then(r => r.data)),

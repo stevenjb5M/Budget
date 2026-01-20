@@ -93,8 +93,15 @@ export const getUserVersionsHandler = async (event: APIGatewayProxyEvent): Promi
 
     const userVersion = await userService.getUserVersions(userId);
     
+    // Return empty versions object if no versions exist yet
     if (!userVersion) {
-      return errorResponse(HTTP_STATUS.NOT_FOUND, 'User versions not found');
+      return successResponse({
+        globalVersion: 0,
+        budgetsVersion: 0,
+        plansVersion: 0,
+        assetsVersion: 0,
+        debtsVersion: 0,
+      });
     }
 
     return successResponse(userVersion.data);
