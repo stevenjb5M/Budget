@@ -71,7 +71,7 @@ resource "aws_iam_role_policy" "lambda_bedrock" {
         Action = [
           "bedrock:InvokeModel"
         ]
-        Resource = "arn:aws:bedrock:${var.aws_region}::foundation-model/anthropic.claude-3-5-haiku-20241022-v1:0"
+        Resource = "arn:aws:bedrock:${var.aws_region}::foundation-model/meta.llama2-70b-chat-v1"
       }
     ]
   })
@@ -88,6 +88,10 @@ resource "aws_lambda_function" "users" {
   architectures = ["arm64"]
   memory_size   = var.lambda_memory
   timeout       = var.lambda_timeout
+
+  timeouts {
+    create = "10m"
+  }
 
   environment {
     variables = {
@@ -110,6 +114,10 @@ resource "aws_lambda_function" "plans" {
   memory_size   = var.lambda_memory
   timeout       = var.lambda_timeout
 
+  timeouts {
+    create = "10m"
+  }
+
   environment {
     variables = {
       PLANS_TABLE        = aws_dynamodb_table.plans.name
@@ -129,6 +137,10 @@ resource "aws_lambda_function" "budgets" {
   architectures = ["arm64"]
   memory_size   = var.lambda_memory
   timeout       = var.lambda_timeout
+
+  timeouts {
+    create = "10m"
+  }
 
   environment {
     variables = {
@@ -150,6 +162,10 @@ resource "aws_lambda_function" "assets" {
   memory_size   = var.lambda_memory
   timeout       = var.lambda_timeout
 
+  timeouts {
+    create = "10m"
+  }
+
   environment {
     variables = {
       ASSETS_TABLE       = aws_dynamodb_table.assets.name
@@ -170,6 +186,10 @@ resource "aws_lambda_function" "debts" {
   memory_size   = var.lambda_memory
   timeout       = var.lambda_timeout
 
+  timeouts {
+    create = "10m"
+  }
+
   environment {
     variables = {
       DEBTS_TABLE        = aws_dynamodb_table.debts.name
@@ -189,6 +209,10 @@ resource "aws_lambda_function" "bedrock" {
   architectures = ["arm64"]
   memory_size   = var.lambda_memory
   timeout       = var.lambda_timeout
+
+  timeouts {
+    create = "10m"
+  }
 
   environment {
     variables = {

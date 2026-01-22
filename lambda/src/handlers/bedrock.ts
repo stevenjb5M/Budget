@@ -8,10 +8,9 @@ const bedrockClient = new BedrockRuntime({
   region: process.env.AWS_REGION || 'us-east-1',
 });
 
-// Bedrock free tier: 100K tokens per month (Claude 3.5 Haiku)
-// Using Haiku for cost efficiency - ~3k tokens per request average
-// Use inference profile for on-demand throughput support
-const MODEL_ID = 'us.anthropic.claude-3-5-haiku-20241022-v1:0';
+// Bedrock free tier: 100K tokens per month (Llama 2 Chat 70B)
+// Using Llama 2 for cost efficiency and no account approval required
+const MODEL_ID = 'meta.llama2-70b-chat-v1';
 
 interface BudgetFeedbackRequest {
   budgetId?: string;
@@ -57,7 +56,7 @@ export const getBudgetFeedbackHandler = async (
 
     const request = body as unknown as BudgetFeedbackRequest;
 
-    // Create prompt for Claude
+    // Create prompt for Llama 2
     const prompt = generateBudgetPrompt(request);
 
     // Call Bedrock API
@@ -112,19 +111,15 @@ async function callBedrock(prompt: string): Promise<BudgetFeedback> {
       contentType: 'application/json',
       accept: 'application/json',
       body: JSON.stringify({
-        anthropic_version: 'bedrock-2023-06-01',
-        max_tokens: 500,
-        messages: [
-          {
-            role: 'user',
-            content: prompt,
-          },
-        ],
+        prompt: `[INST] ${prompt} [/INST]`,
+        max_gen_len: 500,
+        temperature: 0.7,
+        top_p: 0.9,
       }),
     });
 
     const responseBody = JSON.parse(new TextDecoder().decode(response.body));
-    const content = responseBody.content[0].text;
+    const content = responseBody.generation;
 
     // Parse the response into structured feedback
     return parseBedrockResponse(content);
