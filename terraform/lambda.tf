@@ -71,7 +71,10 @@ resource "aws_iam_role_policy" "lambda_bedrock" {
         Action = [
           "bedrock:InvokeModel"
         ]
-        Resource = "arn:aws:bedrock:${var.aws_region}::foundation-model/meta.llama2-70b-chat-v1"
+        Resource = [
+          "arn:aws:bedrock:*::foundation-model/*",
+          "arn:aws:bedrock:*:*:inference-profile/*"
+        ]
       }
     ]
   })

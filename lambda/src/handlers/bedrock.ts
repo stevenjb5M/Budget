@@ -5,12 +5,11 @@ import { successResponse, errorResponse, parseBody, validateRequiredFields } fro
 import { HTTP_STATUS, ERROR_MESSAGES } from '../constants';
 
 const bedrockClient = new BedrockRuntime({
-  region: process.env.AWS_REGION || 'us-east-1',
+  region: 'us-east-1',
 });
 
-// Bedrock free tier: 100K tokens per month (Llama 2 Chat 70B)
-// Using Llama 2 for cost efficiency and no account approval required
-const MODEL_ID = 'meta.llama2-70b-chat-v1';
+// Using Llama 3.2 1B via inference profile (smallest, most cost-effective)
+const MODEL_ID = 'us.meta.llama3-2-1b-instruct-v1:0';
 
 interface BudgetFeedbackRequest {
   budgetId?: string;
