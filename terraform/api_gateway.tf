@@ -1929,3 +1929,27 @@ resource "aws_api_gateway_stage" "prod" {
     environment = var.environment
   }
 }
+
+# Throttling for every route on the stage
+resource "aws_api_gateway_method_settings" "all" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  stage_name  = aws_api_gateway_stage.prod.stage_name
+  method_path = "*/*"
+
+  settings {
+    throttling_rate_limit  = var.api_throttle_rate_limit
+    throttling_burst_limit = var.api_throttle_burst_limit
+  }
+}
+
+# Tighter throttling on the AI endpoint, since each call costs Bedrock tokens
+resource "aws_api_gateway_method_settings" "bedrock_feedback" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  stage_name  = aws_api_gateway_stage.prod.stage_name
+  method_path = "api/bedrock/feedback/POST"
+
+  settings {
+    throttling_rate_limit  = var.ai_throttle_rate_limit
+    throttling_burst_limit = var.ai_throttle_burst_limit
+  }
+}

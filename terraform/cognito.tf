@@ -14,6 +14,12 @@ resource "aws_cognito_user_pool" "main" {
   auto_verified_attributes = ["email"]
   mfa_configuration        = "OFF"
 
+  # Invite-only: users can't self-register; create them with
+  # aws cognito-idp admin-create-user (see README)
+  admin_create_user_config {
+    allow_admin_create_user_only = true
+  }
+
   tags = {
     Name = "Budget Planner User Pool"
   }

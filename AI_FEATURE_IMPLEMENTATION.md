@@ -27,6 +27,11 @@ Click **"✨ Get AI Feedback"** on the Budgets page and Claude reviews the selec
 - **No fake feedback**: if Bedrock errors, refuses, or returns no structured output, the API returns a `500`
   with `"Could not get AI feedback right now. Please try again."` and the modal shows that message.
   It never substitutes canned advice.
+- **Abuse protection** (each call costs Bedrock tokens):
+  - Sign-up is **invite-only** (Cognito `allow_admin_create_user_only`), so only people you add can call it.
+  - **Daily limit**: 20 requests per user per UTC day (`ai_daily_limit`), counted atomically in the
+    `BudgetPlanner-AiUsage-<env>` DynamoDB table *before* the model is called. Over the limit → `429`.
+  - **Throttling**: API Gateway allows 1 req/s (burst 3) on this route and 20 req/s (burst 40) API-wide.
 - **Timeouts**: the SDK call times out at 25s with 1 retry, under API Gateway's 29s limit.
 - **Logging**: token usage and Bedrock errors (status + request id) are logged to CloudWatch
   (`/aws/lambda/BudgetPlanner-Bedrock-<env>`).

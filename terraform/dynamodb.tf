@@ -134,3 +134,30 @@ resource "aws_dynamodb_table" "user_versions" {
     Name = "User Versions Table"
   }
 }
+
+# Per-user daily AI feedback counter (rows expire via TTL)
+resource "aws_dynamodb_table" "ai_usage" {
+  name         = "BudgetPlanner-AiUsage-${var.environment}"
+  billing_mode = var.dynamodb_billing_mode
+  hash_key     = "userId"
+  range_key    = "day"
+
+  attribute {
+    name = "userId"
+    type = "S"
+  }
+
+  attribute {
+    name = "day"
+    type = "S"
+  }
+
+  ttl {
+    attribute_name = "expiresAt"
+    enabled        = true
+  }
+
+  tags = {
+    Name = "AI Usage Table"
+  }
+}

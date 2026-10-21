@@ -144,6 +144,7 @@ export function Auth({ children }: AuthProps) {
     <div className="auth-container">
       <div className="auth-card">
         <Authenticator
+          hideSignUp
           signUpAttributes={['email', 'name', 'birthdate']}
           formFields={{
             signUp: {

@@ -63,3 +63,33 @@ variable "enable_cors" {
   type        = bool
   default     = true
 }
+
+variable "ai_daily_limit" {
+  description = "Max AI budget feedback requests per user per UTC day"
+  type        = number
+  default     = 20
+}
+
+variable "api_throttle_rate_limit" {
+  description = "Steady-state requests per second allowed across the whole API"
+  type        = number
+  default     = 20
+}
+
+variable "api_throttle_burst_limit" {
+  description = "Burst requests allowed across the whole API"
+  type        = number
+  default     = 40
+}
+
+variable "ai_throttle_rate_limit" {
+  description = "Steady-state requests per second allowed on POST /api/bedrock/feedback"
+  type        = number
+  default     = 1
+}
+
+variable "ai_throttle_burst_limit" {
+  description = "Burst requests allowed on POST /api/bedrock/feedback"
+  type        = number
+  default     = 3
+}

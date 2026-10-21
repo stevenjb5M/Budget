@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import axios from 'axios'
 import { Nav } from '../components/Nav'
 import { Footer } from '../components/Footer'
 import { budgetsAPI, assetsAPI, debtsAPI } from '../api/client'
@@ -8,6 +9,19 @@ import { BudgetFeedbackModal } from '../components/BudgetFeedbackModal'
 import { getCurrentUserId } from '../utils/auth'
 import { Budget, BudgetItem, Asset, Debt } from '../types'
 import './Budgets.css'
+
+// Show the API's message (e.g. the daily AI limit) when there is one
+function getFeedbackErrorMessage(err: unknown): string {
+  if (axios.isAxiosError(err)) {
+    if (err.response?.status === 429 && !err.response.data?.error) {
+      return 'Too many requests right now. Please wait a moment and try again.'
+    }
+    if (typeof err.response?.data?.error === 'string') {
+      return err.response.data.error
+    }
+  }
+  return 'Failed to get AI feedback. Please try again.'
+}
 
 export function Budgets() {
   const [budgets, setBudgets] = useState<Budget[]>([])
@@ -407,12 +421,13 @@ export function Budgets() {
     try {
       setFeedbackLoading(true)
       setFeedbackError(null)
+      setBudgetFeedback(null)
+      setShowFeedbackModal(true)
       const feedback = await budgetFeedbackService.getBudgetFeedback(selectedBudget)
       setBudgetFeedback(feedback)
-      setShowFeedbackModal(true)
     } catch (err) {
       console.error('Error getting AI feedback:', err)
-      setFeedbackError('Failed to get AI feedback. Please try again.')
+      setFeedbackError(getFeedbackErrorMessage(err))
     } finally {
       setFeedbackLoading(false)
     }

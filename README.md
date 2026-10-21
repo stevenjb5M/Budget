@@ -144,6 +144,26 @@ For detailed deployment options, see:
 - **Backend + infrastructure**: [terraform/](terraform/) (`npm run package` in `lambda/`, then `terraform apply`)
 - **Frontend**: `npm run deploy` from the repo root (`deploy.js` uploads `frontend/dist` to S3 and invalidates CloudFront)
 
+## Adding Users (invite-only)
+
+Self sign-up is turned off. To give someone access, create their account (they get an email with a temporary password):
+
+```bash
+aws cognito-idp admin-create-user \
+  --user-pool-id <user-pool-id> \
+  --username person@example.com \
+  --user-attributes Name=email,Value=person@example.com Name=email_verified,Value=true \
+                    Name=name,Value="Person Name" Name=birthdate,Value=1990-01-01
+```
+
+## Rate Limits
+
+| Limit | Default | Terraform variable |
+|---|---|---|
+| Whole API | 20 req/s, burst 40 | `api_throttle_rate_limit`, `api_throttle_burst_limit` |
+| `POST /api/bedrock/feedback` | 1 req/s, burst 3 | `ai_throttle_rate_limit`, `ai_throttle_burst_limit` |
+| AI feedback per user | 20 per UTC day | `ai_daily_limit` |
+
 ## Project Structure
 
 ```

@@ -1,13 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { APIGatewayProxyEvent } from 'aws-lambda';
 
-const { mockParse } = vi.hoisted(() => ({ mockParse: vi.fn() }));
+const { mockParse, mockTryConsume } = vi.hoisted(() => ({ mockParse: vi.fn(), mockTryConsume: vi.fn() }));
+
+vi.mock('../daos/aiUsageDAO', () => ({
+  AiUsageDAO: vi.fn(() => ({ tryConsume: mockTryConsume })),
+}));
 
 vi.mock('@anthropic-ai/bedrock-sdk', () => ({
   AnthropicBedrockMantle: vi.fn(() => ({ messages: { parse: mockParse } })),
 }));
 
-import { getBudgetFeedbackHandler, generateBudgetPrompt, MODEL_ID } from './bedrock';
+import { getBudgetFeedbackHandler, generateBudgetPrompt, MODEL_ID, AI_DAILY_LIMIT } from './bedrock';
 
 const validBody = {
   budgetName: 'Monthly Budget',
@@ -42,6 +46,7 @@ const parsedResponse = (parsed_output: unknown, stop_reason = 'end_turn') => ({
 describe('Bedrock Handlers', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockTryConsume.mockResolvedValue(true);
     vi.spyOn(console, 'error').mockImplementation(() => {});
     vi.spyOn(console, 'log').mockImplementation(() => {});
   });
@@ -103,6 +108,24 @@ describe('Bedrock Handlers', () => {
         'totalExpenses',
       ]);
       expect(mockParse).not.toHaveBeenCalled();
+    });
+
+    it('should return 429 without calling the model when the daily limit is reached', async () => {
+      mockTryConsume.mockResolvedValueOnce(false);
+
+      const result = await getBudgetFeedbackHandler(createMockEvent());
+
+      expect(result.statusCode).toBe(429);
+      expect(JSON.parse(result.body).error).toContain('AI feedback for today');
+      expect(mockTryConsume).toHaveBeenCalledWith('test-user-123', AI_DAILY_LIMIT);
+      expect(mockParse).not.toHaveBeenCalled();
+    });
+
+    it('should not count usage for invalid requests', async () => {
+      const event = createMockEvent({ body: JSON.stringify({ budgetName: 'Test' }) });
+      await getBudgetFeedbackHandler(event);
+
+      expect(mockTryConsume).not.toHaveBeenCalled();
     });
 
     it('should return 500 instead of canned advice when Bedrock fails', async () => {

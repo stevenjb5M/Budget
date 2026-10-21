@@ -48,6 +48,7 @@ resource "aws_iam_role_policy" "lambda_dynamodb" {
           aws_dynamodb_table.assets.arn,
           aws_dynamodb_table.debts.arn,
           aws_dynamodb_table.user_versions.arn,
+          aws_dynamodb_table.ai_usage.arn,
           "${aws_dynamodb_table.plans.arn}/index/*",
           "${aws_dynamodb_table.budgets.arn}/index/*",
           "${aws_dynamodb_table.assets.arn}/index/*",
@@ -231,9 +232,11 @@ resource "aws_lambda_function" "bedrock" {
 
   environment {
     variables = {
-      ENVIRONMENT = var.environment
+      ENVIRONMENT    = var.environment
+      AI_USAGE_TABLE = aws_dynamodb_table.ai_usage.name
+      AI_DAILY_LIMIT = tostring(var.ai_daily_limit)
     }
   }
 
-  depends_on = [aws_iam_role_policy.lambda_bedrock]
+  depends_on = [aws_iam_role_policy.lambda_bedrock, aws_iam_role_policy.lambda_dynamodb]
 }

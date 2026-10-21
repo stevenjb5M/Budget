@@ -6,9 +6,15 @@ import { z } from 'zod';
 import { validateAuthorization } from '../middleware/auth';
 import { successResponse, errorResponse, parseBody, validateRequiredFields } from '../utils/response';
 import { HTTP_STATUS, ERROR_MESSAGES } from '../constants';
+import { AiUsageDAO } from '../daos/aiUsageDAO';
 
 // Claude Haiku 5.5 via Claude in Amazon Bedrock (bedrock-mantle endpoint)
 export const MODEL_ID = 'anthropic.claude-haiku-5-5';
+
+// Max AI feedback requests per user per UTC day
+export const AI_DAILY_LIMIT = Number(process.env.AI_DAILY_LIMIT) || 20;
+
+const aiUsageDAO = new AiUsageDAO();
 
 // API Gateway caps requests at 29s, so keep the model call well under that
 const bedrockClient = new AnthropicBedrockMantle({
@@ -60,6 +66,11 @@ export const getBudgetFeedbackHandler = async (
       return errorResponse(HTTP_STATUS.BAD_REQUEST, ERROR_MESSAGES.MISSING_REQUIRED_FIELDS, {
         missingFields,
       });
+    }
+
+    // Count the request before calling the model so failed calls can't be used to bypass the limit
+    if (!(await aiUsageDAO.tryConsume(userId, AI_DAILY_LIMIT))) {
+      return errorResponse(HTTP_STATUS.TOO_MANY_REQUESTS, ERROR_MESSAGES.AI_DAILY_LIMIT_REACHED);
     }
 
     const request = body as unknown as BudgetFeedbackRequest;
