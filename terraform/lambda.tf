@@ -75,6 +75,12 @@ resource "aws_iam_role_policy" "lambda_bedrock" {
           "arn:aws:bedrock:*::foundation-model/*",
           "arn:aws:bedrock:*:*:inference-profile/*"
         ]
+      },
+      {
+        # Claude in Amazon Bedrock (bedrock-mantle Messages API endpoint)
+        Effect   = "Allow"
+        Action   = ["bedrock-mantle:CreateInference"]
+        Resource = "*"
       }
     ]
   })
@@ -83,14 +89,15 @@ resource "aws_iam_role_policy" "lambda_bedrock" {
 # Lambda functions for each endpoint
 
 resource "aws_lambda_function" "users" {
-  filename      = "lambda-functions.zip"
-  function_name = "BudgetPlanner-Users-${var.environment}"
-  role          = aws_iam_role.lambda_role.arn
-  handler       = "dist/users-handler.handler"
-  runtime       = "nodejs20.x"
-  architectures = ["arm64"]
-  memory_size   = var.lambda_memory
-  timeout       = var.lambda_timeout
+  filename         = "lambda-functions.zip"
+  source_code_hash = filebase64sha256("lambda-functions.zip")
+  function_name    = "BudgetPlanner-Users-${var.environment}"
+  role             = aws_iam_role.lambda_role.arn
+  handler          = "dist/users-handler.handler"
+  runtime          = "nodejs20.x"
+  architectures    = ["arm64"]
+  memory_size      = var.lambda_memory
+  timeout          = var.lambda_timeout
 
   timeouts {
     create = "10m"
@@ -98,9 +105,9 @@ resource "aws_lambda_function" "users" {
 
   environment {
     variables = {
-      USERS_TABLE           = aws_dynamodb_table.users.name
-      USER_VERSIONS_TABLE   = aws_dynamodb_table.user_versions.name
-      ENVIRONMENT           = var.environment
+      USERS_TABLE         = aws_dynamodb_table.users.name
+      USER_VERSIONS_TABLE = aws_dynamodb_table.user_versions.name
+      ENVIRONMENT         = var.environment
     }
   }
 
@@ -108,14 +115,15 @@ resource "aws_lambda_function" "users" {
 }
 
 resource "aws_lambda_function" "plans" {
-  filename      = "lambda-functions.zip"
-  function_name = "BudgetPlanner-Plans-${var.environment}"
-  role          = aws_iam_role.lambda_role.arn
-  handler       = "dist/plans-handler.handler"
-  runtime       = "nodejs20.x"
-  architectures = ["arm64"]
-  memory_size   = var.lambda_memory
-  timeout       = var.lambda_timeout
+  filename         = "lambda-functions.zip"
+  source_code_hash = filebase64sha256("lambda-functions.zip")
+  function_name    = "BudgetPlanner-Plans-${var.environment}"
+  role             = aws_iam_role.lambda_role.arn
+  handler          = "dist/plans-handler.handler"
+  runtime          = "nodejs20.x"
+  architectures    = ["arm64"]
+  memory_size      = var.lambda_memory
+  timeout          = var.lambda_timeout
 
   timeouts {
     create = "10m"
@@ -123,8 +131,8 @@ resource "aws_lambda_function" "plans" {
 
   environment {
     variables = {
-      PLANS_TABLE        = aws_dynamodb_table.plans.name
-      ENVIRONMENT        = var.environment
+      PLANS_TABLE = aws_dynamodb_table.plans.name
+      ENVIRONMENT = var.environment
     }
   }
 
@@ -132,14 +140,15 @@ resource "aws_lambda_function" "plans" {
 }
 
 resource "aws_lambda_function" "budgets" {
-  filename      = "lambda-functions.zip"
-  function_name = "BudgetPlanner-Budgets-${var.environment}"
-  role          = aws_iam_role.lambda_role.arn
-  handler       = "dist/budgets-handler.handler"
-  runtime       = "nodejs20.x"
-  architectures = ["arm64"]
-  memory_size   = var.lambda_memory
-  timeout       = var.lambda_timeout
+  filename         = "lambda-functions.zip"
+  source_code_hash = filebase64sha256("lambda-functions.zip")
+  function_name    = "BudgetPlanner-Budgets-${var.environment}"
+  role             = aws_iam_role.lambda_role.arn
+  handler          = "dist/budgets-handler.handler"
+  runtime          = "nodejs20.x"
+  architectures    = ["arm64"]
+  memory_size      = var.lambda_memory
+  timeout          = var.lambda_timeout
 
   timeouts {
     create = "10m"
@@ -147,8 +156,8 @@ resource "aws_lambda_function" "budgets" {
 
   environment {
     variables = {
-      BUDGETS_TABLE      = aws_dynamodb_table.budgets.name
-      ENVIRONMENT        = var.environment
+      BUDGETS_TABLE = aws_dynamodb_table.budgets.name
+      ENVIRONMENT   = var.environment
     }
   }
 
@@ -156,14 +165,15 @@ resource "aws_lambda_function" "budgets" {
 }
 
 resource "aws_lambda_function" "assets" {
-  filename      = "lambda-functions.zip"
-  function_name = "BudgetPlanner-Assets-${var.environment}"
-  role          = aws_iam_role.lambda_role.arn
-  handler       = "dist/assets-handler.handler"
-  runtime       = "nodejs20.x"
-  architectures = ["arm64"]
-  memory_size   = var.lambda_memory
-  timeout       = var.lambda_timeout
+  filename         = "lambda-functions.zip"
+  source_code_hash = filebase64sha256("lambda-functions.zip")
+  function_name    = "BudgetPlanner-Assets-${var.environment}"
+  role             = aws_iam_role.lambda_role.arn
+  handler          = "dist/assets-handler.handler"
+  runtime          = "nodejs20.x"
+  architectures    = ["arm64"]
+  memory_size      = var.lambda_memory
+  timeout          = var.lambda_timeout
 
   timeouts {
     create = "10m"
@@ -171,8 +181,8 @@ resource "aws_lambda_function" "assets" {
 
   environment {
     variables = {
-      ASSETS_TABLE       = aws_dynamodb_table.assets.name
-      ENVIRONMENT        = var.environment
+      ASSETS_TABLE = aws_dynamodb_table.assets.name
+      ENVIRONMENT  = var.environment
     }
   }
 
@@ -180,14 +190,15 @@ resource "aws_lambda_function" "assets" {
 }
 
 resource "aws_lambda_function" "debts" {
-  filename      = "lambda-functions.zip"
-  function_name = "BudgetPlanner-Debts-${var.environment}"
-  role          = aws_iam_role.lambda_role.arn
-  handler       = "dist/debts-handler.handler"
-  runtime       = "nodejs20.x"
-  architectures = ["arm64"]
-  memory_size   = var.lambda_memory
-  timeout       = var.lambda_timeout
+  filename         = "lambda-functions.zip"
+  source_code_hash = filebase64sha256("lambda-functions.zip")
+  function_name    = "BudgetPlanner-Debts-${var.environment}"
+  role             = aws_iam_role.lambda_role.arn
+  handler          = "dist/debts-handler.handler"
+  runtime          = "nodejs20.x"
+  architectures    = ["arm64"]
+  memory_size      = var.lambda_memory
+  timeout          = var.lambda_timeout
 
   timeouts {
     create = "10m"
@@ -195,8 +206,8 @@ resource "aws_lambda_function" "debts" {
 
   environment {
     variables = {
-      DEBTS_TABLE        = aws_dynamodb_table.debts.name
-      ENVIRONMENT        = var.environment
+      DEBTS_TABLE = aws_dynamodb_table.debts.name
+      ENVIRONMENT = var.environment
     }
   }
 
@@ -204,14 +215,15 @@ resource "aws_lambda_function" "debts" {
 }
 
 resource "aws_lambda_function" "bedrock" {
-  filename      = "lambda-functions.zip"
-  function_name = "BudgetPlanner-Bedrock-${var.environment}"
-  role          = aws_iam_role.lambda_role.arn
-  handler       = "dist/bedrock-handler.handler"
-  runtime       = "nodejs20.x"
-  architectures = ["arm64"]
-  memory_size   = var.lambda_memory
-  timeout       = var.lambda_timeout
+  filename         = "lambda-functions.zip"
+  source_code_hash = filebase64sha256("lambda-functions.zip")
+  function_name    = "BudgetPlanner-Bedrock-${var.environment}"
+  role             = aws_iam_role.lambda_role.arn
+  handler          = "dist/bedrock-handler.handler"
+  runtime          = "nodejs20.x"
+  architectures    = ["arm64"]
+  memory_size      = var.lambda_memory
+  timeout          = var.lambda_timeout
 
   timeouts {
     create = "10m"

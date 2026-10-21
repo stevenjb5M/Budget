@@ -1,15 +1,33 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
-import { BedrockRuntime } from '@aws-sdk/client-bedrock-runtime';
+import { AnthropicBedrockMantle } from '@anthropic-ai/bedrock-sdk';
+import Anthropic from '@anthropic-ai/sdk';
+import { zodOutputFormat } from '@anthropic-ai/sdk/helpers/zod';
+import { z } from 'zod';
 import { validateAuthorization } from '../middleware/auth';
 import { successResponse, errorResponse, parseBody, validateRequiredFields } from '../utils/response';
 import { HTTP_STATUS, ERROR_MESSAGES } from '../constants';
 
-const bedrockClient = new BedrockRuntime({
-  region: 'us-east-1',
+// Claude Haiku 5.5 via Claude in Amazon Bedrock (bedrock-mantle endpoint)
+export const MODEL_ID = 'anthropic.claude-haiku-5-5';
+
+// API Gateway caps requests at 29s, so keep the model call well under that
+const bedrockClient = new AnthropicBedrockMantle({
+  awsRegion: process.env.AWS_REGION || 'us-east-1',
+  timeout: 25_000,
+  maxRetries: 1,
 });
 
-// Using Llama 3.2 1B via inference profile (smallest, most cost-effective)
-const MODEL_ID = 'us.meta.llama3-2-1b-instruct-v1:0';
+const SYSTEM_PROMPT = `You are a friendly, practical financial advisor reviewing a person's monthly budget.
+Give specific, actionable feedback grounded in the numbers you are given. Be encouraging but realistic.
+Return 2-3 improvements, 1-2 strengths, and a 1-2 sentence summary.`;
+
+export const BudgetFeedbackSchema = z.object({
+  improvements: z.array(z.string()),
+  strengths: z.array(z.string()),
+  summary: z.string(),
+});
+
+export type BudgetFeedback = z.infer<typeof BudgetFeedbackSchema>;
 
 interface BudgetFeedbackRequest {
   budgetId?: string;
@@ -18,12 +36,6 @@ interface BudgetFeedbackRequest {
   expenses: Array<{ name: string; amount: number; category: string }>;
   totalIncome: number;
   totalExpenses: number;
-}
-
-interface BudgetFeedback {
-  improvements: string[];
-  strengths: string[];
-  summary: string;
 }
 
 export const getBudgetFeedbackHandler = async (
@@ -37,38 +49,34 @@ export const getBudgetFeedbackHandler = async (
 
     const body = parseBody(event.body);
 
-    const validation = validateRequiredFields(body, [
-      'budgetName',
-      'income',
-      'expenses',
-      'totalIncome',
-      'totalExpenses',
-    ]);
+    // totalIncome/totalExpenses can legitimately be 0, so check presence rather than truthiness
+    const validation = validateRequiredFields(body, ['budgetName', 'income', 'expenses']);
+    const missingFields = [
+      ...validation.missingFields,
+      ...['totalIncome', 'totalExpenses'].filter((field) => typeof body[field] !== 'number'),
+    ];
 
-    if (!validation.valid) {
-      return errorResponse(
-        HTTP_STATUS.BAD_REQUEST,
-        ERROR_MESSAGES.MISSING_REQUIRED_FIELDS,
-        { missingFields: validation.missingFields }
-      );
+    if (missingFields.length > 0) {
+      return errorResponse(HTTP_STATUS.BAD_REQUEST, ERROR_MESSAGES.MISSING_REQUIRED_FIELDS, {
+        missingFields,
+      });
     }
 
     const request = body as unknown as BudgetFeedbackRequest;
-
-    // Create prompt for Llama 2
-    const prompt = generateBudgetPrompt(request);
-
-    // Call Bedrock API
-    const feedback = await callBedrock(prompt);
+    const feedback = await callClaude(generateBudgetPrompt(request));
 
     return successResponse(feedback);
   } catch (error) {
-    console.error('Error getting budget feedback:', error);
-    return errorResponse(HTTP_STATUS.INTERNAL_SERVER_ERROR, ERROR_MESSAGES.INTERNAL_ERROR);
+    if (error instanceof Anthropic.APIError) {
+      console.error('Bedrock API error:', { status: error.status, requestId: error.requestID, message: error.message });
+    } else {
+      console.error('Error getting budget feedback:', error);
+    }
+    return errorResponse(HTTP_STATUS.INTERNAL_SERVER_ERROR, ERROR_MESSAGES.AI_FEEDBACK_FAILED);
   }
 };
 
-function generateBudgetPrompt(request: BudgetFeedbackRequest): string {
+export function generateBudgetPrompt(request: BudgetFeedbackRequest): string {
   const incomeDetails = request.income
     .map((i) => `  - ${i.name} (${i.category}): $${i.amount}`)
     .join('\n');
@@ -81,9 +89,7 @@ function generateBudgetPrompt(request: BudgetFeedbackRequest): string {
     ? (((request.totalIncome - request.totalExpenses) / request.totalIncome) * 100).toFixed(1)
     : 0;
 
-  return `You are a financial advisor analyzing a personal budget. Provide helpful, concise feedback.
-
-Budget: "${request.budgetName}"
+  return `Budget: "${request.budgetName}"
 Total Monthly Income: $${request.totalIncome}
 Total Monthly Expenses: $${request.totalExpenses}
 Savings Rate: ${savingsRate}%
@@ -92,101 +98,31 @@ Income Sources:
 ${incomeDetails || '  None'}
 
 Expenses:
-${expenseDetails || '  None'}
-
-Please provide:
-1. 2-3 specific, actionable suggestions for improvement (format as bullet points with "-")
-2. 1-2 things they are doing well (format as bullet points with "-")
-3. A brief summary (1-2 sentences)
-
-Format your response with clear sections using "Improvements:", "Strengths:", and "Summary:" headers.
-Be encouraging but realistic. Focus on practical changes they can make.`;
+${expenseDetails || '  None'}`;
 }
 
-async function callBedrock(prompt: string): Promise<BudgetFeedback> {
-  try {
-    const response = await bedrockClient.invokeModel({
-      modelId: MODEL_ID,
-      contentType: 'application/json',
-      accept: 'application/json',
-      body: JSON.stringify({
-        prompt: `[INST] ${prompt} [/INST]`,
-        max_gen_len: 500,
-        temperature: 0.7,
-        top_p: 0.9,
-      }),
-    });
+async function callClaude(prompt: string): Promise<BudgetFeedback> {
+  const response = await bedrockClient.messages.parse({
+    model: MODEL_ID,
+    max_tokens: 4000,
+    system: SYSTEM_PROMPT,
+    output_config: { effort: 'low', format: zodOutputFormat(BudgetFeedbackSchema) },
+    messages: [{ role: 'user', content: prompt }],
+  });
 
-    const responseBody = JSON.parse(new TextDecoder().decode(response.body));
-    const content = responseBody.generation;
-
-    // Parse the response into structured feedback
-    return parseBedrockResponse(content);
-  } catch (error) {
-    console.error('Bedrock API error:', error);
-    throw error;
+  if (response.stop_reason === 'refusal') {
+    throw new Error(`Model refused request: ${response.stop_details?.category ?? 'unknown'}`);
   }
-}
-
-function parseBedrockResponse(content: string): BudgetFeedback {
-  // Split response into sections
-  const lines = content.split('\n').filter((line) => line.trim());
-
-  const improvements: string[] = [];
-  const strengths: string[] = [];
-  let summary = '';
-  let currentSection = '';
-
-  for (const line of lines) {
-    const trimmedLine = line.trim();
-    const lowerLine = trimmedLine.toLowerCase();
-
-    if (lowerLine.includes('improvement') && lowerLine.includes(':')) {
-      currentSection = 'improvements';
-      continue;
-    }
-
-    if ((lowerLine.includes('strength') || lowerLine.includes('doing well')) && lowerLine.includes(':')) {
-      currentSection = 'strengths';
-      continue;
-    }
-
-    if (lowerLine.includes('summary') && lowerLine.includes(':')) {
-      currentSection = 'summary';
-      continue;
-    }
-
-    if ((trimmedLine.startsWith('-') || trimmedLine.startsWith('•')) && (currentSection === 'improvements' || currentSection === 'strengths')) {
-      const item = trimmedLine.replace(/^[-•]\s*/, '').trim();
-      if (item.length > 0) {
-        if (currentSection === 'improvements') {
-          improvements.push(item);
-        } else if (currentSection === 'strengths') {
-          strengths.push(item);
-        }
-      }
-    } else if (currentSection === 'summary' && trimmedLine.length > 0 && !lowerLine.includes(':')) {
-      summary += (summary ? ' ' : '') + trimmedLine;
-    }
+  if (!response.parsed_output) {
+    throw new Error(`Model returned no structured output (stop_reason: ${response.stop_reason})`);
   }
 
-  // Ensure we have reasonable defaults
-  if (improvements.length === 0) {
-    improvements.push('Review your expense categories to identify optimization opportunities');
-    improvements.push('Consider setting spending limits for discretionary expenses');
-  }
+  console.log('Bedrock usage:', JSON.stringify(response.usage));
 
-  if (strengths.length === 0) {
-    strengths.push('You are actively tracking your budget');
-  }
-
-  if (!summary) {
-    summary = 'Your budget shows awareness and structure. Focus on the suggested improvements to optimize your financial health.';
-  }
-
+  const { improvements, strengths, summary } = response.parsed_output;
   return {
     improvements: improvements.slice(0, 3),
     strengths: strengths.slice(0, 2),
-    summary: summary.substring(0, 300),
+    summary,
   };
 }

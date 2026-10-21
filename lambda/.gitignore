@@ -8,3 +8,4 @@ coverage/
 lambda-functions.zip
 *.js
 !*.config.js
+!build.js

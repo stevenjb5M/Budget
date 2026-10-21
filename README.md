@@ -13,7 +13,7 @@ Budget Planner allows users to:
 - Visualize financial projections for 36 months. Soon to be longer.
 
 ## Quick Start Local Setup
-s
+
 **Requirements**: Node.js 20+, npm.
 
 ```bash
@@ -28,7 +28,7 @@ Frontend runs on `http://localhost:5173` and connects to the deployed AWS backen
 ```bash
 # Optimized Lambda bundle
 cd lambda
-npm run package    # Creates lambda.zip (~14 KB)
+npm run package    # Typecheck + esbuild bundle → terraform/lambda-functions.zip
 
 # Frontend assets
 cd frontend
@@ -61,15 +61,15 @@ The Lambda backend has been optimized for **cost efficiency**, **scalability**, 
 
 ### Lambda Bundle Size Reduction
 - **Before**: ~39 MB (full `node_modules` included)
-- **After**: ~14 KB (esbuild bundled)
+- **After**: ~1.3 MB zip (esbuild bundled, each handler self-contained)
 - **Reduction**: 99.96% smaller
 
-**How**: Using esbuild to bundle and minify Lambda code, with AWS SDK v3 marked as external (provided by Lambda runtime).
+**How**: `lambda/build.js` uses esbuild to bundle and minify each `src/*-handler.ts` (with its dependencies) into `dist/`.
 
 ```bash
 cd lambda
 npm run build    # Runs esbuild bundler
-npm run package  # Creates optimized lambda.zip
+npm run package  # Creates terraform/lambda-functions.zip
 ```
 
 ### ARM64 Architecture (Graviton2)
@@ -141,9 +141,8 @@ Budget Planner features a **sophisticated version-based synchronization system**
 ## Production Deployment
 
 For detailed deployment options, see:
-- **Frontend**: [FRONTEND_DEPLOYMENT.md](FRONTEND_DEPLOYMENT.md) (S3 + CloudFront setup)
-- **Infrastructure**: [terraform/](terraform/) (Infrastructure-as-Code documentation)
-- **CI/CD**: [amplify/](amplify/) (AWS Amplify integration)
+- **Backend + infrastructure**: [terraform/](terraform/) (`npm run package` in `lambda/`, then `terraform apply`)
+- **Frontend**: `npm run deploy` from the repo root (`deploy.js` uploads `frontend/dist` to S3 and invalidates CloudFront)
 
 ## Project Structure
 
@@ -174,11 +173,8 @@ Budget/
 │   ├── variables.tf          # Variable definitions
 │   ├── outputs.tf            # Output values
 │   └── terraform.tfvars      # Variable values
-├── scripts/                    # Deployment & utility scripts
-│   ├── deploy-frontend.sh    # S3 + CloudFront deployment
-│   └── deploy-all.sh         # Full stack deployment
-├── ProjectDesign.md            # Project design & architecture
-├── FRONTEND_DEPLOYMENT.md      # Frontend deployment guide
+├── deploy.js                   # Frontend S3 + CloudFront deployment
+├── AI_FEATURE_IMPLEMENTATION.md # AI budget feedback design
 └── README.md                   # This file
 ```
 
@@ -192,7 +188,6 @@ Budget/
 - **Debt** – Loan or credit account (e.g., "Student Loan", "Credit Card")
 - **Transaction** – One-off income/expense for a specific month in a plan
 
-See [ProjectDesign.md](ProjectDesign.md) for full design documentation.
 
 ## API Endpoints
 
@@ -232,8 +227,7 @@ All endpoints require JWT authentication via Cognito.
 
 ## Documentation
 
-- [ProjectDesign.md](ProjectDesign.md) – Project design, architecture, and data model
-- [FRONTEND_DEPLOYMENT.md](FRONTEND_DEPLOYMENT.md) – Frontend deployment to S3 + CloudFront with caching strategy
+- [AI_FEATURE_IMPLEMENTATION.md](AI_FEATURE_IMPLEMENTATION.md) – AI budget feedback (Claude on Amazon Bedrock)
 - [terraform/](terraform/) – Infrastructure-as-code for Lambda, API Gateway, and supporting services
 
 ## Future Plans
@@ -243,16 +237,16 @@ All endpoints require JWT authentication via Cognito.
 
 ## AI Budget Feedback
 
-Budget Planner includes an **AI-powered budget analysis feature** using AWS Bedrock and Claude 3.5 Haiku:
+Budget Planner includes an **AI-powered budget analysis feature** using Claude Haiku 5.5 on Amazon Bedrock:
 
 - 💡 **Smart Analysis** – Click "✨ Get AI Feedback" to analyze your budget
 - 💰 **Actionable Suggestions** – Get 2-3 specific improvement recommendations
 - ✅ **Recognize Strengths** – See what you're doing well financially
-- 🎯 **Free Tier Compliant** – Uses Claude 3.5 Haiku (~3K tokens per analysis, 100K/month free)
+- 🎯 **Low cost** – Claude Haiku 5.5 with structured JSON output; a typical analysis is a few thousand tokens
 
 The feedback appears in a modal showing a summary, areas for improvement, and financial strengths.
 
-**To deploy**: See [SETUP_GUIDE.md](SETUP_GUIDE.md) for deployment instructions and [AI_FEATURE_IMPLEMENTATION.md](AI_FEATURE_IMPLEMENTATION.md) for technical details.
+**To deploy and test**: see [AI_FEATURE_IMPLEMENTATION.md](AI_FEATURE_IMPLEMENTATION.md).
 
 ## Project Status
 

@@ -355,15 +355,21 @@ describe('Users Handlers', () => {
       expect(mockGetUserVersions).toHaveBeenCalledWith('test-user-123');
     });
 
-    it('should return 404 when user versions not found', async () => {
+    it('should return zeroed versions when user versions not found', async () => {
       const { mockGetUserVersions } = await import('../services/business/userService');
       mockGetUserVersions.mockResolvedValueOnce(null);
 
       const event = createMockEvent({ path: '/users/versions' });
       const result = await getUserVersionsHandler(event);
 
-      expect(result.statusCode).toBe(404);
-      expect(JSON.parse(result.body).error).toBe('User versions not found');
+      expect(result.statusCode).toBe(200);
+      expect(JSON.parse(result.body)).toEqual({
+        globalVersion: 0,
+        budgetsVersion: 0,
+        plansVersion: 0,
+        assetsVersion: 0,
+        debtsVersion: 0,
+      });
     });
 
     it('should return 401 when not authorized', async () => {

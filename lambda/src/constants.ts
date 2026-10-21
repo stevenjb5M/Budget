@@ -39,4 +39,5 @@ export const ERROR_MESSAGES = {
   INTERNAL_ERROR: 'Internal server error',
   MISSING_REQUIRED_FIELDS: 'Missing required fields',
   METHOD_NOT_ALLOWED: 'Method not allowed',
+  AI_FEEDBACK_FAILED: 'Could not get AI feedback right now. Please try again.',
 };
